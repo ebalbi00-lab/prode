@@ -69,19 +69,27 @@ def inject_css():
     /* ── INPUTS ── */
     .stTextInput > div > div > input,
     .stPasswordInput > div > div > input {
-        background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        background: #1a1a2e !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
         border-radius: 10px !important;
-        color: #e8e8f0 !important;
+        color: #ffffff !important;
         padding: 0.6rem 1rem !important;
         font-family: 'DM Sans', sans-serif !important;
         transition: all 0.2s ease !important;
+        -webkit-text-fill-color: #ffffff !important;
+        caret-color: #00c850 !important;
     }
     .stTextInput > div > div > input:focus,
     .stPasswordInput > div > div > input:focus {
         border-color: #00c850 !important;
-        background: rgba(0,200,80,0.05) !important;
-        box-shadow: 0 0 0 3px rgba(0,200,80,0.1) !important;
+        background: #1a1a2e !important;
+        box-shadow: 0 0 0 3px rgba(0,200,80,0.15) !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    .stTextInput > div > div > input::placeholder,
+    .stPasswordInput > div > div > input::placeholder {
+        color: rgba(255,255,255,0.3) !important;
+        -webkit-text-fill-color: rgba(255,255,255,0.3) !important;
     }
     .stTextInput label, .stPasswordInput label,
     .stSelectbox label, .stNumberInput label,
@@ -96,18 +104,25 @@ def inject_css():
 
     /* ── SELECTBOX ── */
     .stSelectbox > div > div {
-        background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        background: #1a1a2e !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
         border-radius: 10px !important;
-        color: #e8e8f0 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    .stSelectbox > div > div > div {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     /* ── NUMBER INPUT ── */
     .stNumberInput > div > div > input {
-        background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        background: #1a1a2e !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
         border-radius: 10px !important;
-        color: #e8e8f0 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        caret-color: #00c850 !important;
         text-align: center !important;
         font-size: 1.2rem !important;
         font-weight: 700 !important;
