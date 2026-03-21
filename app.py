@@ -63,7 +63,13 @@ def inject_css():
     .stNumberInput > div > div > input {
         background: #1a1a2e !important; border: 1px solid rgba(255,255,255,0.15) !important;
         border-radius: 10px !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;
-        caret-color: #00c850 !important; text-align: center !important; font-size: 1.2rem !important; font-weight: 700 !important;
+        caret-color: #00c850 !important; text-align: center !important;
+        font-size: 1.4rem !important; font-weight: 700 !important;
+        font-family: 'Bebas Neue', sans-serif !important;
+    }
+    .stNumberInput > div > div > input:focus {
+        border-color: #00c850 !important;
+        box-shadow: 0 0 0 3px rgba(0,200,80,0.15) !important;
     }
     .stButton > button {
         background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.12) !important;
@@ -120,14 +126,6 @@ def inject_css():
 
     [data-testid="stForm"] { background: rgba(255,255,255,0.02) !important; border: 1px solid rgba(255,255,255,0.07) !important; border-radius: 16px !important; padding: 1.5rem !important; }
 
-    /* Botones +/- compactos en el scorer */
-    .scorer-btn > div > button {
-        padding: 0.3rem 0.5rem !important;
-        font-size: 1.1rem !important;
-        min-height: 36px !important;
-        line-height: 1 !important;
-    }
-
     @media (max-width: 768px) {
         .block-container { padding-left: 1rem !important; padding-right: 1rem !important; padding-top: 1rem !important; }
         h1 { font-size: 2.2rem !important; letter-spacing: 2px !important; }
@@ -138,6 +136,7 @@ def inject_css():
         .stButton > button, .stFormSubmitButton > button { padding: 0.75rem 1rem !important; font-size: 0.95rem !important; width: 100% !important; }
         [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
         .stRadio > div > div { flex-wrap: wrap !important; gap: 4px !important; }
+        .stNumberInput > div > div > input { font-size: 1.6rem !important; }
     }
     </style>
     """, unsafe_allow_html=True)
@@ -703,6 +702,7 @@ def pantalla_usuario():
         nom_visita = f"{bandera(p['visita'])} {p['visita']}"
 
         if confirmado:
+            # Vista solo lectura — igual que siempre
             st.markdown(f"""
             <div style="background:{color_card}; border:1px solid {border_card};
                         border-radius:12px; padding:12px 16px; margin:6px 0;
@@ -718,70 +718,34 @@ def pantalla_usuario():
             """, unsafe_allow_html=True)
 
         else:
-            key_gl = f"val_gl_{fase}_{idx}"
-            key_gv = f"val_gv_{fase}_{idx}"
-            if key_gl not in st.session_state:
-                st.session_state[key_gl] = int(gl_prev)
-            if key_gv not in st.session_state:
-                st.session_state[key_gv] = int(gv_prev)
-
-            # ── Layout: 3 columnas principales ──
-            # Col izquierda: nombre local
-            # Col central: [− gl +] espacio [− gv +]
-            # Col derecha: nombre visita
+            # ── Vista editable: 3 columnas, number_input nativo en el centro ──
             st.markdown(f"""
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
-                        border-radius:12px; padding:10px 16px; margin:6px 0;">
+                        border-radius:12px; padding:12px 16px; margin:6px 0;">
             """, unsafe_allow_html=True)
 
-            col_local, col_centro, col_visita = st.columns([3, 2, 3])
+            col_local, col_gl, col_gv, col_visita = st.columns([3, 1, 1, 3])
 
             col_local.markdown(
                 f"<div style='text-align:right; font-weight:700; font-size:0.95rem; "
-                f"padding-top:8px; color:#fff; line-height:1.4;'>{nom_local}</div>",
+                f"padding-top:10px; color:#fff; line-height:1.4;'>{nom_local}</div>",
                 unsafe_allow_html=True)
+
+            gl = col_gl.number_input(
+                "Local", min_value=0, max_value=10, value=int(gl_prev),
+                key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+
+            gv = col_gv.number_input(
+                "Visita", min_value=0, max_value=10, value=int(gv_prev),
+                key=f"gv_{fase}_{idx}", label_visibility="collapsed")
 
             col_visita.markdown(
                 f"<div style='text-align:left; font-weight:700; font-size:0.95rem; "
-                f"padding-top:8px; color:#fff; line-height:1.4;'>{nom_visita}</div>",
+                f"padding-top:10px; color:#fff; line-height:1.4;'>{nom_visita}</div>",
                 unsafe_allow_html=True)
 
-            # Dentro de col_centro: − num + · − num +
-            with col_centro:
-                b_gl_m, v_gl, b_gl_p, b_gv_m, v_gv, b_gv_p = st.columns([1, 1, 1, 1, 1, 1])
-
-                if b_gl_m.button("−", key=f"gl_m_{fase}_{idx}", use_container_width=True):
-                    st.session_state[key_gl] = max(0, st.session_state[key_gl] - 1)
-                    db_guardar_pred(username, fase, idx, st.session_state[key_gl], st.session_state[key_gv])
-                    st.rerun()
-
-                v_gl.markdown(
-                    f"<div style='text-align:center; font-family:Bebas Neue,sans-serif; "
-                    f"font-size:2rem; color:#00e870; line-height:1.7;'>{st.session_state[key_gl]}</div>",
-                    unsafe_allow_html=True)
-
-                if b_gl_p.button("+", key=f"gl_p_{fase}_{idx}", use_container_width=True):
-                    st.session_state[key_gl] = min(10, st.session_state[key_gl] + 1)
-                    db_guardar_pred(username, fase, idx, st.session_state[key_gl], st.session_state[key_gv])
-                    st.rerun()
-
-                if b_gv_m.button("−", key=f"gv_m_{fase}_{idx}", use_container_width=True):
-                    st.session_state[key_gv] = max(0, st.session_state[key_gv] - 1)
-                    db_guardar_pred(username, fase, idx, st.session_state[key_gl], st.session_state[key_gv])
-                    st.rerun()
-
-                v_gv.markdown(
-                    f"<div style='text-align:center; font-family:Bebas Neue,sans-serif; "
-                    f"font-size:2rem; color:#00e870; line-height:1.7;'>{st.session_state[key_gv]}</div>",
-                    unsafe_allow_html=True)
-
-                if b_gv_p.button("+", key=f"gv_p_{fase}_{idx}", use_container_width=True):
-                    st.session_state[key_gv] = min(10, st.session_state[key_gv] + 1)
-                    db_guardar_pred(username, fase, idx, st.session_state[key_gl], st.session_state[key_gv])
-                    st.rerun()
-
             st.markdown("</div>", unsafe_allow_html=True)
-            cambios[idx] = (st.session_state[key_gl], st.session_state[key_gv])
+            cambios[idx] = (gl, gv)
 
     # ── Render partidos ──────────────────────────────────────────────
     if fase == "Grupos":
@@ -847,9 +811,6 @@ def pantalla_usuario():
             if hash_clave(clave_confirm) == u["clave"]:
                 for idx, (gl, gv) in cambios.items():
                     db_guardar_pred(username, fase, idx, gl, gv)
-                for p in partidos:
-                    st.session_state.pop(f"val_gl_{fase}_{p['idx']}", None)
-                    st.session_state.pop(f"val_gv_{fase}_{p['idx']}", None)
                 db_confirmar_prode(username, fase)
                 st.session_state["wizard_grupos_completo"] = True
                 st.success("¡Pronósticos confirmados! Ya no se pueden modificar.")
