@@ -743,14 +743,12 @@ def db_calcular_puntos():
             if not db_fase_confirmada(username, fase):
                 continue
             prode = db_get_prode(username, fase)
-            partidos = db_get_partidos(fase)
-            for p in partidos:
-                idx = p["idx"]
+            resultados = db_get_resultado_completo(fase)  # solo partidos con resultado real
+            multiplicador = {"Grupos":1,"Dieciseisavos":2,"Octavos":3,"Cuartos":4,"Semifinal":5,"Final":6}.get(fase, 1)
+            for idx, (rl, rv) in resultados.items():
                 if idx not in prode["pred"]:
                     continue
                 gl, gv = prode["pred"][idx]
-                rl, rv = db_get_resultado(fase, idx)
-                multiplicador = {"Grupos":1,"Dieciseisavos":2,"Octavos":3,"Cuartos":4,"Semifinal":5,"Final":6}.get(fase, 1)
                 if (gl > gv and rl > rv) or (gl < gv and rl < rv) or (gl == gv and rl == rv):
                     puntos += 1 * multiplicador
                 if gl == rl and gv == rv:
@@ -1034,42 +1032,51 @@ def pantalla_usuario():
                 res_real = resultados_fase.get(idx)
                 res_str = ""
                 iconos = ""
+                color_card = "rgba(255,255,255,0.03)"
+                border_card = "rgba(255,255,255,0.08)"
                 if res_real:
                     rl, rv = res_real
                     acierto_res = (gl_prev > gv_prev and rl > rv) or (gl_prev < gv_prev and rl < rv) or (gl_prev == gv_prev and rl == rv)
                     acierto_exacto = gl_prev == rl and gv_prev == rv
                     iconos = ("✅" if acierto_res else "❌") + (" 🎯" if acierto_exacto else "")
-                    res_str = f"{rl} - {rv}"
-
-                st.markdown(f"""
-                <div style="display:flex; justify-content:space-between; align-items:center;
-                            padding:6px 0 2px 0; margin-top:8px;">
-                    <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:right; padding-right:8px;">{p['local']}</div>
-                    <div style="color:#606075; font-size:0.75rem; text-align:center; min-width:24px;">vs</div>
-                    <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:left; padding-left:8px;">{p['visita']}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                    res_str = f"{rl} — {rv}"
+                    if acierto_exacto:
+                        color_card = "rgba(0,200,80,0.07)"
+                        border_card = "rgba(0,200,80,0.3)"
+                    elif acierto_res:
+                        color_card = "rgba(0,150,255,0.06)"
+                        border_card = "rgba(0,150,255,0.25)"
+                    else:
+                        color_card = "rgba(255,60,60,0.05)"
+                        border_card = "rgba(255,60,60,0.2)"
 
                 if confirmado:
                     st.markdown(f"""
-                    <div style="display:flex; justify-content:center; align-items:center;
-                                gap:16px; padding:8px 0; margin-bottom:4px;">
-                        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#00e870; min-width:32px; text-align:center;">{gl_prev}</div>
-                        <div style="color:#606075; font-size:1rem;">—</div>
-                        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#00e870; min-width:32px; text-align:center;">{gv_prev}</div>
+                    <div style="background:{color_card}; border:1px solid {border_card};
+                                border-radius:12px; padding:12px 16px; margin:6px 0;
+                                display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                        <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p['local']}</div>
+                        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; color:#00e870; min-width:20px; text-align:center; flex-shrink:0;">{gl_prev}</div>
+                        <div style="color:#404058; font-size:0.9rem; flex-shrink:0;">—</div>
+                        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; color:#00e870; min-width:20px; text-align:center; flex-shrink:0;">{gv_prev}</div>
+                        <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p['visita']}</div>
+                        {f'<div style="font-size:1rem; flex-shrink:0;">{iconos}</div>' if iconos else ""}
                     </div>
+                    {f'<div style="text-align:center; font-size:0.72rem; color:#606075; margin:-2px 0 4px 0;">Real: <span style="color:#a0a0b8;">{res_str}</span></div>' if res_str else ""}
                     """, unsafe_allow_html=True)
                 else:
-                    _, c1, c2, c3, _ = st.columns([2, 2, 1, 2, 2])
-                    gl = c1.number_input("Local", 0, 10, value=gl_prev, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
-                    c2.markdown("<div style='text-align:center; padding-top:8px; color:#606075; font-size:1.2rem;'>—</div>", unsafe_allow_html=True)
-                    gv = c3.number_input("Visita", 0, 10, value=gv_prev, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+                    st.markdown(f"""
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+                                border-radius:12px; padding:10px 16px; margin:6px 0;">
+                    """, unsafe_allow_html=True)
+                    c_local, c_gl, c_sep, c_gv, c_visita = st.columns([3, 1, 0.5, 1, 3])
+                    c_local.markdown(f"<div style='text-align:right; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['local']}</div>", unsafe_allow_html=True)
+                    gl = c_gl.number_input("gl", 0, 10, value=gl_prev, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+                    c_sep.markdown("<div style='text-align:center; padding-top:9px; color:#404058; font-size:1rem;'>—</div>", unsafe_allow_html=True)
+                    gv = c_gv.number_input("gv", 0, 10, value=gv_prev, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+                    c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['visita']}</div>", unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
                     cambios[idx] = (gl, gv)
-
-                if res_str:
-                    st.caption(f"Real: **{res_str}** {iconos}")
-
-                st.markdown("<hr style='border-color:rgba(255,255,255,0.05); margin:6px 0;'>", unsafe_allow_html=True)
 
             if fase == "Grupos":
                 grupos = [chr(ord('A') + i) for i in range(12)]
@@ -1080,7 +1087,7 @@ def pantalla_usuario():
                     letra_sel = grupo_sel[-1]
                     inicio = grupos.index(letra_sel) * 6
                     partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
-                    st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:#00e870; letter-spacing:2px; margin-top:0.5rem;'>GRUPO {letra_sel}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.1rem; color:#606075; letter-spacing:3px; margin-top:0.5rem; text-transform:uppercase;'>GRUPO {letra_sel}</div>", unsafe_allow_html=True)
                     for p in partidos_grupo:
                         render_partido(p)
                 else:
@@ -1089,7 +1096,13 @@ def pantalla_usuario():
                         partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
                         if not partidos_grupo:
                             continue
-                        st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:#00e870; letter-spacing:2px; margin-top:1.2rem;'>GRUPO {letra}</div>", unsafe_allow_html=True)
+                        st.markdown(f"""
+                        <div style='display:flex; align-items:center; gap:10px; margin:1.5rem 0 0.3rem 0;'>
+                            <div style='height:1px; flex:1; background:rgba(255,255,255,0.07);'></div>
+                            <div style='font-family:Bebas Neue,sans-serif; font-size:1.1rem; color:#606075; letter-spacing:3px;'>GRUPO {letra}</div>
+                            <div style='height:1px; flex:1; background:rgba(255,255,255,0.07);'></div>
+                        </div>
+                        """, unsafe_allow_html=True)
                         for p in partidos_grupo:
                             render_partido(p)
             else:
@@ -1435,31 +1448,40 @@ def pantalla_admin():
                 tiene_res = idx in resultados_actuales
                 rl_prev, rv_prev = resultados_actuales.get(idx, (0, 0))
 
+                border = "rgba(0,200,80,0.3)" if tiene_res else "rgba(255,255,255,0.08)"
+                bg = "rgba(0,200,80,0.05)" if tiene_res else "rgba(255,255,255,0.02)"
+
                 st.markdown(f"""
-                <div style="display:flex; justify-content:space-between; align-items:center;
-                            padding:6px 0 2px 0; margin-top:8px;">
-                    <div style="color:#ffffff; font-weight:700; font-size:0.9rem; flex:1; text-align:right; padding-right:8px;">{p["local"]}</div>
-                    <div style="color:#606075; font-size:0.75rem; text-align:center; min-width:20px;">vs</div>
-                    <div style="color:#ffffff; font-weight:700; font-size:0.9rem; flex:1; text-align:left; padding-left:8px;">{p["visita"]}</div>
-                </div>
+                <div style="background:{bg}; border:1px solid {border};
+                            border-radius:12px; padding:10px 14px; margin:6px 0;">
                 """, unsafe_allow_html=True)
 
                 activar = st.checkbox("Cargar resultado", value=tiene_res, key=f"chk_{fase_sel}_{idx}")
 
                 if activar:
-                    _, c1, c2, c3, _ = st.columns([2, 2, 1, 2, 2])
-                    rl = c1.number_input("Local", 0, 15, int(rl_prev), key=f"rl_{fase_sel}_{idx}", label_visibility="collapsed")
-                    c2.markdown("<div style='text-align:center; padding-top:8px; color:#606075; font-size:1.2rem;'>—</div>", unsafe_allow_html=True)
-                    rv = c3.number_input("Visita", 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{idx}", label_visibility="collapsed")
-                    if tiene_res:
-                        st.caption(f"✅ Guardado: {rl_prev} — {rv_prev}")
-                    if st.button("💾 Guardar", key=f"save_{fase_sel}_{idx}", type="primary"):
+                    c_local, c_rl, c_sep, c_rv, c_visita, c_btn = st.columns([3, 1, 0.4, 1, 3, 1.5])
+                    c_local.markdown(f"<div style='text-align:right; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['local']}</div>", unsafe_allow_html=True)
+                    rl = c_rl.number_input("rl", 0, 15, int(rl_prev), key=f"rl_{fase_sel}_{idx}", label_visibility="collapsed")
+                    c_sep.markdown("<div style='text-align:center; padding-top:9px; color:#404058;'>—</div>", unsafe_allow_html=True)
+                    rv = c_rv.number_input("rv", 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{idx}", label_visibility="collapsed")
+                    c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['visita']}</div>", unsafe_allow_html=True)
+                    if c_btn.button("💾", key=f"save_{fase_sel}_{idx}", help="Guardar resultado"):
                         db_guardar_resultado(fase_sel, idx, rl, rv)
                         db_calcular_puntos()
                         st.session_state["res_ok"] = f"✅ {p['local']} {rl} — {rv} {p['visita']}"
                         st.rerun()
+                    if tiene_res:
+                        st.caption(f"✅ Guardado: {p['local']} {rl_prev} — {rv_prev} {p['visita']}")
+                else:
+                    st.markdown(f"""
+                    <div style="display:flex; align-items:center; gap:8px; padding:2px 0 4px 0;">
+                        <div style="color:#ffffff; font-weight:700; font-size:0.9rem; flex:1; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p["local"]}</div>
+                        <div style="color:#404058; font-size:0.8rem; flex-shrink:0;">vs</div>
+                        <div style="color:#ffffff; font-weight:700; font-size:0.9rem; flex:1; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p["visita"]}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                st.markdown("<hr style='border-color:rgba(255,255,255,0.05); margin:4px 0;'>", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
     # ── TAB 6: CONSUMO ──────────────────────────────────────────────
     with tabs[5]:
