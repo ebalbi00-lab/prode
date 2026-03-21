@@ -124,8 +124,28 @@ def inject_css():
         -webkit-text-fill-color: #ffffff !important;
         caret-color: #00c850 !important;
         text-align: center !important;
-        font-size: 1.2rem !important;
+        font-size: 1.3rem !important;
         font-weight: 700 !important;
+        padding: 0.4rem 0.2rem !important;
+    }
+    /* Botones +/- del number input más compactos */
+    .stNumberInput > div > div > div > button {
+        background: rgba(255,255,255,0.06) !important;
+        border: none !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 1rem !important;
+        padding: 0 !important;
+        min-height: unset !important;
+    }
+    .stNumberInput > div > div > div > button:hover {
+        background: rgba(0,200,80,0.2) !important;
+        color: #00e870 !important;
+    }
+    .stNumberInput > div {
+        gap: 4px !important;
     }
 
     /* ── BOTONES ── */
@@ -510,6 +530,99 @@ def init_db():
             "INSERT OR IGNORE INTO usuarios (username, clave, nombre, es_admin) VALUES (?, ?, ?, ?)",
             ("admin", hash_clave(admin_pass), "Admin", 1)
         )
+
+        # Partidos predeterminados de grupos (solo si no existen)
+        partidos_grupos = [
+            # Grupo A
+            (0,  "México",        "Sudáfrica"),
+            (1,  "Corea del Sur", "Rep1"),
+            (2,  "Rep1",          "Sudáfrica"),
+            (3,  "México",        "Corea del Sur"),
+            (4,  "Rep1",          "México"),
+            (5,  "Sudáfrica",     "Corea del Sur"),
+            # Grupo B
+            (6,  "Canadá",        "Rep2"),
+            (7,  "Catar",         "Suiza"),
+            (8,  "Suiza",         "Rep2"),
+            (9,  "Canadá",        "Catar"),
+            (10, "Suiza",         "Canadá"),
+            (11, "Rep2",          "Catar"),
+            # Grupo C
+            (12, "Brasil",        "Marruecos"),
+            (13, "Haití",         "Escocia"),
+            (14, "Escocia",       "Marruecos"),
+            (15, "Brasil",        "Haití"),
+            (16, "Escocia",       "Brasil"),
+            (17, "Marruecos",     "Haití"),
+            # Grupo D
+            (18, "EEUU",          "Paraguay"),
+            (19, "Australia",     "Rep3"),
+            (20, "Rep3",          "Paraguay"),
+            (21, "EEUU",          "Australia"),
+            (22, "Rep3",          "EEUU"),
+            (23, "Paraguay",      "Australia"),
+            # Grupo E
+            (24, "Alemania",      "Curazao"),
+            (25, "Costa de Marfil","Ecuador"),
+            (26, "Alemania",      "Costa de Marfil"),
+            (27, "Ecuador",       "Curazao"),
+            (28, "Ecuador",       "Alemania"),
+            (29, "Curazao",       "Costa de Marfil"),
+            # Grupo F
+            (30, "Países Bajos",  "Japón"),
+            (31, "Rep4",          "Túnez"),
+            (32, "Túnez",         "Japón"),
+            (33, "Países Bajos",  "Rep4"),
+            (34, "Japón",         "Rep4"),
+            (35, "Túnez",         "Países Bajos"),
+            # Grupo G
+            (36, "Bélgica",       "Egipto"),
+            (37, "Irán",          "Nueva Zelanda"),
+            (38, "Bélgica",       "Irán"),
+            (39, "Nueva Zelanda", "Egipto"),
+            (40, "Egipto",        "Irán"),
+            (41, "Nueva Zelanda", "Bélgica"),
+            # Grupo H
+            (42, "España",        "Cabo Verde"),
+            (43, "Arabia Saudita","Uruguay"),
+            (44, "España",        "Arabia Saudita"),
+            (45, "Uruguay",       "Cabo Verde"),
+            (46, "Cabo Verde",    "Arabia Saudita"),
+            (47, "Uruguay",       "España"),
+            # Grupo I
+            (48, "Francia",       "Senegal"),
+            (49, "Rep5",          "Noruega"),
+            (50, "Francia",       "Rep5"),
+            (51, "Noruega",       "Senegal"),
+            (52, "Noruega",       "Francia"),
+            (53, "Senegal",       "Rep5"),
+            # Grupo J
+            (54, "Austria",       "Jordania"),
+            (55, "Argentina",     "Argelia"),
+            (56, "Argentina",     "Austria"),
+            (57, "Jordania",      "Argelia"),
+            (58, "Argelia",       "Austria"),
+            (59, "Jordania",      "Argentina"),
+            # Grupo K
+            (60, "Portugal",      "Rep6"),
+            (61, "Uzbekistán",    "Colombia"),
+            (62, "Portugal",      "Uzbekistán"),
+            (63, "Colombia",      "Rep6"),
+            (64, "Colombia",      "Portugal"),
+            (65, "Rep6",          "Uzbekistán"),
+            # Grupo L
+            (66, "Inglaterra",    "Croacia"),
+            (67, "Ghana",         "Panamá"),
+            (68, "Inglaterra",    "Ghana"),
+            (69, "Panamá",        "Croacia"),
+            (70, "Panamá",        "Inglaterra"),
+            (71, "Croacia",       "Ghana"),
+        ]
+        for idx, local, visita in partidos_grupos:
+            conn.execute("""
+                INSERT OR IGNORE INTO partidos (fase, idx, local, visita, fecha, hora)
+                VALUES ('Grupos', ?, ?, ?, '', '')
+            """, (idx, local, visita))
 
 def hash_clave(clave: str) -> str:
     return hashlib.sha256(clave.encode()).hexdigest()
@@ -915,7 +1028,9 @@ def pantalla_registro_cuenta():
         confirmar = st.text_input("Confirmar clave", type="password")
         st.markdown("**Alias:** prode.mundial.2026")
         st.markdown("**CVU:** 0000003100000000000000")
-        comprobante = st.file_uploader("Comprobante de pago")
+        comprobante = st.file_uploader("Comprobante de pago", key="comp_upload")
+        if comprobante:
+            st.session_state["_comprobante_upload"] = comprobante
         col1, col2 = st.columns(2)
         volver = col1.form_submit_button("Volver")
         enviar = col2.form_submit_button("Enviar", type="primary")
@@ -929,6 +1044,7 @@ def pantalla_registro_cuenta():
 
     if enviar:
         u_strip = usuario.strip().lower()
+        comp = st.session_state.get("_comprobante_upload")
         if not u_strip:
             st.session_state.reg_error = "Ingresá un nombre de usuario"
         elif not re.match(r'^[a-zA-Z0-9._-]+$', u_strip):
@@ -941,15 +1057,15 @@ def pantalla_registro_cuenta():
             st.session_state.reg_error = "La clave debe tener al menos 4 caracteres"
         elif clave != confirmar:
             st.session_state.reg_error = "Las claves no coinciden"
-        elif not comprobante:
+        elif not comp:
             st.session_state.reg_error = "Subí el comprobante de pago"
         else:
             comprobante_dir = "comprobantes"
             os.makedirs(comprobante_dir, exist_ok=True)
-            ext = os.path.splitext(comprobante.name)[-1]
+            ext = os.path.splitext(comp.name)[-1]
             ruta = os.path.join(comprobante_dir, f"{u_strip}{ext}")
             with open(ruta, "wb") as f:
-                f.write(comprobante.getbuffer())
+                f.write(comp.getbuffer())
 
             db_agregar_pendiente({
                 "username": u_strip,
@@ -957,6 +1073,7 @@ def pantalla_registro_cuenta():
                 "comprobante": ruta,
                 **st.session_state.registro_temp
             })
+            st.session_state.pop("_comprobante_upload", None)
             st.session_state.step = 4
             st.rerun()
 
@@ -1053,10 +1170,21 @@ def pantalla_usuario():
                     </div>
                     """, unsafe_allow_html=True)
                 else:
-                    c1, c2, c3 = st.columns([2, 1, 2])
-                    gl = c1.number_input("Local", 0, 10, value=gl_prev, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
-                    c2.markdown("<div style='text-align:center; padding-top:8px; color:#606075; font-size:1.2rem;'>—</div>", unsafe_allow_html=True)
-                    gv = c3.number_input("Visita", 0, 10, value=gv_prev, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+                    col_gl, col_sep, col_gv = st.columns([5, 1, 5])
+                    gl = col_gl.selectbox(
+                        "L", options=list(range(11)), index=int(gl_prev),
+                        key=f"gl_{fase}_{idx}",
+                        label_visibility="collapsed"
+                    )
+                    col_sep.markdown(
+                        "<div style='text-align:center; padding-top:10px; color:#606075;'>—</div>",
+                        unsafe_allow_html=True
+                    )
+                    gv = col_gv.selectbox(
+                        "V", options=list(range(11)), index=int(gv_prev),
+                        key=f"gv_{fase}_{idx}",
+                        label_visibility="collapsed"
+                    )
                     cambios[idx] = (gl, gv)
 
                 if res_str:
@@ -1309,12 +1437,10 @@ def pantalla_admin():
                 for j in range(6):
                     idx_global = inicio + j
                     prev = existentes_map.get(idx_global, {})
-                    c1, c2, c3, c4 = st.columns([2, 2, 1, 1])
+                    c1, c2 = st.columns(2)
                     l = c1.text_input("Local", value=prev.get("local", ""), key=f"gl_{letra}_{j}")
                     v = c2.text_input("Visitante", value=prev.get("visita", ""), key=f"gv_{letra}_{j}")
-                    fecha = c3.text_input("Fecha (YYYY-MM-DD)", value=prev.get("fecha", ""), key=f"gf_{letra}_{j}")
-                    hora = c4.text_input("Hora (HH:MM)", value=prev.get("hora", ""), key=f"gh_{letra}_{j}")
-                    nuevos.append((idx_global, l, v, fecha, hora))
+                    nuevos.append((idx_global, l, v, "", ""))
                 guardar = st.form_submit_button(f"Guardar Grupo {letra}", type="primary")
 
             if guardar:
@@ -1331,12 +1457,10 @@ def pantalla_admin():
                 nuevos = []
                 for i in range(cant):
                     prev = existentes_map.get(i, {})
-                    c1, c2, c3, c4 = st.columns([2, 2, 1, 1])
+                    c1, c2 = st.columns(2)
                     l = c1.text_input(f"Local {i+1}", value=prev.get("local", ""), key=f"{fase_sel}l{i}")
                     v = c2.text_input(f"Visitante {i+1}", value=prev.get("visita", ""), key=f"{fase_sel}v{i}")
-                    fecha = c3.text_input("Fecha", value=prev.get("fecha", ""), key=f"{fase_sel}f{i}")
-                    hora = c4.text_input("Hora", value=prev.get("hora", ""), key=f"{fase_sel}h{i}")
-                    nuevos.append((i, l, v, fecha, hora))
+                    nuevos.append((i, l, v, "", ""))
                 guardar = st.form_submit_button("Guardar partidos", type="primary")
 
             if guardar:
