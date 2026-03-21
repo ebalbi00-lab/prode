@@ -1008,136 +1008,182 @@ def pantalla_usuario():
     st.title(f"Panel — {u.get('nombre', username)}")
 
     fases = db_get_fases()
-    fase = st.radio("Fase", options=FASES, horizontal=True)
+    grupos_completados = st.session_state.get("wizard_grupos_completo", False) or db_fase_confirmada(username, "Grupos")
 
+    # ── Selección de fase (solo si grupos completados) ──
+    if grupos_completados:
+        fase = st.radio("Fase", options=FASES, horizontal=True)
+    else:
+        fase = "Grupos"
+
+    # ── Cargar datos de la fase ──
     if not fases.get(fase, False):
         st.warning("Esta fase no está habilitada aún.")
+        if not grupos_completados:
+            st.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,))
+        return
+
+    partidos = db_get_partidos(fase)
+    if not partidos:
+        st.info("El admin aún no cargó los partidos de esta fase.")
+        if not grupos_completados:
+            st.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,))
+        return
+
+    prode = db_get_prode(username, fase)
+    confirmado = prode["confirmado"]
+    pred = prode["pred"]
+
+    if grupos_completados:
+        st.subheader(f"Pronósticos — {fase}")
     else:
-        partidos = db_get_partidos(fase)
-        if not partidos:
-            st.info("El admin aún no cargó los partidos de esta fase.")
+        st.subheader("Pronósticos — Grupos")
+
+    resultados_fase = db_get_resultado_completo(fase)
+    cambios = {}
+
+    def render_partido(p):
+        idx = p["idx"]
+        gl_prev, gv_prev = pred.get(idx, (0, 0))
+        res_real = resultados_fase.get(idx)
+        res_str = ""
+        iconos = ""
+        color_card = "rgba(255,255,255,0.03)"
+        border_card = "rgba(255,255,255,0.08)"
+        if res_real:
+            rl, rv = res_real
+            acierto_res = (gl_prev > gv_prev and rl > rv) or (gl_prev < gv_prev and rl < rv) or (gl_prev == gv_prev and rl == rv)
+            acierto_exacto = gl_prev == rl and gv_prev == rv
+            iconos = ("✅" if acierto_res else "❌") + (" 🎯" if acierto_exacto else "")
+            res_str = f"{rl} — {rv}"
+            if acierto_exacto:
+                color_card = "rgba(0,200,80,0.07)"
+                border_card = "rgba(0,200,80,0.3)"
+            elif acierto_res:
+                color_card = "rgba(0,150,255,0.06)"
+                border_card = "rgba(0,150,255,0.25)"
+            else:
+                color_card = "rgba(255,60,60,0.05)"
+                border_card = "rgba(255,60,60,0.2)"
+
+        if confirmado:
+            st.markdown(f"""
+            <div style="background:{color_card}; border:1px solid {border_card};
+                        border-radius:12px; padding:12px 16px; margin:6px 0;
+                        display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p['local']}</div>
+                <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; color:#00e870; min-width:20px; text-align:center; flex-shrink:0;">{gl_prev}</div>
+                <div style="color:#404058; font-size:0.9rem; flex-shrink:0;">—</div>
+                <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; color:#00e870; min-width:20px; text-align:center; flex-shrink:0;">{gv_prev}</div>
+                <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p['visita']}</div>
+                {f'<div style="font-size:1rem; flex-shrink:0;">{iconos}</div>' if iconos else ""}
+            </div>
+            {f'<div style="text-align:center; font-size:0.72rem; color:#606075; margin:-2px 0 4px 0;">Real: <span style="color:#a0a0b8;">{res_str}</span></div>' if res_str else ""}
+            """, unsafe_allow_html=True)
         else:
-            prode = db_get_prode(username, fase)
-            confirmado = prode["confirmado"]
-            pred = prode["pred"]
+            st.markdown(f"""
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+                        border-radius:12px; padding:10px 16px; margin:6px 0;">
+            """, unsafe_allow_html=True)
+            c_local, c_gl, c_sep, c_gv, c_visita = st.columns([3, 1, 0.5, 1, 3])
+            c_local.markdown(f"<div style='text-align:right; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['local']}</div>", unsafe_allow_html=True)
+            gl = c_gl.number_input("gl", 0, 10, value=gl_prev, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+            c_sep.markdown("<div style='text-align:center; padding-top:9px; color:#404058; font-size:1rem;'>—</div>", unsafe_allow_html=True)
+            gv = c_gv.number_input("gv", 0, 10, value=gv_prev, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+            c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['visita']}</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+            cambios[idx] = (gl, gv)
 
-            st.subheader(f"Pronósticos — {fase}")
+    # ── Render partidos ──
+    if fase == "Grupos":
+        grupos = [chr(ord('A') + i) for i in range(12)]
+        grupos_con_partidos = [l for l in grupos if any(True for p in partidos if "ABCDEFGHIJKL".index(l)*6 <= p["idx"] < "ABCDEFGHIJKL".index(l)*6+6)]
 
-            resultados_fase = db_get_resultado_completo(fase)
-            cambios = {}
+        if confirmado:
+            st.session_state["wizard_grupos_completo"] = True
 
-            def render_partido(p):
-                idx = p["idx"]
-                gl_prev, gv_prev = pred.get(idx, (0, 0))
-                res_real = resultados_fase.get(idx)
-                res_str = ""
-                iconos = ""
-                color_card = "rgba(255,255,255,0.03)"
-                border_card = "rgba(255,255,255,0.08)"
-                if res_real:
-                    rl, rv = res_real
-                    acierto_res = (gl_prev > gv_prev and rl > rv) or (gl_prev < gv_prev and rl < rv) or (gl_prev == gv_prev and rl == rv)
-                    acierto_exacto = gl_prev == rl and gv_prev == rv
-                    iconos = ("✅" if acierto_res else "❌") + (" 🎯" if acierto_exacto else "")
-                    res_str = f"{rl} — {rv}"
-                    if acierto_exacto:
-                        color_card = "rgba(0,200,80,0.07)"
-                        border_card = "rgba(0,200,80,0.3)"
-                    elif acierto_res:
-                        color_card = "rgba(0,150,255,0.06)"
-                        border_card = "rgba(0,150,255,0.25)"
-                    else:
-                        color_card = "rgba(255,60,60,0.05)"
-                        border_card = "rgba(255,60,60,0.2)"
+        hay_selectbox = st.session_state.get("wizard_grupos_completo", False)
 
-                if confirmado:
-                    st.markdown(f"""
-                    <div style="background:{color_card}; border:1px solid {border_card};
-                                border-radius:12px; padding:12px 16px; margin:6px 0;
-                                display:flex; align-items:center; justify-content:space-between; gap:6px;">
-                        <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p['local']}</div>
-                        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; color:#00e870; min-width:20px; text-align:center; flex-shrink:0;">{gl_prev}</div>
-                        <div style="color:#404058; font-size:0.9rem; flex-shrink:0;">—</div>
-                        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; color:#00e870; min-width:20px; text-align:center; flex-shrink:0;">{gv_prev}</div>
-                        <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{p['visita']}</div>
-                        {f'<div style="font-size:1rem; flex-shrink:0;">{iconos}</div>' if iconos else ""}
-                    </div>
-                    {f'<div style="text-align:center; font-size:0.72rem; color:#606075; margin:-2px 0 4px 0;">Real: <span style="color:#a0a0b8;">{res_str}</span></div>' if res_str else ""}
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
-                                border-radius:12px; padding:10px 16px; margin:6px 0;">
-                    """, unsafe_allow_html=True)
-                    c_local, c_gl, c_sep, c_gv, c_visita = st.columns([3, 1, 0.5, 1, 3])
-                    c_local.markdown(f"<div style='text-align:right; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['local']}</div>", unsafe_allow_html=True)
-                    gl = c_gl.number_input("gl", 0, 10, value=gl_prev, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
-                    c_sep.markdown("<div style='text-align:center; padding-top:9px; color:#404058; font-size:1rem;'>—</div>", unsafe_allow_html=True)
-                    gv = c_gv.number_input("gv", 0, 10, value=gv_prev, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
-                    c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{p['visita']}</div>", unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
-                    cambios[idx] = (gl, gv)
+        if hay_selectbox:
+            grupo_sel = st.selectbox("Elegí el grupo", [f"Grupo {l}" for l in grupos_con_partidos])
+            letra_sel = grupo_sel[-1]
+            inicio = "ABCDEFGHIJKL".index(letra_sel) * 6
+            partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
+            st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.1rem; color:#606075; letter-spacing:3px; margin-top:0.5rem; text-transform:uppercase;'>GRUPO {letra_sel}</div>", unsafe_allow_html=True)
+            for p in partidos_grupo:
+                render_partido(p)
+        else:
+            if "grupo_wizard" not in st.session_state:
+                st.session_state.grupo_wizard = 0
+            gi = st.session_state.grupo_wizard
+            gi = max(0, min(gi, len(grupos_con_partidos) - 1))
+            letra = grupos_con_partidos[gi]
+            total = len(grupos_con_partidos)
 
-            if fase == "Grupos":
-                grupos = [chr(ord('A') + i) for i in range(12)]
-                hay_resultados = len(pred) > 0
+            st.markdown(f"""
+            <div style='display:flex; align-items:center; gap:10px; margin:0.5rem 0 0.8rem 0;'>
+                <div style='height:1px; flex:1; background:rgba(255,255,255,0.07);'></div>
+                <div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:#00e870; letter-spacing:3px;'>GRUPO {letra}</div>
+                <div style='height:1px; flex:1; background:rgba(255,255,255,0.07);'></div>
+            </div>
+            <div style='text-align:center; color:#606075; font-size:0.75rem; margin-bottom:0.8rem; letter-spacing:1px;'>{gi+1} DE {total}</div>
+            """, unsafe_allow_html=True)
 
-                if hay_resultados:
-                    grupo_sel = st.selectbox("Elegí el grupo", [f"Grupo {l}" for l in grupos])
-                    letra_sel = grupo_sel[-1]
-                    inicio = grupos.index(letra_sel) * 6
-                    partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
-                    st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.1rem; color:#606075; letter-spacing:3px; margin-top:0.5rem; text-transform:uppercase;'>GRUPO {letra_sel}</div>", unsafe_allow_html=True)
-                    for p in partidos_grupo:
-                        render_partido(p)
-                else:
-                    for letra in grupos:
-                        inicio = grupos.index(letra) * 6
-                        partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
-                        if not partidos_grupo:
-                            continue
-                        st.markdown(f"""
-                        <div style='display:flex; align-items:center; gap:10px; margin:1.5rem 0 0.3rem 0;'>
-                            <div style='height:1px; flex:1; background:rgba(255,255,255,0.07);'></div>
-                            <div style='font-family:Bebas Neue,sans-serif; font-size:1.1rem; color:#606075; letter-spacing:3px;'>GRUPO {letra}</div>
-                            <div style='height:1px; flex:1; background:rgba(255,255,255,0.07);'></div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        for p in partidos_grupo:
-                            render_partido(p)
+            inicio = "ABCDEFGHIJKL".index(letra) * 6
+            partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
+            for p in partidos_grupo:
+                render_partido(p)
+
+            st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
+            nav1, nav2, nav3 = st.columns([1, 2, 1])
+            if nav1.button("← Anterior", key="grupo_prev", use_container_width=True, disabled=(gi == 0)):
+                for idx2, (gl2, gv2) in cambios.items():
+                    db_guardar_pred(username, fase, idx2, gl2, gv2)
+                st.session_state.grupo_wizard = gi - 1
+                st.rerun()
+            if gi < total - 1:
+                if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
+                    for idx2, (gl2, gv2) in cambios.items():
+                        db_guardar_pred(username, fase, idx2, gl2, gv2)
+                    st.session_state.grupo_wizard = gi + 1
+                    st.rerun()
             else:
-                for p in partidos:
-                    render_partido(p)
+                nav2.markdown("<div style='text-align:center; color:#00e870; font-size:0.85rem; padding-top:8px;'>✅ Último grupo — confirmá abajo</div>", unsafe_allow_html=True)
+    else:
+        for p in partidos:
+            render_partido(p)
 
-            if not confirmado:
-                # Guardar cambios en tiempo real
-                for idx, (gl, gv) in cambios.items():
-                    db_guardar_pred(username, fase, idx, gl, gv)
-
-                st.divider()
-                with st.form("form_confirmar"):
-                    clave_confirm = st.text_input("Ingresá tu contraseña para confirmar", type="password")
-                    col_f1, col_f2 = st.columns(2)
-                    confirmar_btn = col_f1.form_submit_button("🔒 Confirmar prode", type="primary")
-                    borrador_btn = col_f2.form_submit_button("💾 Guardar borrador")
-
-                if confirmar_btn:
-                    if hash_clave(clave_confirm) == u["clave"]:
-                        db_confirmar_prode(username, fase)
-                        st.success("¡Pronósticos confirmados! Ya no se pueden modificar.")
-                        st.rerun()
-                    else:
-                        st.error("Contraseña incorrecta")
-                if borrador_btn:
-                    st.success("Borrador guardado.")
+    if not confirmado:
+        for idx, (gl, gv) in cambios.items():
+            db_guardar_pred(username, fase, idx, gl, gv)
+        st.divider()
+        with st.form("form_confirmar"):
+            clave_confirm = st.text_input("Ingresá tu contraseña para confirmar", type="password")
+            col_f1, col_f2 = st.columns(2)
+            confirmar_btn = col_f1.form_submit_button("🔒 Confirmar prode", type="primary")
+            borrador_btn = col_f2.form_submit_button("💾 Guardar borrador")
+        if confirmar_btn:
+            if hash_clave(clave_confirm) == u["clave"]:
+                db_confirmar_prode(username, fase)
+                st.session_state["wizard_grupos_completo"] = True
+                st.success("¡Pronósticos confirmados! Ya no se pueden modificar.")
+                st.rerun()
             else:
-                st.success("✅ Pronósticos confirmados para esta fase.")
+                st.error("Contraseña incorrecta")
+        if borrador_btn:
+            st.success("Borrador guardado.")
+    else:
+        st.success("✅ Pronósticos confirmados para esta fase.")
+
+    # ── Puntos y ranking (solo si grupos completados) ──
+    if not grupos_completados:
+        st.divider()
+        st.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,))
+        return
 
     st.divider()
-
     u_fresh = db_get_usuario(username)
-    total = u_fresh["puntos"] + u_fresh["goles"] + u_fresh["consumo"]
-
+    total_pts = u_fresh["puntos"] + u_fresh["goles"] + u_fresh["consumo"]
     todos = db_get_todos_usuarios()
     ranking = sorted(todos, key=lambda x: x["puntos"] + x["goles"] + x["consumo"], reverse=True)
     posicion = next((i + 1 for i, x in enumerate(ranking) if x["username"] == username), "—")
@@ -1147,7 +1193,7 @@ def pantalla_usuario():
     col_a.metric("Resultados", u_fresh["puntos"])
     col_b.metric("Goles", u_fresh["goles"])
     col_c.metric("Consumo", u_fresh["consumo"])
-    col_d.metric("Total", total)
+    col_d.metric("Total", total_pts)
     st.info(f"🏆 Posición actual: **{posicion}° de {len(ranking)}**")
 
     st.divider()
