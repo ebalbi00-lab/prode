@@ -124,28 +124,8 @@ def inject_css():
         -webkit-text-fill-color: #ffffff !important;
         caret-color: #00c850 !important;
         text-align: center !important;
-        font-size: 1.3rem !important;
+        font-size: 1.2rem !important;
         font-weight: 700 !important;
-        padding: 0.4rem 0.2rem !important;
-    }
-    /* Botones +/- del number input más compactos */
-    .stNumberInput > div > div > div > button {
-        background: rgba(255,255,255,0.06) !important;
-        border: none !important;
-        color: #ffffff !important;
-        border-radius: 8px !important;
-        width: 28px !important;
-        height: 28px !important;
-        font-size: 1rem !important;
-        padding: 0 !important;
-        min-height: unset !important;
-    }
-    .stNumberInput > div > div > div > button:hover {
-        background: rgba(0,200,80,0.2) !important;
-        color: #00e870 !important;
-    }
-    .stNumberInput > div {
-        gap: 4px !important;
     }
 
     /* ── BOTONES ── */
@@ -408,6 +388,27 @@ def inject_css():
             width: 100% !important;
         }
 
+        /* Number inputs de goles: compactos y acotados */
+        .stNumberInput {
+            max-width: 110px !important;
+            margin: 0 auto !important;
+        }
+        .stNumberInput > div {
+            max-width: 110px !important;
+        }
+        .stNumberInput > div > div > input {
+            font-size: 1.6rem !important;
+            padding: 0.5rem 0.2rem !important;
+            min-width: unset !important;
+            width: 100% !important;
+        }
+        /* Botones +/- del number input */
+        .stNumberInput button {
+            width: auto !important;
+            padding: 0.4rem 0.5rem !important;
+            min-width: 32px !important;
+        }
+
         /* Métricas más compactas */
         [data-testid="stMetricValue"] {
             font-size: 1.6rem !important;
@@ -531,98 +532,11 @@ def init_db():
             ("admin", hash_clave(admin_pass), "Admin", 1)
         )
 
-        # Partidos predeterminados de grupos (solo si no existen)
-        partidos_grupos = [
-            # Grupo A
-            (0,  "México",        "Sudáfrica"),
-            (1,  "Corea del Sur", "Rep1"),
-            (2,  "Rep1",          "Sudáfrica"),
-            (3,  "México",        "Corea del Sur"),
-            (4,  "Rep1",          "México"),
-            (5,  "Sudáfrica",     "Corea del Sur"),
-            # Grupo B
-            (6,  "Canadá",        "Rep2"),
-            (7,  "Catar",         "Suiza"),
-            (8,  "Suiza",         "Rep2"),
-            (9,  "Canadá",        "Catar"),
-            (10, "Suiza",         "Canadá"),
-            (11, "Rep2",          "Catar"),
-            # Grupo C
-            (12, "Brasil",        "Marruecos"),
-            (13, "Haití",         "Escocia"),
-            (14, "Escocia",       "Marruecos"),
-            (15, "Brasil",        "Haití"),
-            (16, "Escocia",       "Brasil"),
-            (17, "Marruecos",     "Haití"),
-            # Grupo D
-            (18, "EEUU",          "Paraguay"),
-            (19, "Australia",     "Rep3"),
-            (20, "Rep3",          "Paraguay"),
-            (21, "EEUU",          "Australia"),
-            (22, "Rep3",          "EEUU"),
-            (23, "Paraguay",      "Australia"),
-            # Grupo E
-            (24, "Alemania",      "Curazao"),
-            (25, "Costa de Marfil","Ecuador"),
-            (26, "Alemania",      "Costa de Marfil"),
-            (27, "Ecuador",       "Curazao"),
-            (28, "Ecuador",       "Alemania"),
-            (29, "Curazao",       "Costa de Marfil"),
-            # Grupo F
-            (30, "Países Bajos",  "Japón"),
-            (31, "Rep4",          "Túnez"),
-            (32, "Túnez",         "Japón"),
-            (33, "Países Bajos",  "Rep4"),
-            (34, "Japón",         "Rep4"),
-            (35, "Túnez",         "Países Bajos"),
-            # Grupo G
-            (36, "Bélgica",       "Egipto"),
-            (37, "Irán",          "Nueva Zelanda"),
-            (38, "Bélgica",       "Irán"),
-            (39, "Nueva Zelanda", "Egipto"),
-            (40, "Egipto",        "Irán"),
-            (41, "Nueva Zelanda", "Bélgica"),
-            # Grupo H
-            (42, "España",        "Cabo Verde"),
-            (43, "Arabia Saudita","Uruguay"),
-            (44, "España",        "Arabia Saudita"),
-            (45, "Uruguay",       "Cabo Verde"),
-            (46, "Cabo Verde",    "Arabia Saudita"),
-            (47, "Uruguay",       "España"),
-            # Grupo I
-            (48, "Francia",       "Senegal"),
-            (49, "Rep5",          "Noruega"),
-            (50, "Francia",       "Rep5"),
-            (51, "Noruega",       "Senegal"),
-            (52, "Noruega",       "Francia"),
-            (53, "Senegal",       "Rep5"),
-            # Grupo J
-            (54, "Austria",       "Jordania"),
-            (55, "Argentina",     "Argelia"),
-            (56, "Argentina",     "Austria"),
-            (57, "Jordania",      "Argelia"),
-            (58, "Argelia",       "Austria"),
-            (59, "Jordania",      "Argentina"),
-            # Grupo K
-            (60, "Portugal",      "Rep6"),
-            (61, "Uzbekistán",    "Colombia"),
-            (62, "Portugal",      "Uzbekistán"),
-            (63, "Colombia",      "Rep6"),
-            (64, "Colombia",      "Portugal"),
-            (65, "Rep6",          "Uzbekistán"),
-            # Grupo L
-            (66, "Inglaterra",    "Croacia"),
-            (67, "Ghana",         "Panamá"),
-            (68, "Inglaterra",    "Ghana"),
-            (69, "Panamá",        "Croacia"),
-            (70, "Panamá",        "Inglaterra"),
-            (71, "Croacia",       "Ghana"),
-        ]
-        for idx, local, visita in partidos_grupos:
-            conn.execute("""
-                INSERT OR IGNORE INTO partidos (fase, idx, local, visita, fecha, hora)
-                VALUES ('Grupos', ?, ?, ?, '', '')
-            """, (idx, local, visita))
+        # Usuario de prueba
+        conn.execute(
+            "INSERT OR IGNORE INTO usuarios (username, clave, nombre, es_admin) VALUES (?, ?, ?, ?)",
+            ("prueba", hash_clave("1234"), "Prueba", 0)
+        )
 
 def hash_clave(clave: str) -> str:
     return hashlib.sha256(clave.encode()).hexdigest()
@@ -1028,9 +942,7 @@ def pantalla_registro_cuenta():
         confirmar = st.text_input("Confirmar clave", type="password")
         st.markdown("**Alias:** prode.mundial.2026")
         st.markdown("**CVU:** 0000003100000000000000")
-        comprobante = st.file_uploader("Comprobante de pago", key="comp_upload")
-        if comprobante:
-            st.session_state["_comprobante_upload"] = comprobante
+        comprobante = st.file_uploader("Comprobante de pago")
         col1, col2 = st.columns(2)
         volver = col1.form_submit_button("Volver")
         enviar = col2.form_submit_button("Enviar", type="primary")
@@ -1044,7 +956,6 @@ def pantalla_registro_cuenta():
 
     if enviar:
         u_strip = usuario.strip().lower()
-        comp = st.session_state.get("_comprobante_upload")
         if not u_strip:
             st.session_state.reg_error = "Ingresá un nombre de usuario"
         elif not re.match(r'^[a-zA-Z0-9._-]+$', u_strip):
@@ -1057,15 +968,15 @@ def pantalla_registro_cuenta():
             st.session_state.reg_error = "La clave debe tener al menos 4 caracteres"
         elif clave != confirmar:
             st.session_state.reg_error = "Las claves no coinciden"
-        elif not comp:
+        elif not comprobante:
             st.session_state.reg_error = "Subí el comprobante de pago"
         else:
             comprobante_dir = "comprobantes"
             os.makedirs(comprobante_dir, exist_ok=True)
-            ext = os.path.splitext(comp.name)[-1]
+            ext = os.path.splitext(comprobante.name)[-1]
             ruta = os.path.join(comprobante_dir, f"{u_strip}{ext}")
             with open(ruta, "wb") as f:
-                f.write(comp.getbuffer())
+                f.write(comprobante.getbuffer())
 
             db_agregar_pendiente({
                 "username": u_strip,
@@ -1073,7 +984,6 @@ def pantalla_registro_cuenta():
                 "comprobante": ruta,
                 **st.session_state.registro_temp
             })
-            st.session_state.pop("_comprobante_upload", None)
             st.session_state.step = 4
             st.rerun()
 
@@ -1115,31 +1025,13 @@ def pantalla_usuario():
 
             st.subheader(f"Pronósticos — {fase}")
 
-            if fase == "Grupos":
-                grupos = [chr(ord('A') + i) for i in range(12)]
-                grupo_sel = st.selectbox("Elegí el grupo", grupos)
-                inicio = grupos.index(grupo_sel) * 6
-                partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
-            else:
-                partidos_grupo = partidos
-
             resultados_fase = db_get_resultado_completo(fase)
             cambios = {}
-            for p in partidos_grupo:
+
+            def render_partido(p):
                 idx = p["idx"]
-                cerrado = confirmado  # solo se bloquea si el prode está confirmado
                 gl_prev, gv_prev = pred.get(idx, (0, 0))
                 res_real = resultados_fase.get(idx)
-
-                # Info extra: fecha y resultado real
-                fecha_str = ""
-                if p.get("fecha") and p.get("hora"):
-                    try:
-                        dt = datetime.datetime.strptime(f"{p['fecha']} {p['hora']}", "%Y-%m-%d %H:%M")
-                        fecha_str = dt.strftime('%d/%m %H:%M')
-                    except Exception:
-                        pass
-
                 res_str = ""
                 iconos = ""
                 if res_real:
@@ -1149,7 +1041,6 @@ def pantalla_usuario():
                     iconos = ("✅" if acierto_res else "❌") + (" 🎯" if acierto_exacto else "")
                     res_str = f"{rl} - {rv}"
 
-                # Header del partido con nombre de equipos y metadata
                 st.markdown(f"""
                 <div style="display:flex; justify-content:space-between; align-items:center;
                             padding:6px 0 2px 0; margin-top:8px;">
@@ -1157,10 +1048,9 @@ def pantalla_usuario():
                     <div style="color:#606075; font-size:0.75rem; text-align:center; min-width:24px;">vs</div>
                     <div style="color:#ffffff; font-weight:700; font-size:0.95rem; flex:1; text-align:left; padding-left:8px;">{p['visita']}</div>
                 </div>
-                {"<div style='text-align:center; color:#606075; font-size:0.72rem; margin-bottom:4px;'>🕐 " + fecha_str + "</div>" if fecha_str else ""}
                 """, unsafe_allow_html=True)
 
-                if confirmado or cerrado:
+                if confirmado:
                     st.markdown(f"""
                     <div style="display:flex; justify-content:center; align-items:center;
                                 gap:16px; padding:8px 0; margin-bottom:4px;">
@@ -1170,27 +1060,41 @@ def pantalla_usuario():
                     </div>
                     """, unsafe_allow_html=True)
                 else:
-                    col_gl, col_sep, col_gv = st.columns([5, 1, 5])
-                    gl = col_gl.selectbox(
-                        "L", options=list(range(11)), index=int(gl_prev),
-                        key=f"gl_{fase}_{idx}",
-                        label_visibility="collapsed"
-                    )
-                    col_sep.markdown(
-                        "<div style='text-align:center; padding-top:10px; color:#606075;'>—</div>",
-                        unsafe_allow_html=True
-                    )
-                    gv = col_gv.selectbox(
-                        "V", options=list(range(11)), index=int(gv_prev),
-                        key=f"gv_{fase}_{idx}",
-                        label_visibility="collapsed"
-                    )
+                    _, c1, c2, c3, _ = st.columns([2, 2, 1, 2, 2])
+                    gl = c1.number_input("Local", 0, 10, value=gl_prev, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+                    c2.markdown("<div style='text-align:center; padding-top:8px; color:#606075; font-size:1.2rem;'>—</div>", unsafe_allow_html=True)
+                    gv = c3.number_input("Visita", 0, 10, value=gv_prev, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
                     cambios[idx] = (gl, gv)
 
                 if res_str:
                     st.caption(f"Real: **{res_str}** {iconos}")
 
                 st.markdown("<hr style='border-color:rgba(255,255,255,0.05); margin:6px 0;'>", unsafe_allow_html=True)
+
+            if fase == "Grupos":
+                grupos = [chr(ord('A') + i) for i in range(12)]
+                hay_resultados = len(pred) > 0
+
+                if hay_resultados:
+                    grupo_sel = st.selectbox("Elegí el grupo", [f"Grupo {l}" for l in grupos])
+                    letra_sel = grupo_sel[-1]
+                    inicio = grupos.index(letra_sel) * 6
+                    partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
+                    st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:#00e870; letter-spacing:2px; margin-top:0.5rem;'>GRUPO {letra_sel}</div>", unsafe_allow_html=True)
+                    for p in partidos_grupo:
+                        render_partido(p)
+                else:
+                    for letra in grupos:
+                        inicio = grupos.index(letra) * 6
+                        partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
+                        if not partidos_grupo:
+                            continue
+                        st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:#00e870; letter-spacing:2px; margin-top:1.2rem;'>GRUPO {letra}</div>", unsafe_allow_html=True)
+                        for p in partidos_grupo:
+                            render_partido(p)
+            else:
+                for p in partidos:
+                    render_partido(p)
 
             if not confirmado:
                 # Guardar cambios en tiempo real
@@ -1425,12 +1329,28 @@ def pantalla_admin():
         st.subheader("Cargar partidos")
         fase_sel = st.selectbox("Fase", FASES, key="fase_partidos")
 
+        GRUPOS_DEFAULT = {
+            "A": [("Mexico","Sudafrica"),("Corea del Sur","rep1"),("rep1","Sudafrica"),("Mexico","Corea del Sur"),("rep1","Mexico"),("Sudafrica","Corea del Sur")],
+            "B": [("Canada","rep2"),("Catar","Suiza"),("Suiza","rep2"),("Canada","Catar"),("Suiza","Canada"),("rep2","Catar")],
+            "C": [("Brasil","Marruecos"),("Haiti","Escocia"),("Escocia","Marruecos"),("Brasil","Haiti"),("Escocia","Brasil"),("Marruecos","Haiti")],
+            "D": [("EEUU","Paraguay"),("Australia","rep3"),("rep3","Paraguay"),("EEUU","Australia"),("rep3","EEUU"),("Paraguay","Australia")],
+            "E": [("Alemania","Curazao"),("Costa de Marfil","Ecuador"),("Alemania","Costa de Marfil"),("Ecuador","Curazao"),("Ecuador","Alemania"),("Curazao","Costa de Marfil")],
+            "F": [("Paises Bajos","Japon"),("rep4","Tunez"),("Tunez","Japon"),("Paises Bajos","rep4"),("Japon","rep4"),("Tunez","Paises Bajos")],
+            "G": [("Belgica","Egipto"),("Iran","Nueva Zelanda"),("Belgica","Iran"),("Nueva Zelanda","Egipto"),("Egipto","Iran"),("Nueva Zelanda","Belgica")],
+            "H": [("España","Cabo Verde"),("Arabia Saudita","Uruguay"),("España","Arabia Saudita"),("Uruguay","Cabo Verde"),("Cabo Verde","Arabia Saudita"),("Uruguay","España")],
+            "I": [("Francia","Senegal"),("rep5","Noruega"),("Francia","rep5"),("Noruega","Senegal"),("Noruega","Francia"),("Senegal","rep5")],
+            "J": [("Austria","Jordania"),("Argentina","Argelia"),("Argentina","Austria"),("Jordania","Argelia"),("Argelia","Austria"),("Jordania","Argentina")],
+            "K": [("Portugal","rep6"),("Uzbekistan","Colombia"),("Portugal","Uzbekistan"),("Colombia","rep6"),("Colombia","Portugal"),("rep6","Uzbekistan")],
+            "L": [("Inglaterra","Croacia"),("Ghana","Panama"),("Inglaterra","Ghana"),("Panama","Croacia"),("Panama","Inglaterra"),("Croacia","Ghana")],
+        }
+
         if fase_sel == "Grupos":
             grupo_sel = st.selectbox("Grupo", [f"Grupo {l}" for l in "ABCDEFGHIJKL"])
             letra = grupo_sel[-1]
             inicio = "ABCDEFGHIJKL".index(letra) * 6
             partidos_existentes = db_get_partidos("Grupos")
             existentes_map = {p["idx"]: p for p in partidos_existentes}
+            defaults = GRUPOS_DEFAULT.get(letra, [("", "")] * 6)
 
             with st.form(f"form_grupo_{letra}"):
                 nuevos = []
@@ -1438,16 +1358,36 @@ def pantalla_admin():
                     idx_global = inicio + j
                     prev = existentes_map.get(idx_global, {})
                     c1, c2 = st.columns(2)
-                    l = c1.text_input("Local", value=prev.get("local", ""), key=f"gl_{letra}_{j}")
-                    v = c2.text_input("Visitante", value=prev.get("visita", ""), key=f"gv_{letra}_{j}")
-                    nuevos.append((idx_global, l, v, "", ""))
-                guardar = st.form_submit_button(f"Guardar Grupo {letra}", type="primary")
+                    l = c1.text_input("Local", value=prev.get("local", defaults[j][0]), key=f"gl_{letra}_{j}")
+                    v = c2.text_input("Visitante", value=prev.get("visita", defaults[j][1]), key=f"gv_{letra}_{j}")
+                    nuevos.append((idx_global, l, v))
+                col_b1, col_b2 = st.columns(2)
+                guardar = col_b1.form_submit_button(f"Guardar Grupo {letra}", type="primary")
+                guardar_todos = col_b2.form_submit_button("Guardar todos los grupos")
 
             if guardar:
-                for idx_global, l, v, fecha, hora in nuevos:
+                for idx_global, l, v in nuevos:
                     if l and v:
-                        db_guardar_partido("Grupos", idx_global, l, v, fecha, hora)
+                        db_guardar_partido("Grupos", idx_global, l, v)
                 st.success(f"Grupo {letra} guardado.")
+
+            if guardar_todos:
+                st.session_state["confirmar_guardar_todos"] = True
+
+            if st.session_state.get("confirmar_guardar_todos"):
+                st.warning("⚠️ Esto sobreescribirá los partidos de todos los grupos. ¿Confirmar?")
+                col_c1, col_c2 = st.columns(2)
+                if col_c1.button("✅ Sí, guardar todos", key="si_guardar_todos"):
+                    for gr, partidos_gr in GRUPOS_DEFAULT.items():
+                        ini_gr = "ABCDEFGHIJKL".index(gr) * 6
+                        for j, (loc, vis) in enumerate(partidos_gr):
+                            db_guardar_partido("Grupos", ini_gr + j, loc, vis)
+                    st.session_state.pop("confirmar_guardar_todos", None)
+                    st.success("Todos los grupos guardados.")
+                    st.rerun()
+                if col_c2.button("❌ Cancelar", key="no_guardar_todos"):
+                    st.session_state.pop("confirmar_guardar_todos", None)
+                    st.rerun()
         else:
             cant = {"Dieciseisavos": 16, "Octavos": 8, "Cuartos": 4, "Semifinal": 2, "Final": 1}[fase_sel]
             partidos_existentes = db_get_partidos(fase_sel)
@@ -1460,39 +1400,66 @@ def pantalla_admin():
                     c1, c2 = st.columns(2)
                     l = c1.text_input(f"Local {i+1}", value=prev.get("local", ""), key=f"{fase_sel}l{i}")
                     v = c2.text_input(f"Visitante {i+1}", value=prev.get("visita", ""), key=f"{fase_sel}v{i}")
-                    nuevos.append((i, l, v, "", ""))
+                    nuevos.append((i, l, v))
                 guardar = st.form_submit_button("Guardar partidos", type="primary")
 
             if guardar:
-                for i, l, v, fecha, hora in nuevos:
+                for i, l, v in nuevos:
                     if l and v:
-                        db_guardar_partido(fase_sel, i, l, v, fecha, hora)
+                        db_guardar_partido(fase_sel, i, l, v)
                 st.success("Partidos guardados.")
 
     # ── TAB 5: RESULTADOS ───────────────────────────────────────────
     with tabs[4]:
         st.subheader("Cargar resultados reales")
+        if "res_ok" in st.session_state:
+            st.success(st.session_state.pop("res_ok"))
         fase_sel = st.selectbox("Fase", FASES, key="fase_resultados")
         partidos = db_get_partidos(fase_sel)
 
         if not partidos:
             st.info("No hay partidos cargados para esta fase.")
         else:
-            with st.form(f"form_res_{fase_sel}"):
-                nuevos_res = []
-                for p in partidos:
-                    rl_prev, rv_prev = db_get_resultado(fase_sel, p["idx"])
-                    c1, c2 = st.columns(2)
-                    rl = c1.number_input(p["local"], 0, 15, int(rl_prev), key=f"rl_{fase_sel}_{p['idx']}")
-                    rv = c2.number_input(p["visita"], 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{p['idx']}")
-                    nuevos_res.append((p["idx"], rl, rv))
-                actualizar = st.form_submit_button("Guardar y recalcular puntajes", type="primary")
+            resultados_actuales = db_get_resultado_completo(fase_sel)
 
-            if actualizar:
-                for idx, rl, rv in nuevos_res:
-                    db_guardar_resultado(fase_sel, idx, rl, rv)
-                db_calcular_puntos()
-                st.success("Resultados guardados y puntajes actualizados.")
+            if fase_sel == "Grupos":
+                grupo_sel_r = st.selectbox("Grupo", [f"Grupo {l}" for l in "ABCDEFGHIJKL"], key="grupo_res")
+                letra_r = grupo_sel_r[-1]
+                inicio_r = "ABCDEFGHIJKL".index(letra_r) * 6
+                partidos_grupo_r = [p for p in partidos if inicio_r <= p["idx"] < inicio_r + 6]
+            else:
+                partidos_grupo_r = partidos
+
+            for p in partidos_grupo_r:
+                idx = p["idx"]
+                tiene_res = idx in resultados_actuales
+                rl_prev, rv_prev = resultados_actuales.get(idx, (0, 0))
+
+                st.markdown(f"""
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            padding:6px 0 2px 0; margin-top:8px;">
+                    <div style="color:#ffffff; font-weight:700; font-size:0.9rem; flex:1; text-align:right; padding-right:8px;">{p["local"]}</div>
+                    <div style="color:#606075; font-size:0.75rem; text-align:center; min-width:20px;">vs</div>
+                    <div style="color:#ffffff; font-weight:700; font-size:0.9rem; flex:1; text-align:left; padding-left:8px;">{p["visita"]}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                activar = st.checkbox("Cargar resultado", value=tiene_res, key=f"chk_{fase_sel}_{idx}")
+
+                if activar:
+                    _, c1, c2, c3, _ = st.columns([2, 2, 1, 2, 2])
+                    rl = c1.number_input("Local", 0, 15, int(rl_prev), key=f"rl_{fase_sel}_{idx}", label_visibility="collapsed")
+                    c2.markdown("<div style='text-align:center; padding-top:8px; color:#606075; font-size:1.2rem;'>—</div>", unsafe_allow_html=True)
+                    rv = c3.number_input("Visita", 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{idx}", label_visibility="collapsed")
+                    if tiene_res:
+                        st.caption(f"✅ Guardado: {rl_prev} — {rv_prev}")
+                    if st.button("💾 Guardar", key=f"save_{fase_sel}_{idx}", type="primary"):
+                        db_guardar_resultado(fase_sel, idx, rl, rv)
+                        db_calcular_puntos()
+                        st.session_state["res_ok"] = f"✅ {p['local']} {rl} — {rv} {p['visita']}"
+                        st.rerun()
+
+                st.markdown("<hr style='border-color:rgba(255,255,255,0.05); margin:4px 0;'>", unsafe_allow_html=True)
 
     # ── TAB 6: CONSUMO ──────────────────────────────────────────────
     with tabs[5]:
