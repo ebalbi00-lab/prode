@@ -161,10 +161,14 @@ def get_connection_pool():
         st.error("⚠️ No se encontró DATABASE_URL. Configurá los secrets en Streamlit Cloud o la variable de entorno local.")
         st.stop()
     return psycopg2.pool.ThreadedConnectionPool(
-        minconn=1,
+        minconn=2,
         maxconn=10,
         dsn=url,
-        cursor_factory=psycopg2.extras.RealDictCursor
+        cursor_factory=psycopg2.extras.RealDictCursor,
+        keepalives=1,
+        keepalives_idle=30,
+        keepalives_interval=10,
+        keepalives_count=5,
     )
 
 @contextmanager
@@ -294,6 +298,7 @@ def hash_clave(clave: str) -> str:
     return hashlib.sha256(clave.encode()).hexdigest()
 
 @st.cache_data(ttl=60)
+@st.cache_data(ttl=30)
 def db_get_config(clave, default=None):
     with get_db() as conn:
         cur = conn.cursor()
@@ -331,7 +336,7 @@ def db_get_usuario(username):
         row = cur.fetchone()
         return dict(row) if row else None
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=60)
 def db_get_fases():
     with get_db() as conn:
         cur = conn.cursor()
@@ -344,7 +349,7 @@ def db_toggle_fase(nombre, valor):
         cur.execute("UPDATE fases SET habilitada=%s WHERE nombre=%s", (1 if valor else 0, nombre))
     st.cache_data.clear()
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=300)
 def db_get_partidos(fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -415,6 +420,7 @@ def db_confirmar_prode(username, fase):
         """, (username, fase))
     st.cache_data.clear()
 
+@st.cache_data(ttl=10)
 def db_fase_confirmada(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -459,7 +465,7 @@ def db_rechazar_pendiente(pid):
         cur = conn.cursor()
         cur.execute("DELETE FROM pendientes WHERE id=%s", (pid,))
 
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=30)
 def db_get_todos_usuarios():
     with get_db() as conn:
         cur = conn.cursor()
@@ -510,7 +516,7 @@ def db_eliminar_consumo_log(log_id):
             )
             cur.execute("DELETE FROM consumo_log WHERE id=%s", (log_id,))
 
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=30)
 def db_get_resultado_completo(fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -790,6 +796,7 @@ def db_limpiar_especiales(username):
     st.cache_data.clear()
 
 @st.cache_data(ttl=30)
+@st.cache_data(ttl=15)
 def db_get_puntos_especiales_usuarios():
     """Devuelve dict {username: puntos_especiales} calculado en tiempo real."""
     result = {}
@@ -906,7 +913,9 @@ def db_get_equipos_grupos():
 # -----------------------
 # INIT
 # -----------------------
-init_db()  # cached via @st.cache_resource — solo corre una vez
+if "db_initialized" not in st.session_state:
+    init_db()
+    st.session_state["db_initialized"] = True
 
 if "step" not in st.session_state:
     st.session_state.step = 0
@@ -1123,7 +1132,13 @@ def pantalla_usuario():
 
 
     fases = db_get_fases()
-    grupos_completados = st.session_state.get("wizard_grupos_completo", False) or db_fase_confirmada(username, "Grupos")
+    # Evitar query si ya está en session_state
+    if st.session_state.get("wizard_grupos_completo", False):
+        grupos_completados = True
+    else:
+        grupos_completados = db_fase_confirmada(username, "Grupos")
+        if grupos_completados:
+            st.session_state["wizard_grupos_completo"] = True
 
     if grupos_completados:
         fase = st.radio("Fase", options=FASES, horizontal=True)
@@ -1442,7 +1457,16 @@ def pantalla_usuario():
     st.info(f"🏆 Posición actual: **{posicion}° de {len(ranking)}**")
 
     # ── Resumen de especiales para usuario que ya confirmó ──
-    esp_data = {cat: db_get_especial(username, cat) for cat in CATEGORIAS_ESPECIALES}
+    # Cargar todos los especiales del usuario de una sola vez
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM especiales WHERE username=%s", (username,))
+        _rows = cur.fetchall()
+    esp_data = {r["categoria"]: dict(r) for r in _rows}
+    # Completar categorías sin datos
+    for _cat in CATEGORIAS_ESPECIALES:
+        if _cat not in esp_data:
+            esp_data[_cat] = None
     any_esp = any(v for v in esp_data.values())
     if any_esp:
         st.subheader("⭐ Mis pronósticos especiales")
