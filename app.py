@@ -1556,23 +1556,31 @@ def pantalla_ranking():
         top_n = st.slider("Mostrar top", 5, max(10, len(rows)), min(10, len(rows)))
         hay_especiales = any(r["E"] > 0 for r in rows)
 
-        cols = ["Pos", "Nombre", "R", "G", "C"] + (["E"] if hay_especiales else []) + ["Total"]
-        df_rank = pd.DataFrame(rows[:top_n])[cols]
+        filas_html = ""
+        for r in rows[:top_n]:
+            es_yo = r["_username"] == username_actual
+            bg = "rgba(0,200,80,0.08)" if es_yo else "transparent"
+            bl = "3px solid #00c850" if es_yo else "3px solid transparent"
+            col_e = f'<td style="padding:9px 6px;color:#ffd700;text-align:center;font-size:0.9rem;">{r["E"]}</td>' if hay_especiales else ""
+            filas_html += f'<tr style="background:{bg};border-left:{bl};"><td style="padding:9px 6px;color:#e8e8f0;font-weight:700;font-size:1rem;">{r["Pos"]}</td><td style="padding:9px 8px;color:#e8e8f0;font-weight:600;font-size:0.9rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{r["Nombre"]}</td><td style="padding:9px 6px;color:#c8c8d8;text-align:center;font-size:0.9rem;">{r["R"]}</td><td style="padding:9px 6px;color:#c8c8d8;text-align:center;font-size:0.9rem;">{r["G"]}</td><td style="padding:9px 6px;color:#c8c8d8;text-align:center;font-size:0.9rem;">{r["C"]}</td>{col_e}<td style="padding:9px 6px;color:#00e870;font-weight:700;text-align:center;font-size:1rem;">{r["Total"]}</td></tr>'
 
-        st.dataframe(
-            df_rank,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Pos":    st.column_config.TextColumn("Pos",   width="small"),
-                "Nombre": st.column_config.TextColumn("Nombre"),
-                "R":      st.column_config.NumberColumn("R",   width="small"),
-                "G":      st.column_config.NumberColumn("G",   width="small"),
-                "C":      st.column_config.NumberColumn("C",   width="small"),
-                "E":      st.column_config.NumberColumn("E",   width="small"),
-                "Total":  st.column_config.NumberColumn("Total", width="small"),
-            }
-        )
+        th_e = '<th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">E</th>' if hay_especiales else ""
+        st.markdown(f"""
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table style="width:100%;min-width:320px;border-collapse:collapse;background:#0f0f1a;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);">
+            <thead><tr style="background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.1);">
+                <th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:left;">Pos</th>
+                <th style="padding:9px 8px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:left;">Nombre</th>
+                <th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">R</th>
+                <th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">G</th>
+                <th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">C</th>
+                {th_e}
+                <th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">Total</th>
+            </tr></thead>
+            <tbody>{filas_html}</tbody>
+        </table>
+        </div>
+        """, unsafe_allow_html=True)
 
         if username_actual and username_actual != "admin":
             pos_actual = next((r["_pos"] for r in rows if r["_username"] == username_actual), None)
