@@ -161,8 +161,8 @@ def get_connection_pool():
         st.error("⚠️ No se encontró DATABASE_URL. Configurá los secrets en Streamlit Cloud o la variable de entorno local.")
         st.stop()
     return psycopg2.pool.ThreadedConnectionPool(
-        minconn=2,
-        maxconn=10,
+        minconn=3,
+        maxconn=15,
         dsn=url,
         cursor_factory=psycopg2.extras.RealDictCursor,
         keepalives=1,
@@ -298,7 +298,7 @@ def hash_clave(clave: str) -> str:
     return hashlib.sha256(clave.encode()).hexdigest()
 
 @st.cache_data(ttl=60)
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=120)
 def db_get_config(clave, default=None):
     with get_db() as conn:
         cur = conn.cursor()
@@ -420,7 +420,7 @@ def db_confirmar_prode(username, fase):
         """, (username, fase))
     st.cache_data.clear()
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=30)
 def db_fase_confirmada(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -673,7 +673,7 @@ CATEGORIAS_ESPECIALES = {
     "jugador":    {"label": "⭐ Mejor Jugador (MVP)",     "puntos": 8},
 }
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=30)
 def db_get_especial(username, categoria):
     with get_db() as conn:
         cur = conn.cursor()
@@ -796,7 +796,7 @@ def db_limpiar_especiales(username):
     st.cache_data.clear()
 
 @st.cache_data(ttl=30)
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=60)
 def db_get_puntos_especiales_usuarios():
     """Devuelve dict {username: puntos_especiales} calculado en tiempo real."""
     result = {}
@@ -901,6 +901,7 @@ def partido_cerrado(partido):
     except Exception:
         return False
 
+@st.cache_data(ttl=300)
 def db_get_equipos_grupos():
     partidos = db_get_partidos("Grupos")
     equipos = sorted(set(
@@ -1447,11 +1448,11 @@ def pantalla_usuario():
 
     st.divider()
     u_fresh = db_get_usuario(username)
-    pts_esp_user = db_get_puntos_especiales_usuarios().get(username, 0)
+    _pts_esp_all = db_get_puntos_especiales_usuarios()
+    pts_esp_user = _pts_esp_all.get(username, 0)
     total_pts = u_fresh["puntos"] + u_fresh["goles"] + u_fresh["consumo"] + pts_esp_user
-    todos_rank = db_get_todos_usuarios()
-    pts_esp_rank = db_get_puntos_especiales_usuarios()
-    ranking = sorted(todos_rank, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + pts_esp_rank.get(x["username"], 0), reverse=True)
+    _todos_rank = db_get_todos_usuarios()
+    ranking = sorted(_todos_rank, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_all.get(x["username"], 0), reverse=True)
     posicion = next((i + 1 for i, x in enumerate(ranking) if x["username"] == username), "—")
 
     st.subheader("Mis puntos")
@@ -1532,7 +1533,8 @@ def pantalla_ranking():
     if not todos:
         st.info("Todavía no hay usuarios para mostrar.")
     else:
-        ranking = sorted(todos, key=lambda x: x["puntos"] + x["goles"] + x["consumo"], reverse=True)
+        _pts_esp_r = db_get_puntos_especiales_usuarios()
+        ranking = sorted(todos, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_r.get(x["username"], 0), reverse=True)
         if len(ranking) >= 3:
             nombres = [u.get("nombre") or u["username"] for u in ranking[:3]]
             totales = [u["puntos"] + u["goles"] + u["consumo"] for u in ranking[:3]]
@@ -1542,7 +1544,7 @@ def pantalla_ranking():
             c3.metric("🥉 " + nombres[2], f"{totales[2]} pts")
             st.divider()
 
-        pts_esp = db_get_puntos_especiales_usuarios()
+        pts_esp = _pts_esp_r
         rows = []
         medallas = {1: "🥇", 2: "🥈", 3: "🥉"}
         for i, u in enumerate(ranking):
@@ -1631,10 +1633,19 @@ def pantalla_admin():
             db_set_config("registro_abierto", "1" if nuevo_estado else "0"); st.rerun()
         st.divider()
         st.subheader("Confirmaciones por fase")
+        # Una sola query para todas las fases
+        with get_db() as _conn:
+            _cur = _conn.cursor()
+            _cur.execute("""
+                SELECT fase, COUNT(DISTINCT username) as cnt
+                FROM prodes WHERE confirmado=1 AND partido_idx=-1
+                GROUP BY fase
+            """)
+            _conf_map = {r["fase"]: r["cnt"] for r in _cur.fetchall()}
         for fase in FASES:
             if not fases.get(fase):
                 continue
-            confirmados = sum(1 for u in todos if db_fase_confirmada(u["username"], fase))
+            confirmados = _conf_map.get(fase, 0)
             st.write(f"**{fase}:** {confirmados} / {len(todos)} confirmados")
         st.divider()
         if st.button("🔄 Recalcular puntajes"):
@@ -2487,11 +2498,21 @@ def pantalla_especiales():
 
     st.divider()
 
+    # Batch load all especiales for this user
+    with get_db() as _conn2:
+        _cur2 = _conn2.cursor()
+        _cur2.execute("SELECT * FROM especiales WHERE username=%s", (username,))
+        _esp_rows = {r["categoria"]: dict(r) for r in _cur2.fetchall()}
+    with get_db() as _conn3:
+        _cur3 = _conn3.cursor()
+        _cur3.execute("SELECT * FROM especiales_resultados")
+        _res_esp = {r["categoria"]: r["resultado"] for r in _cur3.fetchall()}
+
     for cat, info in CATEGORIAS_ESPECIALES.items():
-        esp = db_get_especial(username, cat)
+        esp = _esp_rows.get(cat)
         confirmado = esp and esp["confirmado"] == 1
         eleccion_actual = esp["eleccion"] if esp else None
-        resultado_real = db_get_resultado_especial(cat)
+        resultado_real = _res_esp.get(cat)
 
         # Card por categoría
         color_card = "rgba(255,200,0,0.05)" if confirmado else "rgba(255,255,255,0.02)"
