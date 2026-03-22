@@ -1549,55 +1549,51 @@ def pantalla_ranking():
             pos = i + 1
             esp = pts_esp.get(u["username"], 0)
             total = u["puntos"] + u["goles"] + u["consumo"] + esp
-            rows.append({"Pos": medallas.get(pos, str(pos)), "Nombre": u.get("nombre") or u["username"],
-                         "Resultados": u["puntos"], "Goles": u["goles"], "Consumo": u["consumo"],
-                         "Especiales": esp, "Total": total, "_username": u["username"], "_pos": pos})
+            rows.append({
+                "Pos": medallas.get(pos, str(pos)),
+                "Nombre": u.get("nombre") or u["username"],
+                "Res.": u["puntos"],
+                "Goles": u["goles"],
+                "Cons.": u["consumo"],
+                "⭐": esp,
+                "Total": total,
+                "_username": u["username"],
+                "_pos": pos,
+                "_yo": u["username"] == username_actual,
+            })
 
-        df = pd.DataFrame(rows)
-        top_n = st.slider("Mostrar top", 5, max(10, len(df)), min(10, len(df)))
+        hay_especiales = any(r["⭐"] > 0 for r in rows)
+        top_n = st.slider("Mostrar top", 5, max(10, len(rows)), min(10, len(rows)))
 
-        hay_especiales = any(r["Especiales"] > 0 for r in rows)
+        # Columnas a mostrar según dispositivo
+        cols_mostrar = ["Pos", "Nombre", "Res.", "Goles", "Cons."]
+        if hay_especiales:
+            cols_mostrar.append("⭐")
+        cols_mostrar.append("Total")
 
-        filas_html = ""
-        for r in rows[:top_n]:
-            es_yo = r["_username"] == username_actual
-            bg = "rgba(0,200,80,0.08)" if es_yo else "transparent"
-            border_left = "3px solid #00c850" if es_yo else "3px solid transparent"
-            col_esp = f'<td style="padding:10px 12px; color:#ffd700; text-align:center;">{r["Especiales"]}</td>' if hay_especiales else ""
-            filas_html += f"""
-            <tr style="background:{bg}; border-left:{border_left};">
-                <td style="padding:10px 12px; color:#ffffff; font-weight:700; font-size:1.1rem;">{r['Pos']}</td>
-                <td style="padding:10px 12px; color:#ffffff; font-weight:600;">{r['Nombre']}</td>
-                <td style="padding:10px 12px; color:#a0a0b8; text-align:center;">{r['Resultados']}</td>
-                <td style="padding:10px 12px; color:#a0a0b8; text-align:center;">{r['Goles']}</td>
-                <td style="padding:10px 12px; color:#a0a0b8; text-align:center;">{r['Consumo']}</td>
-                {col_esp}
-                <td style="padding:10px 12px; color:#00e870; font-weight:700; font-size:1.1rem; text-align:center;">{r['Total']}</td>
-            </tr>"""
-
-        th_esp = '<th style="padding:10px 12px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">⭐ Esp.</th>' if hay_especiales else ""
-        st.markdown(f"""
-        <table style="width:100%; border-collapse:collapse; background:#0f0f1a;
-                      border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-            <thead><tr style="background:rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.1);">
-                <th style="padding:10px 12px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:left;">Pos</th>
-                <th style="padding:10px 12px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:left;">Nombre</th>
-                <th style="padding:10px 12px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">Res.</th>
-                <th style="padding:10px 12px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">Goles</th>
-                <th style="padding:10px 12px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">Cons.</th>
-                {th_esp}
-                <th style="padding:10px 12px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">Total</th>
-            </tr></thead>
-            <tbody>{filas_html}</tbody>
-        </table>
-        """, unsafe_allow_html=True)
+        df_show = pd.DataFrame(rows[:top_n])[cols_mostrar]
+        st.dataframe(
+            df_show,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Pos":   st.column_config.TextColumn("Pos",   width="small"),
+                "Nombre": st.column_config.TextColumn("Nombre", width="medium"),
+                "Res.":  st.column_config.NumberColumn("Res.",  width="small", format="%d"),
+                "Goles": st.column_config.NumberColumn("Goles", width="small", format="%d"),
+                "Cons.": st.column_config.NumberColumn("Cons.", width="small", format="%d"),
+                "⭐":    st.column_config.NumberColumn("⭐",    width="small", format="%d"),
+                "Total": st.column_config.NumberColumn("Total", width="small", format="%d"),
+            }
+        )
 
         if username_actual and username_actual != "admin":
             pos_actual = next((r["_pos"] for r in rows if r["_username"] == username_actual), None)
-            if pos_actual and pos_actual > top_n:
+            if pos_actual:
                 fila = next(r for r in rows if r["_username"] == username_actual)
-                st.divider()
-                st.info(f"Tu posición: **{pos_actual}°** — {fila['Nombre']} | Total: **{fila['Total']} pts**")
+                if pos_actual > top_n:
+                    st.divider()
+                st.info(f"🏆 Tu posición: **{pos_actual}°** — {fila['Nombre']} | Total: **{fila['Total']} pts**")
 
     st.divider()
     destino = 9 if st.session_state.get("usuario") == "admin" else 5
