@@ -1130,6 +1130,11 @@ def pantalla_usuario():
     confirmado = prode["confirmado"]
     pred = prode["pred"]
 
+    # Valores por defecto — se sobreescriben dentro del bloque de Grupos
+    gi = 0
+    letra = "A"
+    total = 12
+
     if grupos_completados:
         st.subheader(f"Pronósticos — {fase}")
     else:
@@ -1373,7 +1378,14 @@ def pantalla_usuario():
         for p in partidos:
             render_partido(p)
 
-    # Confirmación para fases que NO son grupos (octavos, cuartos, etc.)
+    # Valores por defecto para variables que pueden no definirse según la fase
+    confirmar_btn = False
+    borrador_btn = False
+    limpiar_btn = False
+    borrador_btn_g = False
+    limpiar_btn_g = False
+    selecciones_esp = {}  # se sobreescribe en paso 13
+
     if fase != "Grupos" and not confirmado:
         st.divider()
         with st.form("form_confirmar"):
@@ -1416,7 +1428,7 @@ def pantalla_usuario():
         col_bor1, col_bor2 = st.columns(2)
         with col_bor1.form("form_borrador_grupos"):
             borrador_btn_g = st.form_submit_button("💾 Guardar borrador", use_container_width=True)
-        if borrador_btn_g:
+        if borrador_btn_g:  # type: ignore
             for idx, (gl, gv) in cambios.items():
                 db_guardar_pred(username, fase, idx, gl, gv)
             st.session_state["msg_grupos"] = f"💾 Borrador del Grupo {letra} guardado."
