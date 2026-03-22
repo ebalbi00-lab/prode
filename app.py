@@ -1432,6 +1432,26 @@ def pantalla_login():
 
     st.divider()
     st.button("ℹ️ Acerca del prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
+    st.markdown("""
+    <div style="text-align:center; margin-top:0.8rem;">
+        <a href="https://www.instagram.com/il_baigo" target="_blank"
+           style="display:inline-flex; align-items:center; gap:7px; text-decoration:none;
+                  background:var(--surface); border:1.5px solid var(--border2);
+                  border-radius:20px; padding:6px 16px; transition:all 0.16s ease;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 style="flex-shrink:0;">
+                <rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor"
+                      stroke-width="2" style="color:var(--text2);"/>
+                <circle cx="12" cy="12" r="4" stroke="currentColor"
+                        stroke-width="2" style="color:var(--text2);"/>
+                <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"
+                        style="color:var(--text2);"/>
+            </svg>
+            <span style="color:var(--text2); font-size:0.82rem; font-weight:600;
+                         letter-spacing:0.3px;">Seguinos <strong style="color:var(--text);">@il_baigo</strong></span>
+        </a>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 def pantalla_registro_datos():
@@ -1496,14 +1516,30 @@ def pantalla_registro_cuenta():
         <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                     border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
-                        color:var(--gold); margin-bottom:8px;">💰 Datos de pago</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
+                <span style="color:var(--text); font-weight:700; font-size:0.88rem;">Il Baigo</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
                 <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">prode.mundial.2026</span>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:var(--text2); font-size:0.82rem;">CVU</span>
-                <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.82rem;">0000003100000000000000</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <span style="color:var(--text2); font-size:0.82rem; flex-shrink:0;">CVU</span>
+                <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                    <span id="cvu-text" style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace;
+                                               font-size:0.78rem; word-break:break-all;">0000003100000000000000</span>
+                    <button onclick="navigator.clipboard.writeText('0000003100000000000000').then(()=>{
+                                this.textContent='✓';
+                                setTimeout(()=>this.textContent='Copiar',1500);
+                            })"
+                            style="flex-shrink:0; background:var(--surface2); border:1px solid var(--border2);
+                                   border-radius:6px; color:var(--text2); font-size:0.72rem; font-weight:600;
+                                   padding:3px 8px; cursor:pointer; white-space:nowrap;">
+                        Copiar
+                    </button>
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
