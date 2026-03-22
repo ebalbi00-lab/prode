@@ -89,7 +89,7 @@ def pantalla_usuario():
 
         if not fases_habilitadas:
             st.warning("No hay fases habilitadas aún.")
-            st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            st.button("🚪 Cerrar sesión", key="logout_92", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
             return
 
         labels = []
@@ -154,7 +154,7 @@ def pantalla_usuario():
             <div style="color:var(--text2); font-size:0.88rem;">Esta fase todavía no fue abierta por el admin.</div>
         </div>""", unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            st.button("🚪 Cerrar sesión", key="logout_157", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
         return
 
     partidos = db_get_partidos(fase)
@@ -165,7 +165,7 @@ def pantalla_usuario():
             <div style="color:var(--text2); font-size:0.88rem;">El admin aún no cargó los partidos de esta fase.</div>
         </div>""", unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            st.button("🚪 Cerrar sesión", key="logout_168", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
         return
 
     prode      = db_get_prode(username, fase)
@@ -280,11 +280,12 @@ def pantalla_usuario():
 
                 st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
                 nav1, nav2, nav3 = st.columns([1, 2, 1])
-                if nav1.button("← Anterior", key="grupo_prev", use_container_width=True, disabled=(gi == 0)):
-                    with st.spinner("Guardando..."):
-                        for idx, (gl, gv) in cambios.items():
-                            db_guardar_pred(username, fase, idx, gl, gv)
-                    st.session_state.grupo_wizard = gi - 1; st.rerun()
+                if gi > 0:
+                    if nav1.button("← Anterior", key="grupo_prev", use_container_width=True):
+                        with st.spinner("Guardando..."):
+                            for idx, (gl, gv) in cambios.items():
+                                db_guardar_pred(username, fase, idx, gl, gv)
+                        st.session_state.grupo_wizard = gi - 1; st.rerun()
 
                 if gi < total - 1:
                     if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
@@ -307,7 +308,7 @@ def pantalla_usuario():
                     options=list(range(n)),
                     value=gi,
                     format_func=lambda x: (pasos[x] if pasos[x] == "⭐" else f"Grupo {pasos[x]}"),
-                    key="slider_wizard",
+                    key=f"slider_wizard_{gi}",
                     label_visibility="collapsed",
                 )
                 if dest_slider != gi:
@@ -316,6 +317,9 @@ def pantalla_usuario():
                             db_guardar_pred(username, fase, idx2, gl2, gv2)
                     st.session_state.grupo_wizard = dest_slider
                     st.rerun()
+
+            st.divider()
+            st.button("🚪 Cerrar sesión", key="wiz_cerrar", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
@@ -342,10 +346,8 @@ def pantalla_usuario():
     if "msg_grupos" in st.session_state:
         st.success(st.session_state.pop("msg_grupos"))
 
-    # Si todavía está en el wizard de grupos, solo mostrar cerrar sesión
+    # Si todavía está en el wizard de grupos, salir
     if not grupos_completados:
-        st.divider()
-        st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
         return
 
     # ── 4) Resumen de especiales ──────────────────────────────────────────────
@@ -394,7 +396,7 @@ def pantalla_usuario():
     col1, col2, col3 = st.columns(3)
     col1.button("🏆 Ranking",       on_click=cambiar_pantalla, args=(6,),  use_container_width=True)
     col2.button("🏅 Destacados",    on_click=cambiar_pantalla, args=(12,), use_container_width=True)
-    col3.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,),  use_container_width=True)
+    col3.button("🚪 Cerrar sesión", key="logout_402", on_click=cambiar_pantalla, args=(0,),  use_container_width=True)
 
 
 # ─── Paso 13: Especiales dentro del wizard de grupos ─────────────────────────
