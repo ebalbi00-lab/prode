@@ -293,6 +293,7 @@ def init_db():
 def hash_clave(clave: str) -> str:
     return hashlib.sha256(clave.encode()).hexdigest()
 
+@st.cache_data(ttl=60)
 def db_get_config(clave, default=None):
     with get_db() as conn:
         cur = conn.cursor()
@@ -311,6 +312,7 @@ def db_set_config(clave, valor):
 def db_registro_abierto():
     return db_get_config("registro_abierto", "1") == "1"
 
+@st.cache_data(ttl=15)
 def db_get_consumo_log(username=None):
     with get_db() as conn:
         cur = conn.cursor()
@@ -320,6 +322,8 @@ def db_get_consumo_log(username=None):
             cur.execute("SELECT * FROM consumo_log ORDER BY id DESC")
         return [dict(r) for r in cur.fetchall()]
 
+@st.cache_data(ttl=10)
+@st.cache_data(ttl=15)
 def db_get_usuario(username):
     with get_db() as conn:
         cur = conn.cursor()
@@ -375,6 +379,8 @@ def db_guardar_resultado(fase, idx, gl, gv):
         """, (fase, idx, gl, gv))
     st.cache_data.clear()
 
+@st.cache_data(ttl=5)
+@st.cache_data(ttl=10)
 def db_get_prode(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -395,6 +401,8 @@ def db_guardar_pred(username, fase, idx, gl, gv):
             ON CONFLICT (username, fase, partido_idx) DO UPDATE SET
             goles_local=EXCLUDED.goles_local, goles_visita=EXCLUDED.goles_visita
         """, (username, fase, idx, gl, gv))
+    st.cache_data.clear()
+    st.cache_data.clear()
 
 def db_confirmar_prode(username, fase):
     with get_db() as conn:
@@ -405,6 +413,7 @@ def db_confirmar_prode(username, fase):
             VALUES (%s, %s, -1, 0, 0, 1)
             ON CONFLICT (username, fase, partido_idx) DO NOTHING
         """, (username, fase))
+    st.cache_data.clear()
 
 def db_fase_confirmada(username, fase):
     with get_db() as conn:
@@ -415,6 +424,7 @@ def db_fase_confirmada(username, fase):
         )
         return bool(cur.fetchone())
 
+@st.cache_data(ttl=15)
 def db_get_pendientes():
     with get_db() as conn:
         cur = conn.cursor()
@@ -657,6 +667,7 @@ CATEGORIAS_ESPECIALES = {
     "jugador":    {"label": "⭐ Mejor Jugador (MVP)",     "puntos": 8},
 }
 
+@st.cache_data(ttl=10)
 def db_get_especial(username, categoria):
     with get_db() as conn:
         cur = conn.cursor()
@@ -680,6 +691,8 @@ def db_confirmar_especial(username, categoria):
         cur.execute("UPDATE especiales SET confirmado=1 WHERE username=%s AND categoria=%s", (username, categoria))
     st.cache_data.clear()
 
+@st.cache_data(ttl=30)
+@st.cache_data(ttl=30)
 def db_get_resultado_especial(categoria):
     with get_db() as conn:
         cur = conn.cursor()
@@ -712,7 +725,6 @@ def db_calcular_puntos_especiales():
             """, (info["puntos"], cat, resultado))
     st.cache_data.clear()
 
-@st.cache_data(ttl=30)
 def db_fusionar_variantes_especial(cat, variantes, nombre_oficial):
     """Reemplaza todas las variantes por el nombre oficial en la tabla especiales."""
     if not variantes:
@@ -777,6 +789,7 @@ def db_limpiar_especiales(username):
         )
     st.cache_data.clear()
 
+@st.cache_data(ttl=30)
 def db_get_puntos_especiales_usuarios():
     """Devuelve dict {username: puntos_especiales} calculado en tiempo real."""
     result = {}
@@ -796,6 +809,7 @@ def db_get_puntos_especiales_usuarios():
     return result
 
 @st.cache_data(ttl=60)
+@st.cache_data(ttl=30)
 def db_get_estadisticas_especiales():
     """Estadísticas de pronósticos especiales: distribución de elecciones."""
     with get_db() as conn:
@@ -1213,8 +1227,9 @@ def pantalla_usuario():
 
             st.markdown("</div>", unsafe_allow_html=True)
             cambios[idx] = (gl, gv)
-            # Autoguardar en cada rerun
-            db_guardar_pred(username, fase, idx, gl, gv)
+            # Autoguardar solo si el valor cambió respecto a lo guardado
+            if (gl, gv) != (int(gl_prev), int(gv_prev)):
+                db_guardar_pred(username, fase, idx, gl, gv)
 
     if fase == "Grupos":
         grupos = [chr(ord('A') + i) for i in range(12)]
@@ -1329,6 +1344,11 @@ def pantalla_usuario():
                             st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
                             st.rerun()
 
+                # Autoguardar especiales al cambiar selección
+                for cat, elec in selecciones_esp.items():
+                    if elec and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"]):
+                        db_guardar_especial(username, cat, elec)
+
                 st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
                 nav1_e, _, _ = st.columns([1,2,1])
                 if nav1_e.button("← Grupo L", key="esp_back", use_container_width=True):
@@ -1352,12 +1372,18 @@ def pantalla_usuario():
                 st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
                 nav1, nav2, nav3 = st.columns([1, 2, 1])
                 if nav1.button("← Anterior", key="grupo_prev", use_container_width=True, disabled=(gi == 0)):
+                    for idx, (gl, gv) in cambios.items():
+                        db_guardar_pred(username, fase, idx, gl, gv)
                     st.session_state.grupo_wizard = gi - 1; st.rerun()
                 if gi < total - 1:
                     if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
+                        for idx, (gl, gv) in cambios.items():
+                            db_guardar_pred(username, fase, idx, gl, gv)
                         st.session_state.grupo_wizard = gi + 1; st.rerun()
                 else:
                     if nav3.button("Siguiente → Especiales ⭐", key="grupo_to_especiales", type="primary", use_container_width=True):
+                        for idx, (gl, gv) in cambios.items():
+                            db_guardar_pred(username, fase, idx, gl, gv)
                         st.session_state.grupo_wizard = 12; st.rerun()
 
     else:
@@ -1401,9 +1427,9 @@ def pantalla_usuario():
     u_fresh = db_get_usuario(username)
     pts_esp_user = db_get_puntos_especiales_usuarios().get(username, 0)
     total_pts = u_fresh["puntos"] + u_fresh["goles"] + u_fresh["consumo"] + pts_esp_user
-    todos = db_get_todos_usuarios()
+    todos_rank = db_get_todos_usuarios()
     pts_esp_rank = db_get_puntos_especiales_usuarios()
-    ranking = sorted(todos, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + pts_esp_rank.get(x["username"], 0), reverse=True)
+    ranking = sorted(todos_rank, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + pts_esp_rank.get(x["username"], 0), reverse=True)
     posicion = next((i + 1 for i, x in enumerate(ranking) if x["username"] == username), "—")
 
     st.subheader("Mis puntos")
