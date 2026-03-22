@@ -20,8 +20,10 @@ def inject_css():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
-    /* === DARK THEME (default) === */
-    :root {
+    /* Force dark theme regardless of OS setting */
+    :root, :root[data-theme="light"], :root[data-theme="dark"] {
+        color-scheme: dark !important;
+
         --bg:           #07080d;
         --bg2:          #0d0f18;
         --bg3:          #131621;
@@ -59,48 +61,87 @@ def inject_css():
         --radius-sm:    9px;
     }
 
-    /* === LIGHT THEME === */
+    /* Override Streamlit light mode completely */
     @media (prefers-color-scheme: light) {
         :root {
-            --bg:           #f2f4f8;
-            --bg2:          #e8ebf0;
-            --bg3:          #ffffff;
-            --surface:      rgba(0,0,0,0.04);
-            --surface2:     rgba(0,0,0,0.07);
-            --border:       rgba(0,0,0,0.10);
-            --border2:      rgba(0,0,0,0.18);
-            --text:         #111122;
-            --text2:        #44446a;
-            --text3:        #8888aa;
-            --table-bg:     #ffffff;
-            --table-head:   rgba(0,0,0,0.04);
-            --table-row:    rgba(0,0,0,0.02);
-            --shadow-clr:   rgba(0,0,0,0.10);
-            --hover-border: rgba(0,0,0,0.25);
-
-            --green:        #007a33;
-            --green2:       #005c26;
-            --green-dim:    rgba(0,120,50,0.10);
-            --green-glow:   rgba(0,120,50,0.20);
-            --gold:         #996600;
-            --gold-dim:     rgba(153,102,0,0.10);
-            --gold-border:  rgba(153,102,0,0.30);
-            --blue:         #1144cc;
-            --blue-dim:     rgba(17,68,204,0.08);
-            --blue-border:  rgba(17,68,204,0.28);
-            --red:          #bb1122;
-            --red-dim:      rgba(187,17,34,0.08);
-            --red-border:   rgba(187,17,34,0.28);
-            --orange:       #bb4400;
-            --orange-dim:   rgba(187,68,0,0.10);
-            --orange-border:rgba(187,68,0,0.30);
+            color-scheme: dark !important;
+            --bg:           #07080d !important;
+            --bg2:          #0d0f18 !important;
+            --bg3:          #131621 !important;
+            --surface:      rgba(255,255,255,0.04) !important;
+            --surface2:     rgba(255,255,255,0.08) !important;
+            --border:       rgba(255,255,255,0.09) !important;
+            --border2:      rgba(255,255,255,0.16) !important;
+            --text:         #eeeef5 !important;
+            --text2:        #9898b0 !important;
+            --text3:        #525268 !important;
+            --table-bg:     #0d0f18 !important;
+            --table-head:   rgba(255,255,255,0.05) !important;
+            --table-row:    rgba(255,255,255,0.03) !important;
+            --shadow-clr:   rgba(0,0,0,0.45) !important;
+            --hover-border: rgba(255,255,255,0.28) !important;
+            --green:        #00e87a !important;
+            --green2:       #00c860 !important;
+            --green-dim:    rgba(0,220,110,0.12) !important;
+            --green-glow:   rgba(0,200,96,0.28) !important;
+            --gold:         #ffc840 !important;
+            --gold-dim:     rgba(255,200,64,0.12) !important;
+            --gold-border:  rgba(255,200,64,0.30) !important;
+            --blue:         #5599ff !important;
+            --blue-dim:     rgba(85,153,255,0.10) !important;
+            --blue-border:  rgba(85,153,255,0.30) !important;
+            --red:          #ff5566 !important;
+            --red-dim:      rgba(255,85,102,0.10) !important;
+            --red-border:   rgba(255,85,102,0.30) !important;
+            --orange:       #ff8844 !important;
+            --orange-dim:   rgba(255,136,68,0.12) !important;
+            --orange-border:rgba(255,136,68,0.30) !important;
         }
+        /* Force dark backgrounds on all Streamlit containers in light OS mode */
+        html, body, .stApp, [data-testid="stAppViewContainer"],
+        [data-testid="stHeader"], [data-testid="stToolbar"],
+        section[data-testid="stSidebar"], .main, .block-container {
+            background-color: #07080d !important;
+            color: #eeeef5 !important;
+        }
+    }
+
+    /* Force dark on ALL Streamlit containers always */
+    html, body,
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stAppViewBlockContainer"],
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stBottom"],
+    [data-testid="stMain"],
+    .main, .block-container,
+    section.main, div.main,
+    [data-baseweb="base-input"],
+    [data-baseweb="select"],
+    [data-baseweb="popover"],
+    [data-testid="stForm"],
+    [data-testid="stVerticalBlock"],
+    [data-testid="stHorizontalBlock"],
+    div[class*="st-emotion"],
+    div[class*="stMarkdown"],
+    div[class*="element-container"] {
+        background-color: var(--bg) !important;
+        color: var(--text) !important;
+    }
+
+    /* Streamlit uses inline light backgrounds in light OS mode — override */
+    [data-testid="stAppViewContainer"] > div,
+    [data-testid="stAppViewContainer"] > section {
+        background: var(--bg) !important;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
     html, body, [class*="css"] {
         font-family: 'Outfit', sans-serif;
         -webkit-font-smoothing: antialiased;
+        background-color: #07080d !important;
+        color: #eeeef5 !important;
     }
 
     .stApp {
