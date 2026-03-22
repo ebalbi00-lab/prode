@@ -1524,7 +1524,7 @@ def pantalla_ranking():
         <div style="font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:4px;
                     background:linear-gradient(135deg,#ffd700,#ffaa00);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text;">🏆 RANKING</div>
+                    background-clip:text;">🏆 TOP 10</div>
     </div>
     """, unsafe_allow_html=True)
 
