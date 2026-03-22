@@ -1435,7 +1435,14 @@ def pantalla_login():
 
 
 def pantalla_registro_datos():
-    st.title("Registro — Datos personales")
+    st.markdown("""
+    <div style="padding:0.5rem 0 1rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                    color:#525268; margin-bottom:0.3rem;">Paso 1 de 2</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:3px; color:#eeeef5;">
+            Datos personales</div>
+    </div>
+    """, unsafe_allow_html=True)
     if not db_registro_abierto():
         st.error("⛔ El registro está cerrado. No se aceptan nuevas inscripciones.")
         st.button("Volver", on_click=cambiar_pantalla, args=(0,))
@@ -1473,19 +1480,39 @@ def pantalla_registro_datos():
 
 
 def pantalla_registro_cuenta():
-    st.title("Registro — Cuenta y pago")
+    st.markdown("""
+    <div style="padding:0.5rem 0 1rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                    color:#525268; margin-bottom:0.3rem;">Paso 2 de 2</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:3px; color:#eeeef5;">
+            Cuenta y pago</div>
+    </div>
+    """, unsafe_allow_html=True)
     with st.form("form_registro_cuenta"):
-        usuario = st.text_input("Usuario")
+        usuario = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
         clave = st.text_input("Clave (mínimo 4 caracteres)", type="password")
         confirmar = st.text_input("Confirmar clave", type="password")
-        st.markdown("**Alias:** prode.mundial.2026")
-        st.markdown("**CVU:** 0000003100000000000000")
+        st.markdown("""
+        <div style="background:rgba(255,200,64,0.07); border:1.5px solid rgba(255,200,64,0.25);
+                    border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+                        color:#ffc840; margin-bottom:8px;">💰 Datos de pago</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="color:#9898b0; font-size:0.82rem;">Alias</span>
+                <span style="color:#eeeef5; font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">prode.mundial.2026</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#9898b0; font-size:0.82rem;">CVU</span>
+                <span style="color:#eeeef5; font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.82rem;">0000003100000000000000</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         comprobante = st.file_uploader("Comprobante de pago")
         if "reg_error" in st.session_state:
             st.error(st.session_state.pop("reg_error"))
         col1, col2 = st.columns(2)
-        volver = col1.form_submit_button("Volver")
-        enviar = col2.form_submit_button("Enviar", type="primary")
+        volver = col1.form_submit_button("← Volver")
+        enviar = col2.form_submit_button("Enviar solicitud", type="primary")
 
     if volver:
         cambiar_pantalla(1); st.rerun()
@@ -1568,21 +1595,66 @@ def pantalla_usuario():
             st.session_state["wizard_grupos_completo"] = True
 
     if grupos_completados:
-        fase = st.radio("Fase", options=FASES, horizontal=True)
+        # Mostrar solo fases habilitadas, con indicador de confirmación
+        fases_habilitadas = [f for f in FASES if fases.get(f, False)]
+        fases_confirmadas = {}
+        for f in fases_habilitadas:
+            fases_confirmadas[f] = db_fase_confirmada(username, f)
+
+        if not fases_habilitadas:
+            st.warning("No hay fases habilitadas aún.")
+            st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            return
+
+        # Selector de fase con estado visual
+        labels = []
+        for f in fases_habilitadas:
+            check = "✅ " if fases_confirmadas.get(f) else ""
+            labels.append(f"{check}{f}")
+
+        fase_idx = st.session_state.get("fase_sel_idx", 0)
+        if fase_idx >= len(fases_habilitadas):
+            fase_idx = 0
+
+        cols_fases = st.columns(len(fases_habilitadas))
+        for i, (col, f, lbl) in enumerate(zip(cols_fases, fases_habilitadas, labels)):
+            es_activa = (i == fase_idx)
+            if col.button(
+                lbl,
+                key=f"fase_btn_{f}",
+                use_container_width=True,
+                type="primary" if es_activa else "secondary",
+            ):
+                st.session_state["fase_sel_idx"] = i
+                st.rerun()
+
+        fase = fases_habilitadas[fase_idx]
     else:
         fase = "Grupos"
 
     if not fases.get(fase, False):
-        st.warning("Esta fase no está habilitada aún.")
+        st.markdown("""
+        <div style="background:rgba(255,180,0,0.08); border:1.5px solid rgba(255,180,0,0.25);
+                    border-radius:12px; padding:14px 18px; margin:1rem 0;">
+            <div style="color:#ffc840; font-weight:700; margin-bottom:4px;">⏳ Fase no habilitada</div>
+            <div style="color:#9898b0; font-size:0.88rem;">Esta fase todavía no fue abierta por el admin.</div>
+        </div>
+        """, unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,))
+            st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
         return
 
     partidos = db_get_partidos(fase)
     if not partidos:
-        st.info("El admin aún no cargó los partidos de esta fase.")
+        st.markdown("""
+        <div style="background:rgba(85,153,255,0.07); border:1.5px solid rgba(85,153,255,0.22);
+                    border-radius:12px; padding:14px 18px; margin:1rem 0;">
+            <div style="color:#5599ff; font-weight:700; margin-bottom:4px;">📋 Sin partidos cargados</div>
+            <div style="color:#9898b0; font-size:0.88rem;">El admin aún no cargó los partidos de esta fase.</div>
+        </div>
+        """, unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,))
+            st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
         return
 
     prode = db_get_prode(username, fase)
@@ -1594,10 +1666,22 @@ def pantalla_usuario():
     letra = "A"
     total = 12
 
+    # Header de sección con estado
+    estado_badge = '<span style="background:rgba(0,232,122,0.15);color:#00e87a;font-size:0.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 9px;border-radius:20px;border:1px solid rgba(0,200,96,0.3);margin-left:8px;">Confirmado ✓</span>' if confirmado else ""
     if grupos_completados:
-        st.subheader(f"Pronósticos — {fase}")
+        st.markdown(f"""
+        <div style="margin:0.8rem 0 0.5rem 0;">
+            <span style="font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:2px; color:#eeeef5;">
+                Pronósticos — {fase}</span>{estado_badge}
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.subheader("Pronósticos — Grupos")
+        st.markdown("""
+        <div style="margin:0.8rem 0 0.5rem 0;">
+            <span style="font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:2px; color:#eeeef5;">
+                Pronósticos — Grupos</span>
+        </div>
+        """, unsafe_allow_html=True)
 
     resultados_fase = db_get_resultado_completo(fase)
     cambios = {}
@@ -1866,7 +1950,7 @@ def pantalla_usuario():
 
     if not grupos_completados:
         st.divider()
-        st.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,))
+        st.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
         return
 
 
@@ -1948,14 +2032,9 @@ def pantalla_usuario():
                 <span>{derecha}</span>
             </div>""", unsafe_allow_html=True)
     st.divider()
-    col1, col2, col3 = st.columns(3)
-    col1.button("🏆 Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True)
-    col2.button("📊 Estadísticas", on_click=cambiar_pantalla, args=(12,), use_container_width=True)
-    col3.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
-
-    # ── Destacados ──
-    st.divider()
-    render_destacados_usuarios()
+    col1, col2 = st.columns(2)
+    col1.button("🏆 Ver Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True)
+    col2.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
 
 
 def render_destacados_usuarios():
@@ -3176,8 +3255,8 @@ def pantalla_especiales():
 
     st.divider()
     col1, col2 = st.columns(2)
-    col1.button("← Volver", on_click=cambiar_pantalla, args=(5,))
-    col2.button("Ver Ranking", on_click=cambiar_pantalla, args=(6,))
+    col1.button("← Mis pronósticos", on_click=cambiar_pantalla, args=(5,), use_container_width=True)
+    col2.button("🏆 Ver Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True)
 
 
 def pantalla_estadisticas():
