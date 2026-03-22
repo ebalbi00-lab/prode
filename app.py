@@ -18,127 +18,425 @@ st.set_page_config(page_title="Prode Il Baigo - Mundial 2026", layout="wide", pa
 def inject_css():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
-    html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
+    :root {
+        --bg:        #07080d;
+        --bg2:       #0d0f18;
+        --bg3:       #131621;
+        --surface:   rgba(255,255,255,0.04);
+        --surface2:  rgba(255,255,255,0.07);
+        --border:    rgba(255,255,255,0.09);
+        --border2:   rgba(255,255,255,0.16);
+        --text:      #eeeef5;
+        --text2:     #9898b0;
+        --text3:     #525268;
+        --green:     #00e87a;
+        --green2:    #00c860;
+        --green-dim: rgba(0,232,122,0.12);
+        --green-glow:rgba(0,200,96,0.28);
+        --gold:      #ffc840;
+        --gold-dim:  rgba(255,200,64,0.12);
+        --blue:      #5599ff;
+        --blue-dim:  rgba(85,153,255,0.1);
+        --red:       #ff5566;
+        --red-dim:   rgba(255,85,102,0.1);
+        --radius:    14px;
+        --radius-sm: 9px;
+        --shadow:    0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body, [class*="css"] {
+        font-family: 'Outfit', sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Background ── */
     .stApp {
-        background: #0a0a0f;
+        background: var(--bg);
         background-image:
-            radial-gradient(ellipse at 20% 50%, rgba(0,200,80,0.07) 0%, transparent 60%),
-            radial-gradient(ellipse at 80% 20%, rgba(0,120,255,0.06) 0%, transparent 50%),
-            radial-gradient(ellipse at 60% 80%, rgba(200,50,50,0.05) 0%, transparent 50%);
-        color: #e8e8f0;
+            radial-gradient(ellipse 60% 40% at 15% 55%, rgba(0,200,96,0.055) 0%, transparent 100%),
+            radial-gradient(ellipse 50% 35% at 85% 18%, rgba(85,153,255,0.045) 0%, transparent 100%),
+            radial-gradient(ellipse 40% 30% at 55% 90%, rgba(255,200,64,0.03) 0%, transparent 100%);
+        color: var(--text);
+        min-height: 100vh;
     }
+
     #MainMenu, footer, header { visibility: hidden; }
-    .block-container { padding-top: 2rem !important; padding-bottom: 3rem !important; max-width: 900px !important; }
+    .block-container {
+        padding-top: 2.5rem !important;
+        padding-bottom: 4rem !important;
+        max-width: 860px !important;
+    }
 
+    /* ── Typography ── */
     h1 {
-        font-family: 'Bebas Neue', sans-serif !important; font-size: 3.2rem !important;
-        letter-spacing: 3px !important;
-        background: linear-gradient(135deg, #00c850, #00ff88) !important;
-        -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
-        background-clip: text !important; margin-bottom: 0.2rem !important; line-height: 1.1 !important;
-    }
-    h2 { font-family: 'Bebas Neue', sans-serif !important; font-size: 1.8rem !important; letter-spacing: 2px !important; color: #e8e8f0 !important; }
-    h3 { font-family: 'DM Sans', sans-serif !important; font-weight: 600 !important; color: #a0a0b8 !important; font-size: 0.85rem !important; text-transform: uppercase !important; letter-spacing: 1.5px !important; }
-
-    .stTextInput > div > div > input, .stPasswordInput > div > div > input {
-        background: #1a1a2e !important; border: 1px solid rgba(255,255,255,0.15) !important;
-        border-radius: 10px !important; color: #ffffff !important; padding: 0.6rem 1rem !important;
-        font-family: 'DM Sans', sans-serif !important; transition: all 0.2s ease !important;
-        -webkit-text-fill-color: #ffffff !important; caret-color: #00c850 !important;
-    }
-    .stTextInput > div > div > input:focus, .stPasswordInput > div > div > input:focus {
-        border-color: #00c850 !important; background: #1a1a2e !important;
-        box-shadow: 0 0 0 3px rgba(0,200,80,0.15) !important; -webkit-text-fill-color: #ffffff !important;
-    }
-    .stTextInput > div > div > input::placeholder, .stPasswordInput > div > div > input::placeholder {
-        color: rgba(255,255,255,0.3) !important; -webkit-text-fill-color: rgba(255,255,255,0.3) !important;
-    }
-    .stTextInput label, .stPasswordInput label, .stSelectbox label, .stNumberInput label,
-    .stFileUploader label, .stRadio label, .stDateInput label {
-        color: #a0a0b8 !important; font-size: 0.82rem !important; font-weight: 500 !important;
-        text-transform: uppercase !important; letter-spacing: 1px !important;
-    }
-    .stSelectbox > div > div { background: #1a1a2e !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 10px !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
-    .stSelectbox > div > div > div { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
-    .stNumberInput > div > div > input {
-        background: #1a1a2e !important; border: 1px solid rgba(255,255,255,0.15) !important;
-        border-radius: 10px !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;
-        caret-color: #00c850 !important; text-align: center !important;
-        font-size: 1.4rem !important; font-weight: 700 !important;
         font-family: 'Bebas Neue', sans-serif !important;
+        font-size: 3rem !important;
+        letter-spacing: 3px !important;
+        background: linear-gradient(135deg, var(--green) 0%, #80ffbb 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        margin-bottom: 0.15rem !important;
+        line-height: 1.05 !important;
+    }
+    h2 {
+        font-family: 'Bebas Neue', sans-serif !important;
+        font-size: 1.7rem !important;
+        letter-spacing: 2px !important;
+        color: var(--text) !important;
+        margin-top: 0.3rem !important;
+    }
+    h3 {
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+        color: var(--text2) !important;
+        font-size: 0.72rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 2px !important;
+    }
+
+    /* ── Form inputs ── */
+    .stTextInput > div > div > input,
+    .stPasswordInput > div > div > input {
+        background: var(--bg3) !important;
+        border: 1.5px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--text) !important;
+        padding: 0.65rem 1rem !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.97rem !important;
+        font-weight: 500 !important;
+        transition: all 0.18s ease !important;
+        -webkit-text-fill-color: var(--text) !important;
+        caret-color: var(--green) !important;
+    }
+    .stTextInput > div > div > input:focus,
+    .stPasswordInput > div > div > input:focus {
+        border-color: var(--green2) !important;
+        background: var(--bg3) !important;
+        box-shadow: 0 0 0 3px var(--green-dim), 0 2px 12px rgba(0,0,0,0.3) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }
+    .stTextInput > div > div > input::placeholder,
+    .stPasswordInput > div > div > input::placeholder {
+        color: var(--text3) !important;
+        -webkit-text-fill-color: var(--text3) !important;
+    }
+    .stTextInput label, .stPasswordInput label,
+    .stSelectbox label, .stNumberInput label,
+    .stFileUploader label, .stRadio label, .stDateInput label {
+        color: var(--text2) !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1.2px !important;
+        margin-bottom: 0.3rem !important;
+    }
+
+    /* ── Selectbox ── */
+    .stSelectbox > div > div {
+        background: var(--bg3) !important;
+        border: 1.5px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }
+    .stSelectbox > div > div > div { color: var(--text) !important; -webkit-text-fill-color: var(--text) !important; }
+
+    /* ── Number input ── */
+    .stNumberInput > div > div > input {
+        background: var(--bg3) !important;
+        border: 1.5px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+        caret-color: var(--green) !important;
+        text-align: center !important;
+        font-size: 1.5rem !important;
+        font-weight: 800 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        letter-spacing: -0.5px !important;
     }
     .stNumberInput > div > div > input:focus {
-        border-color: #00c850 !important;
-        box-shadow: 0 0 0 3px rgba(0,200,80,0.15) !important;
+        border-color: var(--green2) !important;
+        box-shadow: 0 0 0 3px var(--green-dim) !important;
     }
+
+    /* ── Buttons ── */
     .stButton > button {
-        background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.12) !important;
-        border-radius: 10px !important; color: #e8e8f0 !important; font-family: 'DM Sans', sans-serif !important;
-        font-weight: 600 !important; font-size: 0.9rem !important; padding: 0.55rem 1.4rem !important;
-        transition: all 0.2s ease !important; letter-spacing: 0.5px !important;
+        background: var(--surface) !important;
+        border: 1.5px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--text) !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        padding: 0.55rem 1.4rem !important;
+        transition: all 0.16s ease !important;
+        letter-spacing: 0.3px !important;
     }
-    .stButton > button:hover { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.25) !important; transform: translateY(-1px) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important; }
-    .stButton > button[kind="primary"] { background: linear-gradient(135deg, #00c850, #00a040) !important; border: none !important; color: #fff !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(0,200,80,0.3) !important; }
-    .stButton > button[kind="primary"]:hover { background: linear-gradient(135deg, #00e060, #00c850) !important; box-shadow: 0 6px 25px rgba(0,200,80,0.45) !important; transform: translateY(-2px) !important; }
+    .stButton > button:hover {
+        background: var(--surface2) !important;
+        border-color: rgba(255,255,255,0.28) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.35) !important;
+    }
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, var(--green2) 0%, #009944 100%) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 18px var(--green-glow) !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, var(--green) 0%, var(--green2) 100%) !important;
+        box-shadow: 0 6px 28px var(--green-glow) !important;
+        transform: translateY(-2px) !important;
+    }
 
-    .stFormSubmitButton > button { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 10px !important; color: #e8e8f0 !important; font-family: 'DM Sans', sans-serif !important; font-weight: 600 !important; transition: all 0.2s ease !important; }
-    .stFormSubmitButton > button:hover { background: rgba(255,255,255,0.1) !important; transform: translateY(-1px) !important; }
-    .stFormSubmitButton > button[kind="primary"] { background: linear-gradient(135deg, #00c850, #00a040) !important; border: none !important; color: #fff !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(0,200,80,0.3) !important; }
-    .stFormSubmitButton > button[kind="primary"]:hover { background: linear-gradient(135deg, #00e060, #00c850) !important; box-shadow: 0 6px 25px rgba(0,200,80,0.45) !important; transform: translateY(-2px) !important; }
+    .stFormSubmitButton > button {
+        background: var(--surface) !important;
+        border: 1.5px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--text) !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 600 !important;
+        transition: all 0.16s ease !important;
+    }
+    .stFormSubmitButton > button:hover {
+        background: var(--surface2) !important;
+        transform: translateY(-1px) !important;
+    }
+    .stFormSubmitButton > button[kind="primary"] {
+        background: linear-gradient(135deg, var(--green2) 0%, #009944 100%) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 18px var(--green-glow) !important;
+    }
+    .stFormSubmitButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, var(--green) 0%, var(--green2) 100%) !important;
+        box-shadow: 0 6px 28px var(--green-glow) !important;
+        transform: translateY(-2px) !important;
+    }
 
-    .stSuccess { background: rgba(0,200,80,0.1) !important; border: 1px solid rgba(0,200,80,0.3) !important; border-radius: 10px !important; color: #00e870 !important; }
-    .stError { background: rgba(255,60,60,0.1) !important; border: 1px solid rgba(255,60,60,0.3) !important; border-radius: 10px !important; color: #ff6b6b !important; }
-    .stWarning { background: rgba(255,180,0,0.1) !important; border: 1px solid rgba(255,180,0,0.3) !important; border-radius: 10px !important; color: #ffcc44 !important; }
-    .stInfo { background: rgba(0,120,255,0.08) !important; border: 1px solid rgba(0,120,255,0.25) !important; border-radius: 10px !important; color: #66aaff !important; }
+    /* ── Alerts ── */
+    .stSuccess {
+        background: var(--green-dim) !important;
+        border: 1px solid rgba(0,200,96,0.35) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--green) !important;
+    }
+    .stError {
+        background: var(--red-dim) !important;
+        border: 1px solid rgba(255,85,102,0.35) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--red) !important;
+    }
+    .stWarning {
+        background: rgba(255,180,0,0.08) !important;
+        border: 1px solid rgba(255,180,0,0.3) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--gold) !important;
+    }
+    .stInfo {
+        background: var(--blue-dim) !important;
+        border: 1px solid rgba(85,153,255,0.3) !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--blue) !important;
+    }
 
-    [data-testid="stMetric"] { background: rgba(255,255,255,0.03) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 14px !important; padding: 1rem 1.2rem !important; transition: all 0.2s ease !important; }
-    [data-testid="stMetric"]:hover { border-color: rgba(0,200,80,0.3) !important; background: rgba(0,200,80,0.04) !important; }
-    [data-testid="stMetricLabel"] { color: #a0a0b8 !important; font-size: 0.75rem !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
-    [data-testid="stMetricValue"] { color: #00e870 !important; font-family: 'Bebas Neue', sans-serif !important; font-size: 2.2rem !important; letter-spacing: 1px !important; }
+    /* ── Metrics ── */
+    [data-testid="stMetric"] {
+        background: var(--bg3) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: var(--radius) !important;
+        padding: 1.1rem 1.3rem !important;
+        transition: all 0.2s ease !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+    [data-testid="stMetric"]::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--green2), transparent);
+        opacity: 0.6;
+    }
+    [data-testid="stMetric"]:hover {
+        border-color: rgba(0,200,96,0.35) !important;
+        background: rgba(0,200,96,0.04) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    [data-testid="stMetricLabel"] {
+        color: var(--text2) !important;
+        font-size: 0.72rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1.4px !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stMetricValue"] {
+        color: var(--green) !important;
+        font-family: 'Bebas Neue', sans-serif !important;
+        font-size: 2.4rem !important;
+        letter-spacing: 1.5px !important;
+        line-height: 1.1 !important;
+    }
 
-    [data-testid="stDataFrame"] { border-radius: 12px !important; overflow: hidden !important; border: 1px solid rgba(255,255,255,0.08) !important; }
-    .dvn-scroller { background: #0f0f1a !important; }
+    /* ── DataFrame ── */
+    [data-testid="stDataFrame"] {
+        border-radius: var(--radius) !important;
+        overflow: hidden !important;
+        border: 1px solid var(--border) !important;
+    }
+    .dvn-scroller { background: var(--bg2) !important; }
 
-    .stTabs [data-baseweb="tab-list"] { background: rgba(255,255,255,0.03) !important; border-radius: 12px !important; padding: 4px !important; gap: 4px !important; border: 1px solid rgba(255,255,255,0.06) !important; }
-    .stTabs [data-baseweb="tab"] { background: transparent !important; border-radius: 8px !important; color: #a0a0b8 !important; font-family: 'DM Sans', sans-serif !important; font-weight: 600 !important; font-size: 0.8rem !important; padding: 0.4rem 0.8rem !important; transition: all 0.2s ease !important; }
-    .stTabs [aria-selected="true"] { background: rgba(0,200,80,0.15) !important; color: #00e870 !important; border: 1px solid rgba(0,200,80,0.25) !important; }
+    /* ── Tabs ── */
+    .stTabs [data-baseweb="tab-list"] {
+        background: var(--bg3) !important;
+        border-radius: var(--radius) !important;
+        padding: 5px !important;
+        gap: 3px !important;
+        border: 1.5px solid var(--border) !important;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent !important;
+        border-radius: var(--radius-sm) !important;
+        color: var(--text2) !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.78rem !important;
+        padding: 0.42rem 0.85rem !important;
+        transition: all 0.16s ease !important;
+        letter-spacing: 0.2px !important;
+    }
+    .stTabs [data-baseweb="tab"]:hover { color: var(--text) !important; background: var(--surface2) !important; }
+    .stTabs [aria-selected="true"] {
+        background: var(--green-dim) !important;
+        color: var(--green) !important;
+        border: 1px solid rgba(0,200,96,0.3) !important;
+    }
 
-    .stRadio [data-testid="stMarkdownContainer"] p { color: #e8e8f0 !important; font-weight: 500 !important; }
-    .stRadio > div { background: rgba(255,255,255,0.03) !important; border-radius: 12px !important; padding: 0.5rem 1rem !important; border: 1px solid rgba(255,255,255,0.07) !important; }
-    .stCheckbox, [data-testid="stToggle"] { color: #e8e8f0 !important; }
+    /* ── Radio ── */
+    .stRadio [data-testid="stMarkdownContainer"] p {
+        color: var(--text) !important;
+        font-weight: 500 !important;
+        font-size: 0.9rem !important;
+    }
+    .stRadio > div {
+        background: var(--bg3) !important;
+        border-radius: var(--radius) !important;
+        padding: 0.55rem 1rem !important;
+        border: 1.5px solid var(--border) !important;
+        gap: 4px !important;
+    }
 
-    .streamlit-expanderHeader { background: rgba(255,255,255,0.03) !important; border-radius: 10px !important; border: 1px solid rgba(255,255,255,0.08) !important; color: #e8e8f0 !important; font-weight: 600 !important; }
-    .streamlit-expanderContent { background: rgba(255,255,255,0.02) !important; border: 1px solid rgba(255,255,255,0.06) !important; border-top: none !important; border-radius: 0 0 10px 10px !important; }
+    /* ── Toggle / Checkbox ── */
+    .stCheckbox, [data-testid="stToggle"] { color: var(--text) !important; }
 
-    hr { border-color: rgba(255,255,255,0.07) !important; margin: 1.5rem 0 !important; }
-    .stSlider [data-baseweb="slider"] { padding: 0.5rem 0 !important; }
-    .stCaption, caption { color: #606075 !important; font-size: 0.78rem !important; }
-    .stMarkdown p { color: #c8c8d8 !important; line-height: 1.7 !important; }
-    .stMarkdown strong { color: #e8e8f0 !important; }
+    /* ── Expander ── */
+    .streamlit-expanderHeader {
+        background: var(--bg3) !important;
+        border-radius: var(--radius-sm) !important;
+        border: 1.5px solid var(--border) !important;
+        color: var(--text) !important;
+        font-weight: 600 !important;
+        font-size: 0.92rem !important;
+        transition: all 0.16s ease !important;
+    }
+    .streamlit-expanderHeader:hover { border-color: var(--border2) !important; }
+    .streamlit-expanderContent {
+        background: var(--surface) !important;
+        border: 1.5px solid var(--border) !important;
+        border-top: none !important;
+        border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+    }
 
-    [data-testid="stFileUploader"] { background: rgba(255,255,255,0.03) !important; border: 1.5px dashed rgba(255,255,255,0.15) !important; border-radius: 12px !important; transition: all 0.2s !important; }
-    [data-testid="stFileUploader"]:hover { border-color: rgba(0,200,80,0.4) !important; background: rgba(0,200,80,0.03) !important; }
+    /* ── Divider ── */
+    hr {
+        border: none !important;
+        border-top: 1px solid var(--border) !important;
+        margin: 1.6rem 0 !important;
+    }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0a0a0f; }
-    ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+    /* ── Misc ── */
+    .stCaption, caption { color: var(--text3) !important; font-size: 0.78rem !important; }
+    .stMarkdown p { color: #c0c0d0 !important; line-height: 1.75 !important; }
+    .stMarkdown strong { color: var(--text) !important; font-weight: 700 !important; }
 
-    [data-testid="stForm"] { background: rgba(255,255,255,0.02) !important; border: 1px solid rgba(255,255,255,0.07) !important; border-radius: 16px !important; padding: 1.5rem !important; }
+    [data-testid="stFileUploader"] {
+        background: var(--surface) !important;
+        border: 1.5px dashed var(--border2) !important;
+        border-radius: var(--radius) !important;
+        transition: all 0.2s !important;
+    }
+    [data-testid="stFileUploader"]:hover {
+        border-color: var(--green2) !important;
+        background: var(--green-dim) !important;
+    }
 
+    [data-testid="stForm"] {
+        background: var(--bg3) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: var(--radius) !important;
+        padding: 1.6rem !important;
+    }
+
+    /* ── Spinner ── */
+    .stSpinner > div { border-top-color: var(--green) !important; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #252538; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #333350; }
+
+    /* ── Custom utility classes ── */
+    .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+    }
+    .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,200,96,0.3); }
+    .badge-gold  { background: var(--gold-dim);  color: var(--gold);  border: 1px solid rgba(255,200,64,0.3); }
+    .badge-blue  { background: var(--blue-dim);  color: var(--blue);  border: 1px solid rgba(85,153,255,0.3); }
+    .badge-red   { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(255,85,102,0.3); }
+
+    .section-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text3);
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Mobile ── */
     @media (max-width: 768px) {
-        .block-container { padding-left: 1rem !important; padding-right: 1rem !important; padding-top: 1rem !important; }
-        h1 { font-size: 2.2rem !important; letter-spacing: 2px !important; }
+        .block-container { padding-left: 0.8rem !important; padding-right: 0.8rem !important; padding-top: 1rem !important; }
+        h1 { font-size: 2.3rem !important; letter-spacing: 2px !important; }
         h2 { font-size: 1.4rem !important; }
-        .stTabs [data-baseweb="tab"] { font-size: 0.7rem !important; padding: 0.3rem 0.4rem !important; }
+        .stTabs [data-baseweb="tab"] { font-size: 0.68rem !important; padding: 0.3rem 0.45rem !important; }
         .stTabs [data-baseweb="tab-list"] { flex-wrap: wrap !important; gap: 2px !important; }
-        .stTextInput > div > div > input, .stPasswordInput > div > div > input { font-size: 16px !important; padding: 0.75rem 1rem !important; }
-        .stButton > button, .stFormSubmitButton > button { padding: 0.75rem 1rem !important; font-size: 0.95rem !important; width: 100% !important; }
-        [data-testid="stMetricValue"] { font-size: 1.6rem !important; }
+        .stTextInput > div > div > input,
+        .stPasswordInput > div > div > input { font-size: 16px !important; padding: 0.75rem 1rem !important; }
+        .stButton > button,
+        .stFormSubmitButton > button { padding: 0.75rem 1rem !important; font-size: 0.95rem !important; }
+        [data-testid="stMetricValue"] { font-size: 1.8rem !important; }
         .stRadio > div > div { flex-wrap: wrap !important; gap: 4px !important; }
-        .stNumberInput > div > div > input { font-size: 1.6rem !important; }
+        .stNumberInput > div > div > input { font-size: 1.5rem !important; }
     }
     </style>
     """, unsafe_allow_html=True)
@@ -1103,14 +1401,15 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 
 def pantalla_login():
     st.markdown("""
-    <div style="text-align:center; padding: 2rem 0 1rem 0;">
-        <div style="font-size:4rem; margin-bottom:0.5rem;">⚽</div>
-        <div style="font-family:'Bebas Neue',sans-serif; font-size:3.5rem; letter-spacing:4px;
-                    background:linear-gradient(135deg,#00c850,#00ff88);
+    <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
+        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:3.8rem; letter-spacing:5px;
+                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.1;">PRODE IL BAIGO</div>
-        <div style="font-family:'DM Sans',sans-serif; font-size:1rem; color:#606075;
-                    letter-spacing:3px; text-transform:uppercase; margin-top:0.3rem;">Mundial 2026</div>
+                    background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
+        <div style="display:inline-block; background:rgba(255,200,64,0.1); border:1px solid rgba(255,200,64,0.25);
+                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#ffc840;
+                    font-weight:700; letter-spacing:3px; text-transform:uppercase;">⚽ MUNDIAL 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1118,8 +1417,8 @@ def pantalla_login():
         st.error(st.session_state.pop("login_error"))
 
     with st.form("form_login"):
-        usuario = st.text_input("Usuario")
-        clave = st.text_input("Clave", type="password")
+        usuario = st.text_input("Usuario", placeholder="tu_usuario")
+        clave = st.text_input("Clave", type="password", placeholder="••••••••")
         col1, col2 = st.columns(2)
         ingresar = col1.form_submit_button("Ingresar", type="primary", use_container_width=True)
         registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
@@ -1221,21 +1520,42 @@ def pantalla_registro_cuenta():
 
 def pantalla_en_revision():
     st.markdown("""
-    <div style="text-align:center; padding:3rem 1rem;">
-        <div style="font-size:4rem; margin-bottom:1rem;">⏳</div>
-        <div style="font-family:'Bebas Neue',sans-serif; font-size:2.5rem; letter-spacing:3px; color:#ffcc44;">
+    <div style="text-align:center; padding:3.5rem 1rem 2rem 1rem;">
+        <div style="width:72px; height:72px; margin:0 auto 1.2rem auto;
+                    background:rgba(255,200,64,0.1); border:2px solid rgba(255,200,64,0.3);
+                    border-radius:50%; display:flex; align-items:center; justify-content:center;
+                    font-size:2.2rem;">⏳</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2.3rem; letter-spacing:3px; color:#ffc840; margin-bottom:0.8rem;">
             INSCRIPCIÓN EN REVISIÓN</div>
-        <div style="color:#a0a0b8; margin-top:1rem; font-size:1rem; line-height:1.7;">
-            Tu solicitud está siendo revisada por el administrador.<br>Te avisamos cuando sea aprobada.</div>
+        <div style="color:#9898b0; font-size:0.95rem; line-height:1.8; max-width:380px; margin:0 auto;">
+            Tu solicitud está siendo revisada por el administrador.<br>
+            <span style="color:#eeeef5; font-weight:600;">Te avisamos cuando sea aprobada.</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
-    st.button("Volver al inicio", on_click=cambiar_pantalla, args=(0,))
+    st.button("← Volver al inicio", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
 
 
 def pantalla_usuario():
     username = st.session_state.usuario
     u = db_get_usuario(username)
-    st.title(f"Panel — {u.get('nombre', username)}")
+    nombre_display = u.get('nombre', username)
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; gap:14px; padding:0.3rem 0 1.2rem 0; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:1.2rem;">
+        <div style="width:46px; height:46px; border-radius:50%;
+                    background:linear-gradient(135deg,#00c860,#009944);
+                    display:flex; align-items:center; justify-content:center;
+                    font-size:1.3rem; font-weight:800; color:#fff; flex-shrink:0;
+                    box-shadow:0 4px 14px rgba(0,200,96,0.35);">
+            {nombre_display[0].upper()}
+        </div>
+        <div>
+            <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; color:#eeeef5; line-height:1.1;">
+                {nombre_display}</div>
+            <div style="font-size:0.72rem; color:#525268; text-transform:uppercase; letter-spacing:1.5px; font-weight:600;">Panel de pronósticos</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
     fases = db_get_fases()
@@ -1559,14 +1879,26 @@ def pantalla_usuario():
     ranking = sorted(_todos_rank, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_all.get(x["username"], 0), reverse=True)
     posicion = next((i + 1 for i, x in enumerate(ranking) if x["username"] == username), "—")
 
-    st.subheader("Mis puntos")
+    st.markdown("""
+    <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:#525268; margin-bottom:0.7rem;">Mis puntos</div>
+    """, unsafe_allow_html=True)
     col_a, col_b, col_c, col_d, col_e = st.columns(5)
     col_a.metric("Resultados", u_fresh["puntos"])
     col_b.metric("Goles", u_fresh["goles"])
     col_c.metric("Consumo", u_fresh["consumo"])
     col_d.metric("⭐ Especiales", pts_esp_user)
     col_e.metric("Total", total_pts)
-    st.info(f"🏆 Posición actual: **{posicion}° de {len(ranking)}**")
+    st.markdown(f"""
+    <div style="background:rgba(255,200,64,0.08); border:1.5px solid rgba(255,200,64,0.25);
+                border-radius:10px; padding:10px 16px; margin-top:0.5rem;
+                display:flex; align-items:center; gap:10px;">
+        <span style="font-size:1.3rem;">🏆</span>
+        <span style="color:#9898b0; font-size:0.9rem;">Tu posición actual:</span>
+        <span style="color:#ffc840; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:1px;">
+            {posicion}° de {len(ranking)}</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ── Resumen de especiales para usuario que ya confirmó ──
     # Cargar todos los especiales del usuario de una sola vez
@@ -1617,9 +1949,9 @@ def pantalla_usuario():
             </div>""", unsafe_allow_html=True)
     st.divider()
     col1, col2, col3 = st.columns(3)
-    col1.button("Ver Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True)
+    col1.button("🏆 Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True)
     col2.button("📊 Estadísticas", on_click=cambiar_pantalla, args=(12,), use_container_width=True)
-    col3.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+    col3.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
 
     # ── Destacados ──
     st.divider()
@@ -1629,54 +1961,75 @@ def pantalla_usuario():
 def render_destacados_usuarios():
     """Sección de estadísticas por usuario: los más destacados en distintas categorías."""
     st.markdown("""
-    <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:3px;
-                color:#e8e8f0; margin-bottom:0.8rem;">🏅 DESTACADOS</div>
+    <div style="margin-bottom:1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                    color:#525268; margin-bottom:0.4rem;">Estadísticas</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:3px; color:#eeeef5;">
+            🏅 DESTACADOS</div>
+    </div>
     """, unsafe_allow_html=True)
 
     stats = db_get_estadisticas_usuarios()
 
     categorias = [
-        ("top_resultados", "✅ Más resultados acertados", "resultados acertados", "#66aaff"),
-        ("top_exactos",    "🎯 Más aciertos exactos (goles)", "exactos", "#ffd700"),
-        ("top_grupos",     "⚽ Más puntos en Grupos", "pts en Grupos", "#00e870"),
-        ("top_finales",    "🏆 Más puntos en Fases Finales", "pts en Finales", "#ff8844"),
+        ("top_resultados", "✅ Más resultados", "resultados acertados", "#5599ff", "rgba(85,153,255,0.12)", "rgba(85,153,255,0.3)"),
+        ("top_exactos",    "🎯 Más exactos",    "scores exactos",       "#ffc840", "rgba(255,200,64,0.12)", "rgba(255,200,64,0.3)"),
+        ("top_grupos",     "⚽ Rey de grupos",   "pts en Grupos",        "#00e87a", "rgba(0,232,122,0.12)", "rgba(0,232,122,0.3)"),
+        ("top_finales",    "🏆 Rey de finales",  "pts en Finales",       "#ff8844", "rgba(255,136,68,0.12)", "rgba(255,136,68,0.3)"),
     ]
 
     col_a, col_b = st.columns(2)
     cols = [col_a, col_b, col_a, col_b]
+    iconos_pos = ["🥇", "🥈", "🥉"]
 
-    for i, (key, titulo, unidad, color) in enumerate(categorias):
+    for i, (key, titulo, unidad, color, bg_color, border_color) in enumerate(categorias):
         datos = stats.get(key, [])
         with cols[i]:
-            st.markdown(f"**{titulo}**")
+            st.markdown(f"""
+            <div style="background:{bg_color}; border:1.5px solid {border_color};
+                        border-radius:14px; padding:14px 16px; margin-bottom:12px;">
+                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
+                            letter-spacing:1.5px; color:{color}; margin-bottom:10px;">{titulo}</div>
+            """, unsafe_allow_html=True)
+
             if not datos:
-                st.markdown('<div style="color:#606075; font-size:0.82rem; padding:8px 0;">Sin datos aún.</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="color:#525268; font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>', unsafe_allow_html=True)
             else:
                 top3 = datos[:3]
-                iconos_pos = ["🥇", "🥈", "🥉"]
                 filas = ""
                 for j, d in enumerate(top3):
                     icono = iconos_pos[j] if j < 3 else str(j + 1)
-                    bg = "rgba(255,255,255,0.04)" if j % 2 == 0 else "transparent"
-                    filas += f"""<tr style="background:{bg};">
-                        <td style="padding:8px 10px; font-size:1rem; width:32px;">{icono}</td>
-                        <td style="padding:8px 6px; color:#e8e8f0; font-weight:600; font-size:0.9rem;">{d['nombre']}</td>
-                        <td style="padding:8px 10px; color:{color}; font-weight:700; text-align:right; font-size:0.95rem;">{d['valor']} <span style="color:#606075; font-size:0.72rem; font-weight:400;">{unidad}</span></td>
-                    </tr>"""
-                st.markdown(f"""<table style="width:100%; border-collapse:collapse; background:#0f0f1a;
-                    border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); margin-bottom:1rem;">
-                    <tbody>{filas}</tbody></table>""", unsafe_allow_html=True)
+                    sep = "border-top:1px solid rgba(255,255,255,0.06);" if j > 0 else ""
+                    filas += f"""
+                    <div style="display:flex; align-items:center; justify-content:space-between;
+                                padding:7px 0; {sep}">
+                        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                            <span style="font-size:1.0rem; flex-shrink:0;">{icono}</span>
+                            <span style="color:#eeeef5; font-weight:600; font-size:0.88rem;
+                                         white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+                                         max-width:130px;">{d['nombre']}</span>
+                        </div>
+                        <span style="color:{color}; font-weight:800; font-size:0.95rem;
+                                      font-family:'JetBrains Mono',monospace; flex-shrink:0;
+                                      margin-left:8px;">{d['valor']}</span>
+                    </div>"""
+                st.markdown(f"{filas}", unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
 def pantalla_ranking():
     st.markdown("""
-    <div style="text-align:center; padding:1rem 0 0.5rem 0;">
-        <div style="font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:4px;
-                    background:linear-gradient(135deg,#ffd700,#ffaa00);
+    <div style="text-align:center; padding:1.2rem 0 1rem 0;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
+                    color:#525268; margin-bottom:0.3rem;">Il Baigo — Mundial 2026</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:3.2rem; letter-spacing:4px;
+                    background:linear-gradient(135deg,#ffc840 0%,#ffdd80 50%,#ffa820 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text;">🏆 RANKING</div>
-        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px;
-                    color:#a0a0b8; margin-top:-0.3rem;">TOP 15</div>
+                    background-clip:text; line-height:1.05;">🏆 RANKING</div>
+        <div style="display:inline-block; background:rgba(255,200,64,0.1); border:1px solid rgba(255,200,64,0.28);
+                    border-radius:20px; padding:3px 18px; font-family:'Bebas Neue',sans-serif;
+                    font-size:1rem; color:#ffc840; letter-spacing:3px; margin-top:0.2rem;">TOP 15</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1710,41 +2063,50 @@ def pantalla_ranking():
                          "E": esp, "Total": total, "_username": u["username"], "_pos": pos})
 
         top_n = min(15, len(rows))
-        hay_especiales = True  # siempre mostrar columna E
+        hay_especiales = True
 
         filas_html = ""
         for r in rows[:top_n]:
             es_yo = r["_username"] == username_actual
-            bg = "rgba(0,200,80,0.08)" if es_yo else "transparent"
-            bl = "3px solid #00c850" if es_yo else "3px solid transparent"
-            col_e = ('<td style="padding:9px 6px;color:#ffd700;text-align:center;font-size:0.9rem;">'
-                     + str(r["E"]) + '</td>') if hay_especiales else ""
+            pos = r["_pos"]
+            # Colores por posición
+            if pos == 1:
+                pos_color = "#ffc840"; bg = "rgba(255,200,64,0.07)"; bl = "3px solid rgba(255,200,64,0.5)"
+            elif pos == 2:
+                pos_color = "#c0c8d8"; bg = "rgba(192,200,216,0.05)"; bl = "3px solid rgba(192,200,216,0.3)"
+            elif pos == 3:
+                pos_color = "#cd8040"; bg = "rgba(205,128,64,0.06)"; bl = "3px solid rgba(205,128,64,0.35)"
+            elif es_yo:
+                pos_color = "#00e87a"; bg = "rgba(0,232,122,0.07)"; bl = "3px solid rgba(0,200,96,0.5)"
+            else:
+                pos_color = "#525268"; bg = "transparent"; bl = "3px solid transparent"
+
+            you_badge = '<span style="background:rgba(0,232,122,0.15);color:#00e87a;font-size:0.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:10px;margin-left:6px;border:1px solid rgba(0,200,96,0.3);">vos</span>' if es_yo else ""
+            col_e = f'<td style="padding:10px 8px;color:#ffc840;text-align:center;font-family:JetBrains Mono,monospace;font-size:0.9rem;font-weight:700;">{r["E"]}</td>' if hay_especiales else ""
             filas_html += (
-                '<tr style="background:' + bg + ';border-left:' + bl + ';">'
-                '<td style="padding:9px 6px;color:#e8e8f0;font-weight:700;font-size:1rem;">' + str(r["Pos"]) + '</td>'
-                '<td style="padding:9px 8px;color:#e8e8f0;font-weight:600;font-size:0.9rem;'
-                'max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + str(r["Nombre"]) + '</td>'
-                '<td style="padding:9px 6px;color:#c8c8d8;text-align:center;font-size:0.9rem;">' + str(r["R"]) + '</td>'
-                '<td style="padding:9px 6px;color:#c8c8d8;text-align:center;font-size:0.9rem;">' + str(r["G"]) + '</td>'
-                '<td style="padding:9px 6px;color:#c8c8d8;text-align:center;font-size:0.9rem;">' + str(r["C"]) + '</td>'
+                f'<tr style="background:{bg};border-left:{bl};transition:background 0.15s;">'
+                f'<td style="padding:10px 10px;font-weight:800;font-size:1.05rem;color:{pos_color};min-width:42px;text-align:center;">{r["Pos"]}</td>'
+                f'<td style="padding:10px 8px;color:#eeeef5;font-weight:600;font-size:0.92rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{r["Nombre"]}{you_badge}</td>'
+                f'<td style="padding:10px 8px;color:#9898b0;text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["R"]}</td>'
+                f'<td style="padding:10px 8px;color:#9898b0;text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["G"]}</td>'
+                f'<td style="padding:10px 8px;color:#9898b0;text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["C"]}</td>'
                 + col_e +
-                '<td style="padding:9px 6px;color:#00e870;font-weight:700;text-align:center;font-size:1rem;">' + str(r["Total"]) + '</td>'
-                '</tr>'
+                f'<td style="padding:10px 10px;color:#00e87a;font-weight:800;text-align:center;font-family:JetBrains Mono,monospace;font-size:1rem;">{r["Total"]}</td>'
+                f'</tr>'
             )
 
-        th_e = '<th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">E</th>' if hay_especiales else ""
+        th_e = '<th style="padding:10px 8px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">ESP</th>' if hay_especiales else ""
         tabla_html = (
-            '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">'
-            '<table style="width:100%;min-width:300px;border-collapse:collapse;'
-            'background:#0f0f1a;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);">'
-            '<thead><tr style="background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.1);">'
-            '<th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:left;">Pos</th>'
-            '<th style="padding:9px 8px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:left;">Nombre</th>'
-            '<th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">R</th>'
-            '<th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">G</th>'
-            '<th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">C</th>'
+            '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;border:1.5px solid rgba(255,255,255,0.09);overflow:hidden;">'
+            '<table style="width:100%;min-width:320px;border-collapse:collapse;background:#0d0f18;">'
+            '<thead><tr style="background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.09);">'
+            '<th style="padding:10px 10px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;min-width:42px;">#</th>'
+            '<th style="padding:10px 8px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:left;">Jugador</th>'
+            '<th style="padding:10px 8px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Resultados">R</th>'
+            '<th style="padding:10px 8px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Goles exactos">G</th>'
+            '<th style="padding:10px 8px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Consumo">C</th>'
             + th_e +
-            '<th style="padding:9px 6px;color:#a0a0b8;font-size:0.72rem;text-transform:uppercase;text-align:center;">Total</th>'
+            '<th style="padding:10px 10px;color:#00e87a;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">Total</th>'
             '</tr></thead>'
             '<tbody>' + filas_html + '</tbody>'
             '</table></div>'
@@ -1756,15 +2118,35 @@ def pantalla_ranking():
             if pos_actual and pos_actual > top_n:
                 fila = next(r for r in rows if r["_username"] == username_actual)
                 st.divider()
-                st.info(f"Tu posición: **{pos_actual}°** — {fila['Nombre']} | Total: **{fila['Total']} pts**")
+                st.markdown(f"""
+                <div style="background:rgba(0,232,122,0.07); border:1.5px solid rgba(0,200,96,0.3);
+                            border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:1.4rem;">📍</span>
+                    <div>
+                        <div style="color:#9898b0; font-size:0.78rem; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Tu posición</div>
+                        <div style="color:#eeeef5; font-weight:700; font-size:1rem;">{fila['Nombre']} — <span style="color:#00e87a;">{pos_actual}° lugar</span> · <span style="color:#ffc840;">{fila['Total']} pts</span></div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
     st.divider()
     destino = 9 if st.session_state.get("usuario") == "admin" else 5
-    st.button("Volver", on_click=cambiar_pantalla, args=(destino,))
+    st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)
 
 
 def pantalla_admin():
-    st.title("⚙️ Panel Admin")
+    st.markdown("""
+    <div style="display:flex; align-items:center; gap:12px; padding:0.3rem 0 1.2rem 0;
+                border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:1rem;">
+        <div style="width:42px; height:42px; border-radius:10px;
+                    background:rgba(255,200,64,0.12); border:1.5px solid rgba(255,200,64,0.3);
+                    display:flex; align-items:center; justify-content:center; font-size:1.3rem;">⚙️</div>
+        <div>
+            <div style="font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:2px; color:#eeeef5; line-height:1.1;">Panel Admin</div>
+            <div style="font-size:0.7rem; color:#525268; text-transform:uppercase; letter-spacing:1.5px; font-weight:600;">Prode Il Baigo · Mundial 2026</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     tabs = st.tabs(["📋 Resumen", "👥 Pendientes", "🔀 Fases", "⚽ Partidos", "📊 Result.", "💰 Consumo", "⭐ Especiales", "👤 Usuarios", "🏅 Destacados", "⚠️ Reset", "📥 Exportar"])
 
     with tabs[0]:
@@ -2548,84 +2930,139 @@ def pantalla_admin():
 
     st.divider()
     col1, col2 = st.columns(2)
-    col1.button("Ver Ranking", on_click=cambiar_pantalla, args=(6,))
-    col2.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,))
+    col1.button("🏆 Ver Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True)
+    col2.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
 
 
 def pantalla_acerca():
-    st.title("ℹ️ Acerca del Prode Il Baigo - Mundial 2026")
-    st.subheader("⚽ ¿Cómo funciona?")
     st.markdown("""
-Pronosticás el resultado de cada partido antes de que empiece.
-Una vez que el partido arranca, tu pronóstico queda bloqueado y no podés modificarlo.
-Tus pronósticos se guardan automáticamente mientras navegás. Al terminar, confirmás todo con tu contraseña.
-""")
+    <div style="padding:0.5rem 0 1.2rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                    color:#525268; margin-bottom:0.3rem;">Guía del participante</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2.8rem; letter-spacing:3px;
+                    color:#eeeef5; line-height:1.05;">ℹ️ PRODE IL BAIGO</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:2px;
+                    color:#525268;">MUNDIAL 2026</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="background:rgba(0,232,122,0.06); border:1.5px solid rgba(0,200,96,0.25);
+                border-radius:12px; padding:14px 18px; margin-bottom:1rem;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+                    color:#00e87a; margin-bottom:6px;">⚽ ¿Cómo funciona?</div>
+        <div style="color:#c0c0d0; font-size:0.92rem; line-height:1.75;">
+            Pronosticás el resultado de cada partido <strong>antes de que empiece</strong>.<br>
+            Una vez que arranca, tu pronóstico queda bloqueado. Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.divider()
-    st.subheader("🏆 Sistema de puntos")
+    st.markdown("""
+    <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:#525268; margin-bottom:0.7rem;">🏆 Sistema de puntos</div>
+    """, unsafe_allow_html=True)
     st.markdown("Los puntos **aumentan por fase**. Cuanto más avanzada la etapa, más valen los aciertos.")
     fases_pts = ["Grupos","Dieciseisavos","Octavos","Cuartos","Semifinal","Final"]
     res_pts = [1, 2, 3, 4, 5, 6]
     exacto_pts = [3, 6, 9, 12, 15, 18]
     filas_pts = ""
     for i, fase in enumerate(fases_pts):
-        bg = "rgba(255,255,255,0.02)" if i % 2 == 0 else "transparent"
-        filas_pts += f'<tr style="background:{bg};"><td style="padding:10px 14px; color:#ffffff; font-weight:600;">{fase}</td><td style="padding:10px 14px; color:#66ccff; font-weight:700; text-align:center;">{res_pts[i]}</td><td style="padding:10px 14px; color:#00e870; font-weight:700; text-align:center;">{exacto_pts[i]}</td></tr>'
-    st.markdown(f"""<table style="width:100%; border-collapse:collapse; background:#0f0f1a; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); margin-bottom:1rem;">
-        <thead><tr style="background:rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.1);">
-            <th style="padding:10px 14px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:left;">Fase</th>
-            <th style="padding:10px 14px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">✅ Resultado</th>
-            <th style="padding:10px 14px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">🎯 Exacto</th>
-        </tr></thead><tbody>{filas_pts}</tbody></table>""", unsafe_allow_html=True)
-    st.caption("**Resultado** = acertás quién gana o si es empate.")
-    st.caption("**Exacto** = acertás el marcador exacto (ambos goles). Solo suma si acertás local Y visitante.")
-    st.caption("Ejemplo Grupos: pronóstico 2-1, real 2-1 → 1 pt + 3 pts = **4 puntos**")
-    st.caption("Ejemplo Final: pronóstico 2-1, real 2-1 → 6 pts + 18 pts = **24 puntos**")
-    st.caption("Ejemplo Octavos: pronóstico 1-0, real 3-0 → 3 pts + 0 pts = **3 puntos**")
+        bg = "rgba(255,255,255,0.03)" if i % 2 == 0 else "transparent"
+        filas_pts += f'<tr style="background:{bg};"><td style="padding:10px 14px; color:#eeeef5; font-weight:600; font-size:0.92rem;">{fase}</td><td style="padding:10px 14px; color:#5599ff; font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{res_pts[i]}</td><td style="padding:10px 14px; color:#00e87a; font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{exacto_pts[i]}</td></tr>'
+    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.09);margin-bottom:0.8rem;">
+        <table style="width:100%; border-collapse:collapse; background:#0d0f18;">
+        <thead><tr style="background:rgba(255,255,255,0.06); border-bottom:1px solid rgba(255,255,255,0.09);">
+            <th style="padding:10px 14px; color:#525268; font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:left;">Fase</th>
+            <th style="padding:10px 14px; color:#5599ff; font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">✅ Resultado</th>
+            <th style="padding:10px 14px; color:#00e87a; font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">🎯 Exacto</th>
+        </tr></thead><tbody>{filas_pts}</tbody></table></div>""", unsafe_allow_html=True)
+    st.caption("**Resultado** = acertás quién gana o si es empate. &nbsp;&nbsp;**Exacto** = acertás el marcador exacto (ambos goles).")
+    st.caption("Ejemplo Grupos: 2-1 pronosticado, 2-1 real → 1 + 3 = **4 pts** &nbsp;·&nbsp; Ejemplo Final: mismo caso → 6 + 18 = **24 pts**")
+
     st.divider()
-    st.subheader("⭐ Pronósticos especiales")
-    st.markdown("Al completar los grupos, podés elegir el **campeón**, **goleador**, **mejor arquero** y **mejor jugador** del torneo. Confirmás junto con los grupos y no se pueden modificar después.")
+    st.markdown("""
+    <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:#525268; margin-bottom:0.7rem;">⭐ Pronósticos especiales</div>
+    """, unsafe_allow_html=True)
+    st.markdown("Al completar los grupos podés elegir el **campeón**, **goleador**, **mejor arquero** y **mejor jugador**. Se confirman junto con los grupos y no se pueden modificar después.")
     fases_esp = [("🏆 Campeón del Mundial", 20), ("⚽ Goleador del Mundial", 10), ("🧤 Mejor Arquero", 8), ("⭐ Mejor Jugador (MVP)", 8)]
     filas_esp_acerca = ""
     for i, (lbl, pts) in enumerate(fases_esp):
-        bg_e = "rgba(255,255,255,0.02)" if i % 2 == 0 else "transparent"
-        filas_esp_acerca += f'<tr style="background:{bg_e};"><td style="padding:10px 14px; color:#ffffff; font-weight:600;">{lbl}</td><td style="padding:10px 14px; color:#ffd700; font-weight:700; text-align:center;">+{pts} pts</td></tr>'
-    st.markdown(f"""<table style="width:100%; border-collapse:collapse; background:#0f0f1a; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); margin-bottom:0.5rem;">
-        <thead><tr style="background:rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.1);">
-            <th style="padding:10px 14px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:left;">Categoría</th>
-            <th style="padding:10px 14px; color:#606075; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; text-align:center;">Puntos si acertás</th>
-        </tr></thead><tbody>{filas_esp_acerca}</tbody></table>""", unsafe_allow_html=True)
-    st.caption("Para goleador, arquero y MVP podés buscar por nombre. Si no lo encontrás en la lista, usá la opción **Otro** y escribilo a mano.")
+        bg_e = "rgba(255,255,255,0.03)" if i % 2 == 0 else "transparent"
+        filas_esp_acerca += f'<tr style="background:{bg_e};"><td style="padding:10px 14px; color:#eeeef5; font-weight:600; font-size:0.92rem;">{lbl}</td><td style="padding:10px 14px; color:#ffc840; font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">+{pts}</td></tr>'
+    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.09);margin-bottom:0.8rem;">
+        <table style="width:100%; border-collapse:collapse; background:#0d0f18;">
+        <thead><tr style="background:rgba(255,255,255,0.06); border-bottom:1px solid rgba(255,255,255,0.09);">
+            <th style="padding:10px 14px; color:#525268; font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:left;">Categoría</th>
+            <th style="padding:10px 14px; color:#ffc840; font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">Puntos</th>
+        </tr></thead><tbody>{filas_esp_acerca}</tbody></table></div>""", unsafe_allow_html=True)
+    st.caption("Para goleador, arquero y MVP podés buscar por nombre. Si no lo encontrás, usá **Otro** y escribilo a mano.")
+
     st.divider()
-    st.subheader("💰 Puntos de consumo")
-    st.markdown("Además de los pronósticos, el admin puede sumar puntos por consumo en el local o presencia en los partidos. Estos puntos se suman al total y cuentan para el ranking.")
+    col_info1, col_info2 = st.columns(2)
+    with col_info1:
+        st.markdown("""
+        <div style="background:rgba(255,136,68,0.08); border:1.5px solid rgba(255,136,68,0.25);
+                    border-radius:12px; padding:14px 16px;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+                        color:#ff8844; margin-bottom:6px;">💰 Puntos de consumo</div>
+            <div style="color:#c0c0d0; font-size:0.88rem; line-height:1.65;">
+                El admin puede sumar puntos por consumo en el local o presencia en los partidos. Se suman al total del ranking.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_info2:
+        st.markdown("""
+        <div style="background:rgba(85,153,255,0.08); border:1.5px solid rgba(85,153,255,0.25);
+                    border-radius:12px; padding:14px 16px;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+                        color:#5599ff; margin-bottom:6px;">📊 Ranking</div>
+            <div style="color:#c0c0d0; font-size:0.88rem; line-height:1.65;">
+                Se actualiza automáticamente. Total = resultados + goles + consumo + especiales.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     st.divider()
-    st.subheader("📊 Ranking")
-    st.markdown("El ranking se actualiza automáticamente cada vez que el admin carga resultados reales. El total es la suma de: **puntos por resultados + puntos por goles + puntos por consumo + especiales**.")
+    st.markdown("""
+    <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:#525268; margin-bottom:0.7rem;">📋 Fases del torneo</div>
+    """, unsafe_allow_html=True)
+    fases_desc = [
+        ("Grupos", "72 partidos · 12 grupos de 4 equipos"),
+        ("Dieciseisavos", "16 partidos · eliminación directa"),
+        ("Octavos", "8 partidos · eliminación directa"),
+        ("Cuartos", "4 partidos · eliminación directa"),
+        ("Semifinal", "2 partidos · eliminación directa"),
+        ("Final", "1 partido · la gran final 🏆"),
+    ]
+    filas_fases = ""
+    for i, (fase, desc) in enumerate(fases_desc):
+        bg = "rgba(255,255,255,0.03)" if i % 2 == 0 else "transparent"
+        filas_fases += f'<tr style="background:{bg};"><td style="padding:9px 14px; color:#eeeef5; font-weight:700; font-size:0.9rem;">{fase}</td><td style="padding:9px 14px; color:#9898b0; font-size:0.85rem;">{desc}</td></tr>'
+    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.09);margin-bottom:1rem;">
+        <table style="width:100%; border-collapse:collapse; background:#0d0f18;">
+        <tbody>{filas_fases}</tbody></table></div>""", unsafe_allow_html=True)
+
     st.divider()
-    st.subheader("📋 Fases del torneo")
-    for fase, desc in {
-        "Grupos": "72 partidos — 12 grupos de 4 equipos cada uno",
-        "Dieciseisavos": "16 partidos — eliminación directa",
-        "Octavos": "8 partidos — eliminación directa",
-        "Cuartos": "4 partidos — eliminación directa",
-        "Semifinal": "2 partidos — eliminación directa",
-        "Final": "1 partido — la gran final",
-    }.items():
-        st.markdown(f"**{fase}:** {desc}")
-    st.divider()
-    st.subheader("❓ Preguntas frecuentes")
+    st.markdown("""
+    <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:#525268; margin-bottom:0.7rem;">❓ Preguntas frecuentes</div>
+    """, unsafe_allow_html=True)
     with st.expander("¿Puedo modificar mi pronóstico después de confirmarlo?"):
         st.write("No. Una vez que confirmás con tu contraseña, el pronóstico queda bloqueado definitivamente.")
     with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
         st.write("No sumás puntos para esa fase. Te recomendamos cargar y confirmar antes de que empiece el primer partido.")
     with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
-        st.write("El admin controla manualmente cuándo se cierra cada fase. Mientras la fase esté habilitada podés cargar y modificar tus pronósticos.")
+        st.write("El admin controla manualmente cuándo se cierra cada fase. Mientras esté habilitada podés cargar y modificar.")
     with st.expander("¿Cómo se registra el consumo?"):
         st.write("El admin lo carga manualmente desde el panel. Si creés que falta registrar tu consumo, contactá al organizador.")
     with st.expander("¿Olvidé mi contraseña, qué hago?"):
         st.write("Contactá al administrador por fuera de la app para que te resetee la contraseña.")
     st.divider()
-    st.button("Volver", on_click=cambiar_pantalla, args=(0,))
+    st.button("← Volver", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
 
 
 
@@ -2745,12 +3182,13 @@ def pantalla_especiales():
 
 def pantalla_estadisticas():
     st.markdown("""
-    <div style="text-align:center; padding:1.5rem 0 0.5rem 0;">
-        <div style="font-family:'Bebas Neue',sans-serif; font-size:2.8rem; letter-spacing:4px;
-                    background:linear-gradient(135deg,#00c850,#00ff88);
+    <div style="padding:1rem 0 1.2rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
+                    color:#525268; margin-bottom:0.3rem;">Il Baigo · Mundial 2026</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:4px;
+                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text;">📊 ESTADÍSTICAS</div>
-        <div style="color:#606075; font-size:0.85rem; letter-spacing:2px; text-transform:uppercase;">Mundial 2026 — Il Baigo</div>
+                    background-clip:text; line-height:1.05;">📊 ESTADÍSTICAS</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2817,7 +3255,7 @@ def pantalla_estadisticas():
 
             col_t1, col_t2 = st.columns(2)
             with col_t1:
-                st.markdown("**🎯 Los más adivinados (exacto)**")
+                st.markdown("""<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#00e87a;margin-bottom:8px;">🎯 Más adivinados</div>""", unsafe_allow_html=True)
                 top_exactos = sorted(con_prodes, key=lambda x: x["pct_exacto"], reverse=True)[:5]
                 filas_e = ""
                 for p in top_exactos:
@@ -2825,19 +3263,20 @@ def pantalla_estadisticas():
                     nombre = f"{pd_.get('local','?')} vs {pd_.get('visita','?')}" if pd_ else f"{p['fase']} #{p['partido_idx']}"
                     resultado = f"{p['rl']}—{p['rv']}"
                     filas_e += f"""<tr>
-                        <td style="padding:7px 10px; color:#fff; font-size:0.82rem;">{nombre}</td>
-                        <td style="padding:7px 10px; color:#606075; font-size:0.8rem; text-align:center;">{resultado}</td>
-                        <td style="padding:7px 10px; color:#00e870; font-weight:700; text-align:right;">{p['pct_exacto']}%</td>
+                        <td style="padding:8px 10px; color:#eeeef5; font-size:0.82rem; font-weight:500;">{nombre}</td>
+                        <td style="padding:8px 8px; color:#525268; font-size:0.78rem; text-align:center; font-family:JetBrains Mono,monospace;">{resultado}</td>
+                        <td style="padding:8px 10px; color:#00e87a; font-weight:800; text-align:right; font-family:JetBrains Mono,monospace; font-size:0.9rem;">{p['pct_exacto']}%</td>
                     </tr>"""
-                st.markdown(f"""<table style="width:100%; border-collapse:collapse; background:#0f0f1a; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-                    <thead><tr style="background:rgba(255,255,255,0.05);">
-                        <th style="padding:7px 10px; color:#606075; font-size:0.7rem; text-transform:uppercase; text-align:left;">Partido</th>
-                        <th style="padding:7px 10px; color:#606075; font-size:0.7rem; text-transform:uppercase; text-align:center;">Res.</th>
-                        <th style="padding:7px 10px; color:#606075; font-size:0.7rem; text-transform:uppercase; text-align:right;">Exacto</th>
-                    </tr></thead><tbody>{filas_e}</tbody></table>""", unsafe_allow_html=True)
+                st.markdown(f"""<div style="border-radius:10px;overflow:hidden;border:1.5px solid rgba(0,232,122,0.2);">
+                    <table style="width:100%;border-collapse:collapse;background:#0d0f18;">
+                    <thead><tr style="background:rgba(0,232,122,0.06);">
+                        <th style="padding:8px 10px;color:#525268;font-size:0.67rem;text-transform:uppercase;letter-spacing:1.2px;text-align:left;">Partido</th>
+                        <th style="padding:8px 8px;color:#525268;font-size:0.67rem;text-transform:uppercase;letter-spacing:1.2px;text-align:center;">Res.</th>
+                        <th style="padding:8px 10px;color:#00e87a;font-size:0.67rem;text-transform:uppercase;letter-spacing:1.2px;text-align:right;">Exacto</th>
+                    </tr></thead><tbody>{filas_e}</tbody></table></div>""", unsafe_allow_html=True)
 
             with col_t2:
-                st.markdown("**❌ Los que nadie adivinó**")
+                st.markdown("""<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#ff5566;margin-bottom:8px;">❌ Los más difíciles</div>""", unsafe_allow_html=True)
                 top_dificiles = sorted(con_prodes, key=lambda x: x["pct_res"])[:5]
                 filas_d = ""
                 for p in top_dificiles:
@@ -2845,20 +3284,21 @@ def pantalla_estadisticas():
                     nombre = f"{pd_.get('local','?')} vs {pd_.get('visita','?')}" if pd_ else f"{p['fase']} #{p['partido_idx']}"
                     resultado = f"{p['rl']}—{p['rv']}"
                     filas_d += f"""<tr>
-                        <td style="padding:7px 10px; color:#fff; font-size:0.82rem;">{nombre}</td>
-                        <td style="padding:7px 10px; color:#606075; font-size:0.8rem; text-align:center;">{resultado}</td>
-                        <td style="padding:7px 10px; color:#ff6b6b; font-weight:700; text-align:right;">{p['pct_res']}%</td>
+                        <td style="padding:8px 10px; color:#eeeef5; font-size:0.82rem; font-weight:500;">{nombre}</td>
+                        <td style="padding:8px 8px; color:#525268; font-size:0.78rem; text-align:center; font-family:JetBrains Mono,monospace;">{resultado}</td>
+                        <td style="padding:8px 10px; color:#ff5566; font-weight:800; text-align:right; font-family:JetBrains Mono,monospace; font-size:0.9rem;">{p['pct_res']}%</td>
                     </tr>"""
-                st.markdown(f"""<table style="width:100%; border-collapse:collapse; background:#0f0f1a; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-                    <thead><tr style="background:rgba(255,255,255,0.05);">
-                        <th style="padding:7px 10px; color:#606075; font-size:0.7rem; text-transform:uppercase; text-align:left;">Partido</th>
-                        <th style="padding:7px 10px; color:#606075; font-size:0.7rem; text-transform:uppercase; text-align:center;">Res.</th>
-                        <th style="padding:7px 10px; color:#606075; font-size:0.7rem; text-transform:uppercase; text-align:right;">Acertaron</th>
-                    </tr></thead><tbody>{filas_d}</tbody></table>""", unsafe_allow_html=True)
+                st.markdown(f"""<div style="border-radius:10px;overflow:hidden;border:1.5px solid rgba(255,85,102,0.2);">
+                    <table style="width:100%;border-collapse:collapse;background:#0d0f18;">
+                    <thead><tr style="background:rgba(255,85,102,0.06);">
+                        <th style="padding:8px 10px;color:#525268;font-size:0.67rem;text-transform:uppercase;letter-spacing:1.2px;text-align:left;">Partido</th>
+                        <th style="padding:8px 8px;color:#525268;font-size:0.67rem;text-transform:uppercase;letter-spacing:1.2px;text-align:center;">Res.</th>
+                        <th style="padding:8px 10px;color:#ff5566;font-size:0.67rem;text-transform:uppercase;letter-spacing:1.2px;text-align:right;">Acertaron</th>
+                    </tr></thead><tbody>{filas_d}</tbody></table></div>""", unsafe_allow_html=True)
 
             # Resumen por fase
             st.divider()
-            st.markdown("**📋 Rendimiento por fase**")
+            st.markdown("""<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#525268;margin-bottom:0.7rem;">📋 Rendimiento por fase</div>""", unsafe_allow_html=True)
             fases_stats = {}
             for p in con_prodes:
                 fase = p["fase"]
@@ -2870,32 +3310,34 @@ def pantalla_estadisticas():
                 fases_stats[fase]["partidos"]   += 1
 
             filas_f = ""
-            for fase in FASES:
+            for i, fase in enumerate(FASES):
                 if fase not in fases_stats:
                     continue
                 fs = fases_stats[fase]
                 pct_res = round(fs["resultados"] / fs["total"] * 100) if fs["total"] else 0
                 pct_ex  = round(fs["exactos"]    / fs["total"] * 100) if fs["total"] else 0
-                filas_f += f"""<tr>
-                    <td style="padding:9px 12px; color:#fff; font-weight:600;">{fase}</td>
-                    <td style="padding:9px 12px; color:#a0a0b8; text-align:center;">{fs['partidos']}</td>
-                    <td style="padding:9px 12px; color:#66aaff; text-align:center;">{pct_res}%</td>
-                    <td style="padding:9px 12px; color:#00e870; text-align:center;">{pct_ex}%</td>
+                bg = "rgba(255,255,255,0.03)" if i % 2 == 0 else "transparent"
+                filas_f += f"""<tr style="background:{bg};">
+                    <td style="padding:10px 12px; color:#eeeef5; font-weight:600; font-size:0.9rem;">{fase}</td>
+                    <td style="padding:10px 12px; color:#9898b0; text-align:center; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{fs['partidos']}</td>
+                    <td style="padding:10px 12px; color:#5599ff; text-align:center; font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.9rem;">{pct_res}%</td>
+                    <td style="padding:10px 12px; color:#00e87a; text-align:center; font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.9rem;">{pct_ex}%</td>
                 </tr>"""
-            st.markdown(f"""<table style="width:100%; border-collapse:collapse; background:#0f0f1a; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-                <thead><tr style="background:rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.1);">
-                    <th style="padding:9px 12px; color:#606075; font-size:0.72rem; text-transform:uppercase; text-align:left;">Fase</th>
-                    <th style="padding:9px 12px; color:#606075; font-size:0.72rem; text-transform:uppercase; text-align:center;">Partidos</th>
-                    <th style="padding:9px 12px; color:#606075; font-size:0.72rem; text-transform:uppercase; text-align:center;">% Resultado</th>
-                    <th style="padding:9px 12px; color:#606075; font-size:0.72rem; text-transform:uppercase; text-align:center;">% Exacto</th>
-                </tr></thead><tbody>{filas_f}</tbody></table>""", unsafe_allow_html=True)
+            st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.09);">
+                <table style="width:100%;border-collapse:collapse;background:#0d0f18;">
+                <thead><tr style="background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <th style="padding:10px 12px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:left;">Fase</th>
+                    <th style="padding:10px 12px;color:#525268;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">Partidos</th>
+                    <th style="padding:10px 12px;color:#5599ff;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">% Result.</th>
+                    <th style="padding:10px 12px;color:#00e87a;font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">% Exacto</th>
+                </tr></thead><tbody>{filas_f}</tbody></table></div>""", unsafe_allow_html=True)
 
     if not esp_stats and not part_stats:
         st.info("Las estadísticas se van completando a medida que se juegan los partidos y el admin carga los resultados.")
 
     st.divider()
     destino = 9 if st.session_state.get("usuario") == "admin" else 5
-    st.button("← Volver", on_click=cambiar_pantalla, args=(destino,))
+    st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)
 
 
 # -----------------------
