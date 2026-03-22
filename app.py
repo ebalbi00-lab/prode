@@ -1528,15 +1528,39 @@ def pantalla_registro_cuenta():
             <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                 <span style="color:var(--text2); font-size:0.82rem; flex-shrink:0;">CVU</span>
                 <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-                    <span id="cvu-text" style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace;
-                                               font-size:0.78rem; word-break:break-all;">0000003100000000000000</span>
-                    <button onclick="navigator.clipboard.writeText('0000003100000000000000').then(()=>{
-                                this.textContent='✓';
-                                setTimeout(()=>this.textContent='Copiar',1500);
-                            })"
+                    <span id="cvu-val"
+                          style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace;
+                                 font-size:0.78rem; word-break:break-all; user-select:all; cursor:text;">
+                        0000003100000000000000
+                    </span>
+                    <button id="cvu-btn"
+                            onclick="
+                                var txt = '0000003100000000000000';
+                                var btn = document.getElementById('cvu-btn');
+                                function ok() { btn.textContent='✓ Copiado'; btn.style.color='var(--green)'; setTimeout(function(){ btn.textContent='Copiar'; btn.style.color=''; }, 1800); }
+                                if (navigator.clipboard && navigator.clipboard.writeText) {
+                                    navigator.clipboard.writeText(txt).then(ok).catch(function(){
+                                        var el = document.getElementById('cvu-val');
+                                        var range = document.createRange();
+                                        range.selectNodeContents(el);
+                                        window.getSelection().removeAllRanges();
+                                        window.getSelection().addRange(range);
+                                        document.execCommand('copy');
+                                        ok();
+                                    });
+                                } else {
+                                    var el = document.getElementById('cvu-val');
+                                    var range = document.createRange();
+                                    range.selectNodeContents(el);
+                                    window.getSelection().removeAllRanges();
+                                    window.getSelection().addRange(range);
+                                    document.execCommand('copy');
+                                    ok();
+                                }
+                            "
                             style="flex-shrink:0; background:var(--surface2); border:1px solid var(--border2);
                                    border-radius:6px; color:var(--text2); font-size:0.72rem; font-weight:600;
-                                   padding:3px 8px; cursor:pointer; white-space:nowrap;">
+                                   padding:3px 10px; cursor:pointer; white-space:nowrap; transition:all 0.15s;">
                         Copiar
                     </button>
                 </div>
