@@ -1528,24 +1528,14 @@ def pantalla_ranking():
     </div>
     """, unsafe_allow_html=True)
 
-    # Auto-refresh con streamlit-autorefresh
+    # Auto-refresh fijo a 60 segundos
     try:
         from streamlit_autorefresh import st_autorefresh
-        intervalo = st.select_slider(
-            "🔄 Actualizar cada",
-            options=[15, 30, 60, 120],
-            value=30,
-            format_func=lambda x: f"{x} seg",
-            key="ranking_refresh_interval"
-        )
-        count = st_autorefresh(interval=intervalo * 1000, key="ranking_autorefresh")
+        count = st_autorefresh(interval=60 * 1000, key="ranking_autorefresh")
         if count > 0:
             st.cache_data.clear()
     except ImportError:
-        # Fallback si no está instalado
-        if st.button("🔄 Actualizar ranking", use_container_width=True):
-            st.cache_data.clear()
-            st.rerun()
+        pass
 
     username_actual = st.session_state.get("usuario", "")
 
@@ -1555,14 +1545,6 @@ def pantalla_ranking():
     else:
         _pts_esp_r = db_get_puntos_especiales_usuarios()
         ranking = sorted(todos, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_r.get(x["username"], 0), reverse=True)
-        if len(ranking) >= 3:
-            nombres = [u.get("nombre") or u["username"] for u in ranking[:3]]
-            totales = [u["puntos"] + u["goles"] + u["consumo"] for u in ranking[:3]]
-            c2, c1, c3 = st.columns(3)
-            c1.metric("🥇 " + nombres[0], f"{totales[0]} pts")
-            c2.metric("🥈 " + nombres[1], f"{totales[1]} pts")
-            c3.metric("🥉 " + nombres[2], f"{totales[2]} pts")
-            st.divider()
 
         pts_esp = _pts_esp_r
         rows = []
@@ -1575,7 +1557,7 @@ def pantalla_ranking():
                          "R": u["puntos"], "G": u["goles"], "C": u["consumo"],
                          "E": esp, "Total": total, "_username": u["username"], "_pos": pos})
 
-        top_n = st.slider("Mostrar top", 5, max(10, len(rows)), min(10, len(rows)))
+        top_n = min(10, len(rows))
         hay_especiales = True  # siempre mostrar columna E
 
         filas_html = ""
