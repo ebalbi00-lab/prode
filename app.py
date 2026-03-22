@@ -1,5 +1,6 @@
 """
-app.py — Punto de entrada principal de la aplicación.
+app.py — Punto de entrada principal.
+El tema oscuro/claro se guarda en ?t= (query_params) — persiste entre recargas.
 """
 import streamlit as st
 
@@ -9,7 +10,7 @@ st.set_page_config(
     page_icon="⚽"
 )
 
-from styles import inject_css
+from styles import inject_css, render_tema_boton
 from db import init_db
 from screens_auth import (
     pantalla_login, pantalla_registro_datos,
@@ -18,7 +19,6 @@ from screens_auth import (
 from screens_usuario import pantalla_usuario
 from screens_stats import pantalla_ranking, pantalla_estadisticas
 from screens_admin import pantalla_admin
-
 
 # ─── Inicialización ───────────────────────────────────────────────────────────
 
@@ -33,11 +33,10 @@ if "usuario" not in st.session_state:
 if "registro_temp" not in st.session_state:
     st.session_state.registro_temp = {}
 
+# ─── Tema + CSS ───────────────────────────────────────────────────────────────
 
-# ─── CSS ──────────────────────────────────────────────────────────────────────
-
-inject_css()
-
+inject_css()          # CSS generado según tema actual en query_params
+render_tema_boton()   # Botón ☀️/🌙 arriba a la derecha
 
 # ─── Router ───────────────────────────────────────────────────────────────────
 

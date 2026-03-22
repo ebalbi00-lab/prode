@@ -3,8 +3,12 @@ screens_admin.py — Panel de administración completo.
 """
 import datetime
 import re
+import unicodedata
 import pandas as pd
 import streamlit as st
+
+def _norm(s: str) -> str:
+    return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii').lower()
 
 from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, ARQUEROS_MUNDIALISTAS, JUGADORES_MUNDIALISTAS, GRUPOS_DEFAULT, bandera
 from db import (
@@ -440,24 +444,7 @@ def _tab_especiales():
             otros  = sub[~sub["eleccion"].isin(lista_oficial)]["eleccion"].unique().tolist()
             if otros: variantes_por_cat[cat] = otros
 
-    with st.expander("🔀 Unificar variantes escritas a mano"):
-        for cat in [c for c in CATEGORIAS_ESPECIALES if c != "campeon"]:
-            info     = CATEGORIAS_ESPECIALES[cat]
-            variantes = variantes_por_cat.get(cat, [])
-            if variantes:
-                st.markdown(f"**{info['label']}** — {len(variantes)} variante(s):")
-                sels_fusion   = st.multiselect("Seleccioná las variantes", variantes, key=f"fusion_sel_{cat}",
-                                               format_func=lambda x: f"{x} ({sum(1 for r in todos_esp if r['categoria']==cat and r['eleccion']==x)} votos)")
-                nombre_fusion = st.text_input("Nombre oficial", key=f"fusion_nombre_{cat}", placeholder="Ej: Erling Haaland")
-                if st.button("🔀 Fusionar", key=f"btn_fusion_{cat}"):
-                    if sels_fusion and nombre_fusion.strip():
-                        db_fusionar_variantes_especial(cat, sels_fusion, nombre_fusion.strip())
-                        st.session_state["msg_esp_adm"] = f"✅ Variantes de {info['label']} unificadas."
-                        st.rerun()
-                    else:
-                        st.warning("Seleccioná variante(s) y escribí el nombre oficial.")
-            else:
-                st.markdown(f"**{info['label']}** — sin variantes manuales.")
+
 
     with st.form("form_admin_esp_todos"):
         selecciones_adm = {}
@@ -478,26 +465,15 @@ def _tab_especiales():
             else:
                 lista_adm = ARQUEROS_MUNDIALISTAS if cat == "arquero" else JUGADORES_MUNDIALISTAS
                 label_adm = "arquero" if cat == "arquero" else "jugador"
-                db_extra  = []
-                if not df_esp.empty and cat in df_esp["categoria"].values:
-                    sub_adm  = df_esp[df_esp["categoria"] == cat]
-                    db_extra = [e for e in sub_adm["eleccion"].unique() if e not in lista_adm]
-                lista_con_extra = lista_adm + db_extra
-                opciones_adm    = ["— Seleccioná —"] + lista_con_extra + ["— Otro —"]
-                if resultado_actual and resultado_actual in lista_con_extra:
-                    idx_adm = lista_con_extra.index(resultado_actual) + 1
-                elif resultado_actual and resultado_actual not in lista_adm:
-                    idx_adm = len(opciones_adm) - 1
+                busq_adm = st.text_input(f"Buscar {label_adm}", value="", key=f"adm_busq_{cat}", placeholder="Escribí el nombre (con o sin acento)...")
+                filtrados_adm = [j for j in lista_adm if _norm(busq_adm) in _norm(j)] if busq_adm else lista_adm
+                opciones_adm = ["— Seleccioná —"] + filtrados_adm
+                if resultado_actual and resultado_actual in filtrados_adm:
+                    idx_adm = filtrados_adm.index(resultado_actual) + 1
                 else:
                     idx_adm = 0
                 sel_adm = st.selectbox(f"Nuevo {label_adm} real", opciones_adm, index=idx_adm, key=f"adm_sel_{cat}")
-                if sel_adm == "— Otro —":
-                    otro_adm = st.text_input(f"Nombre del {label_adm}", value=resultado_actual if resultado_actual and resultado_actual not in lista_adm else "", key=f"adm_otro_{cat}")
-                    selecciones_adm[cat] = otro_adm.strip() if otro_adm.strip() else None
-                elif sel_adm == "— Seleccioná —":
-                    selecciones_adm[cat] = None
-                else:
-                    selecciones_adm[cat] = sel_adm
+                selecciones_adm[cat] = sel_adm if sel_adm != "— Seleccioná —" else None
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
         st.divider()

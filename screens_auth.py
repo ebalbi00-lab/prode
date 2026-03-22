@@ -16,7 +16,7 @@ def cambiar_pantalla(step):
 
 
 def login(usuario, clave):
-    u = db_get_usuario(usuario)
+    u = db_get_usuario(usuario.strip().lower())
     if not u:
         st.session_state.login_error = "Usuario no existe"
         st.rerun()
@@ -24,7 +24,7 @@ def login(usuario, clave):
         st.session_state.login_error = "Clave incorrecta"
         st.rerun()
     else:
-        st.session_state.usuario = usuario
+        st.session_state.usuario = usuario.strip().lower()
         st.session_state.step = 9 if u["es_admin"] else 5
         st.rerun()
 

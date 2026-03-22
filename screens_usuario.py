@@ -10,6 +10,7 @@ Orden de la pantalla (cuando grupos ya fue completado):
   6. Botones de navegación
 """
 import streamlit as st
+import unicodedata
 
 from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, bandera
 from db import (
@@ -26,10 +27,37 @@ def cambiar_pantalla(step):
     st.session_state.step = step
 
 
+def normalizar(s: str) -> str:
+    """Quita acentos y pasa a minúsculas para búsqueda flexible."""
+    return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii').lower()
+
+
 def pantalla_usuario():
     username = st.session_state.usuario
     u = db_get_usuario(username)
     nombre_display = u.get('nombre', username)
+
+    # Scroll al tope: itera todos los elementos scrolleables del parent
+    st.components.v1.html("""
+    <script>
+    (function() {
+        function scrollAll() {
+            var doc = window.parent.document;
+            // Scrollear el documento raíz
+            doc.documentElement.scrollTop = 0;
+            doc.body.scrollTop = 0;
+            // Scrollear todos los divs que tienen scroll
+            var els = doc.querySelectorAll('*');
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].scrollTop > 0) els[i].scrollTop = 0;
+            }
+        }
+        scrollAll();
+        setTimeout(scrollAll, 50);
+        setTimeout(scrollAll, 200);
+    })();
+    </script>
+    """, height=0)
 
     # ── 0) Header ─────────────────────────────────────────────────────────────
     st.markdown(f"""
@@ -207,8 +235,6 @@ def pantalla_usuario():
             col_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.95rem; padding-top:10px; color:var(--text); line-height:1.4;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             cambios[idx] = (gl, gv)
-            if (gl, gv) != (int(gl_prev), int(gv_prev)):
-                db_guardar_pred(username, fase, idx, gl, gv)
 
     # ── Fase Grupos con wizard ────────────────────────────────────────────────
     if fase == "Grupos":
@@ -272,6 +298,24 @@ def pantalla_usuario():
                             for idx, (gl, gv) in cambios.items():
                                 db_guardar_pred(username, fase, idx, gl, gv)
                         st.session_state.grupo_wizard = 12; st.rerun()
+
+                # ── Stepper clickeable ──
+                st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
+                pasos = grupos_con_partidos + ["⭐"]
+                paso_cols = st.columns(len(pasos))
+                for pi, (pcol, paso) in enumerate(zip(paso_cols, pasos)):
+                    es_actual = (pi == gi)
+                    dest = 12 if paso == "⭐" else pi
+                    if es_actual:
+                        pcol.markdown(f"""<div style="text-align:center; font-size:0.7rem; font-weight:800;
+                            color:var(--green); border-bottom:2px solid var(--green);
+                            padding-bottom:3px;">{paso}</div>""", unsafe_allow_html=True)
+                    else:
+                        if pcol.button(paso, key=f"step_{pi}", use_container_width=True):
+                            with st.spinner("Guardando..."):
+                                for idx, (gl, gv) in cambios.items():
+                                    db_guardar_pred(username, fase, idx, gl, gv)
+                            st.session_state.grupo_wizard = dest; st.rerun()
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
@@ -394,22 +438,14 @@ def _render_paso_especiales(username, u, fase, total, partidos):
             else:
                 lista_w = ARQUEROS_MUNDIALISTAS if cat == "arquero" else JUGADORES_MUNDIALISTAS
                 label_w = "arquero" if cat == "arquero" else "jugador"
-                busq_w  = st.text_input(f"Buscar {label_w}", value="", key=f"esp_busq_{cat}", placeholder="Escribí para filtrar...")
-                st.caption(f"Si no encontrás al {label_w}, elegí **— Otro (escribir abajo) —** al final de la lista.")
-                filtrados_w = [j for j in lista_w if busq_w.lower() in j.lower()] if busq_w else lista_w
-                opciones_w  = filtrados_w + ["— Otro (escribir abajo) —"]
-                if elec_w in filtrados_w:
-                    idx_w = filtrados_w.index(elec_w)
-                elif elec_w and elec_w not in lista_w:
-                    idx_w = len(opciones_w) - 1
+                busq_w  = st.text_input(f"Buscar {label_w}", value="", key=f"esp_busq_{cat}", placeholder="Escribí el nombre (con o sin acento)...")
+                filtrados_w = [j for j in lista_w if normalizar(busq_w) in normalizar(j)] if busq_w else lista_w
+                if not filtrados_w:
+                    st.caption("No se encontró ningún jugador con ese nombre.")
+                    selecciones_esp[cat] = elec_w
                 else:
-                    idx_w = 0
-                sel_w = st.selectbox(f"Seleccioná el {label_w}", opciones_w, index=min(idx_w, len(opciones_w) - 1), key=f"esp_sel_{cat}")
-                if sel_w == "— Otro (escribir abajo) —":
-                    otro_val = elec_w if (elec_w and elec_w not in lista_w) else ""
-                    otro_w   = st.text_input(f"Nombre del {label_w}", value=otro_val, key=f"esp_otro_{cat}", placeholder="Escribí el nombre completo")
-                    selecciones_esp[cat] = otro_w.strip() if otro_w.strip() else None
-                else:
+                    idx_w = filtrados_w.index(elec_w) if elec_w in filtrados_w else 0
+                    sel_w = st.selectbox(f"Seleccioná el {label_w}", filtrados_w, index=idx_w, key=f"esp_sel_{cat}")
                     selecciones_esp[cat] = sel_w
 
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)

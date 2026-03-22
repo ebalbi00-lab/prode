@@ -1,5 +1,6 @@
 """
 db.py — Conexión, pool y todas las funciones de acceso a la base de datos.
+Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 """
 import datetime
 import hashlib
@@ -27,7 +28,7 @@ def get_db_url():
 def get_connection_pool():
     url = get_db_url()
     if not url:
-        st.error("⚠️ No se encontró DATABASE_URL. Configurá los secrets en Streamlit Cloud o la variable de entorno local.")
+        st.error("⚠️ No se encontró DATABASE_URL.")
         st.stop()
     return psycopg2.pool.ThreadedConnectionPool(
         minconn=3, maxconn=15, dsn=url,
@@ -51,11 +52,47 @@ def get_db():
         pool.putconn(conn)
 
 
+# ─── Helpers de invalidación quirúrgica ──────────────────────────────────────
+# En lugar de clear() global, invalidamos solo las funciones afectadas.
+# Esto evita que guardar un pronóstico tire el cache de ranking, fases, etc.
+
+def _invalidar_prode(username, fase):
+    db_get_prode.clear(username, fase)
+    try:
+        db_fase_confirmada.clear(username, fase)
+    except Exception:
+        pass
+
+def _invalidar_resultados(fase):
+    try:
+        db_get_resultado_completo.clear(fase)
+    except Exception:
+        pass
+
+def _invalidar_usuarios():
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_puntos_especiales_usuarios.clear()
+    except Exception:
+        pass
+
+def _invalidar_especial(username, categoria):
+    try:
+        db_get_especial.clear(username, categoria)
+    except Exception:
+        pass
+
+def _invalidar_resultado_especial(categoria):
+    try:
+        db_get_resultado_especial.clear(categoria)
+    except Exception:
+        pass
+
+
 # ─── Inicialización ───────────────────────────────────────────────────────────
 
 @st.cache_resource
 def init_tablas():
-    """Crea las tablas e inserta datos fijos. Se cachea — corre una sola vez."""
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -108,7 +145,6 @@ def init_tablas():
 
 
 def init_db():
-    """Crea tablas (cacheado) y garantiza que admin y prueba siempre existan."""
     init_tablas()
     admin_pass = os.environ.get("ADMIN_PASSWORD", "admin123")
     try:
@@ -149,6 +185,13 @@ def db_set_config(clave, valor):
             "INSERT INTO config (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor=EXCLUDED.valor",
             (clave, valor)
         )
+    try:
+        db_get_config.clear(clave, None)
+        db_get_config.clear(clave, "dark")
+        db_get_config.clear(clave, "1")
+        db_get_config.clear(clave, "0")
+    except Exception:
+        pass
 
 
 def db_registro_abierto():
@@ -157,7 +200,7 @@ def db_registro_abierto():
 
 # ─── Usuarios ─────────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=30)
 def db_get_usuario(username):
     with get_db() as conn:
         cur = conn.cursor()
@@ -178,6 +221,10 @@ def db_reset_clave(username, nueva_clave):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE usuarios SET clave=%s WHERE username=%s", (hash_clave(nueva_clave), username))
+    try:
+        db_get_usuario.clear(username)
+    except Exception:
+        pass
 
 
 def db_borrar_usuario(username):
@@ -185,6 +232,11 @@ def db_borrar_usuario(username):
         cur = conn.cursor()
         cur.execute("DELETE FROM usuarios WHERE username=%s", (username,))
         cur.execute("DELETE FROM prodes WHERE username=%s", (username,))
+    try:
+        db_get_usuario.clear(username)
+        db_get_todos_usuarios.clear()
+    except Exception:
+        pass
 
 
 def db_resetear_todos_puntajes():
@@ -196,7 +248,7 @@ def db_resetear_todos_puntajes():
         cur.execute("DELETE FROM consumo_log")
         cur.execute("DELETE FROM especiales")
         cur.execute("DELETE FROM especiales_resultados")
-    st.cache_data.clear()
+    st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
 
 
 # ─── Fases ────────────────────────────────────────────────────────────────────
@@ -213,7 +265,10 @@ def db_toggle_fase(nombre, valor):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE fases SET habilitada=%s WHERE nombre=%s", (1 if valor else 0, nombre))
-    st.cache_data.clear()
+    try:
+        db_get_fases.clear()
+    except Exception:
+        st.cache_data.clear()
 
 
 # ─── Partidos ─────────────────────────────────────────────────────────────────
@@ -235,7 +290,11 @@ def db_guardar_partido(fase, idx, local, visita, fecha="", hora=""):
             local=EXCLUDED.local, visita=EXCLUDED.visita,
             fecha=EXCLUDED.fecha, hora=EXCLUDED.hora
         """, (fase, idx, local, visita, fecha, hora))
-    st.cache_data.clear()
+    try:
+        db_get_partidos.clear(fase)
+        db_get_equipos_grupos.clear()
+    except Exception:
+        pass
 
 
 @st.cache_data(ttl=300)
@@ -251,14 +310,6 @@ def db_get_equipos_grupos():
 
 # ─── Resultados ───────────────────────────────────────────────────────────────
 
-def db_get_resultado(fase, idx):
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM resultados WHERE fase=%s AND partido_idx=%s", (fase, idx))
-        row = cur.fetchone()
-        return (row["goles_local"], row["goles_visita"]) if row else (0, 0)
-
-
 def db_guardar_resultado(fase, idx, gl, gv):
     with get_db() as conn:
         cur = conn.cursor()
@@ -267,7 +318,7 @@ def db_guardar_resultado(fase, idx, gl, gv):
             ON CONFLICT (fase, partido_idx) DO UPDATE SET
             goles_local=EXCLUDED.goles_local, goles_visita=EXCLUDED.goles_visita
         """, (fase, idx, gl, gv))
-    st.cache_data.clear()
+    _invalidar_resultados(fase)
 
 
 @st.cache_data(ttl=30)
@@ -282,19 +333,24 @@ def db_limpiar_resultados_fase(fase):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM resultados WHERE fase=%s", (fase,))
-    st.cache_data.clear()
+    _invalidar_resultados(fase)
 
 
 def db_limpiar_resultados_especiales():
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM especiales_resultados")
-    st.cache_data.clear()
+    try:
+        db_get_estadisticas_especiales.clear()
+    except Exception:
+        pass
+    for cat in CATEGORIAS_ESPECIALES:
+        _invalidar_resultado_especial(cat)
 
 
 # ─── Pronósticos ──────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=15)
 def db_get_prode(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -302,12 +358,13 @@ def db_get_prode(username, fase):
         rows = cur.fetchall()
         if not rows:
             return {"pred": {}, "confirmado": False}
-        confirmado = bool(rows[0]["confirmado"])
+        confirmado = any(r["confirmado"] for r in rows)
         pred = {r["partido_idx"]: (r["goles_local"], r["goles_visita"]) for r in rows}
         return {"pred": pred, "confirmado": confirmado}
 
 
 def db_guardar_pred(username, fase, idx, gl, gv):
+    """Guarda un pronóstico. NO invalida cache global — solo el prode de este usuario/fase."""
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -316,7 +373,7 @@ def db_guardar_pred(username, fase, idx, gl, gv):
             ON CONFLICT (username, fase, partido_idx) DO UPDATE SET
             goles_local=EXCLUDED.goles_local, goles_visita=EXCLUDED.goles_visita
         """, (username, fase, idx, gl, gv))
-    st.cache_data.clear()
+    _invalidar_prode(username, fase)
 
 
 def db_confirmar_prode(username, fase):
@@ -328,10 +385,11 @@ def db_confirmar_prode(username, fase):
             VALUES (%s, %s, -1, 0, 0, 1)
             ON CONFLICT (username, fase, partido_idx) DO NOTHING
         """, (username, fase))
-    st.cache_data.clear()
+    _invalidar_prode(username, fase)
+    _invalidar_usuarios()
 
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=20)
 def db_fase_confirmada(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -349,7 +407,7 @@ def db_limpiar_prode_fase(username, fase):
             "DELETE FROM prodes WHERE username=%s AND fase=%s AND confirmado=0",
             (username, fase)
         )
-    st.cache_data.clear()
+    _invalidar_prode(username, fase)
 
 
 # ─── Pendientes ───────────────────────────────────────────────────────────────
@@ -369,6 +427,10 @@ def db_agregar_pendiente(data):
             INSERT INTO pendientes (username, clave, nombre, nacimiento, localidad, celular, mail, comprobante)
             VALUES (%(username)s, %(clave)s, %(nombre)s, %(nacimiento)s, %(localidad)s, %(celular)s, %(mail)s, %(comprobante)s)
         """, data)
+    try:
+        db_get_pendientes.clear()
+    except Exception:
+        pass
 
 
 def db_aprobar_pendiente(pid):
@@ -384,12 +446,21 @@ def db_aprobar_pendiente(pid):
         """, (row["username"], row["clave"], row["nombre"], row["nacimiento"],
               row["localidad"], row["celular"], row["mail"]))
         cur.execute("DELETE FROM pendientes WHERE id=%s", (pid,))
+    try:
+        db_get_pendientes.clear()
+        db_get_todos_usuarios.clear()
+    except Exception:
+        pass
 
 
 def db_rechazar_pendiente(pid):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM pendientes WHERE id=%s", (pid,))
+    try:
+        db_get_pendientes.clear()
+    except Exception:
+        pass
 
 
 # ─── Consumo ──────────────────────────────────────────────────────────────────
@@ -403,6 +474,13 @@ def db_sumar_consumo(username, puntos, descripcion=""):
             "INSERT INTO consumo_log (username, puntos, descripcion, fecha) VALUES (%s, %s, %s, %s)",
             (username, puntos, descripcion, fecha)
         )
+    try:
+        db_get_usuario.clear(username)
+        db_get_todos_usuarios.clear()
+        db_get_consumo_log.clear()
+        db_get_consumo_log.clear(username)
+    except Exception:
+        pass
 
 
 def db_eliminar_consumo_log(log_id):
@@ -416,9 +494,14 @@ def db_eliminar_consumo_log(log_id):
                 (row["puntos"], row["username"])
             )
             cur.execute("DELETE FROM consumo_log WHERE id=%s", (log_id,))
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_consumo_log.clear()
+    except Exception:
+        pass
 
 
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=20)
 def db_get_consumo_log(username=None):
     with get_db() as conn:
         cur = conn.cursor()
@@ -471,7 +554,14 @@ def db_calcular_puntos():
             ) c
             WHERE u.username = c.username
         """)
-    st.cache_data.clear()
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_puntos_especiales_usuarios.clear()
+        db_get_estadisticas_usuarios.clear()
+        db_get_estadisticas_generales.clear()
+        db_get_estadisticas_partidos.clear()
+    except Exception:
+        pass
 
 
 # ─── Especiales ───────────────────────────────────────────────────────────────
@@ -493,14 +583,14 @@ def db_guardar_especial(username, categoria, eleccion):
             VALUES (%s, %s, %s, 0)
             ON CONFLICT (username, categoria) DO UPDATE SET eleccion=EXCLUDED.eleccion
         """, (username, categoria, eleccion))
-    st.cache_data.clear()
+    _invalidar_especial(username, categoria)
 
 
 def db_confirmar_especial(username, categoria):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE especiales SET confirmado=1 WHERE username=%s AND categoria=%s", (username, categoria))
-    st.cache_data.clear()
+    _invalidar_especial(username, categoria)
 
 
 @st.cache_data(ttl=30)
@@ -519,7 +609,7 @@ def db_guardar_resultado_especial(categoria, resultado):
             INSERT INTO especiales_resultados (categoria, resultado) VALUES (%s, %s)
             ON CONFLICT (categoria) DO UPDATE SET resultado=EXCLUDED.resultado
         """, (categoria, resultado))
-    st.cache_data.clear()
+    _invalidar_resultado_especial(categoria)
 
 
 def db_calcular_puntos_especiales():
@@ -536,7 +626,11 @@ def db_calcular_puntos_especiales():
                     WHERE categoria=%s AND eleccion=%s AND confirmado=1
                 )
             """, (info["puntos"], cat, resultado))
-    st.cache_data.clear()
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_puntos_especiales_usuarios.clear()
+    except Exception:
+        pass
 
 
 def db_fusionar_variantes_especial(cat, variantes, nombre_oficial):
@@ -548,19 +642,10 @@ def db_fusionar_variantes_especial(cat, variantes, nombre_oficial):
             "UPDATE especiales SET eleccion=%s WHERE categoria=%s AND eleccion = ANY(%s)",
             (nombre_oficial, cat, variantes)
         )
-    st.cache_data.clear()
-
-
-def db_sumar_puntos_especial_a_usuarios(usernames, puntos):
-    if not usernames:
-        return
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE usuarios SET puntos = puntos + %s WHERE username = ANY(%s)",
-            (puntos, usernames)
-        )
-    st.cache_data.clear()
+    try:
+        db_get_estadisticas_especiales.clear()
+    except Exception:
+        pass
 
 
 def db_get_todos_especiales():
@@ -574,7 +659,8 @@ def db_limpiar_especiales(username):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM especiales WHERE username=%s AND confirmado=0", (username,))
-    st.cache_data.clear()
+    for cat in CATEGORIAS_ESPECIALES:
+        _invalidar_especial(username, cat)
 
 
 @st.cache_data(ttl=60)
@@ -676,7 +762,6 @@ def db_get_estadisticas_usuarios():
             GROUP BY p.username ORDER BY resultados DESC
         """)
         top_resultados = [dict(r) for r in cur.fetchall()]
-
         cur.execute("""
             SELECT p.username,
                    SUM(CASE WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
@@ -688,7 +773,6 @@ def db_get_estadisticas_usuarios():
             GROUP BY p.username ORDER BY exactos DESC
         """)
         top_exactos = [dict(r) for r in cur.fetchall()]
-
         cur.execute("""
             SELECT p.username,
                    SUM(CASE WHEN
@@ -705,7 +789,6 @@ def db_get_estadisticas_usuarios():
             GROUP BY p.username ORDER BY puntos_grupos DESC
         """)
         top_grupos = [dict(r) for r in cur.fetchall()]
-
         cur.execute("""
             SELECT p.username,
                    SUM(CASE WHEN
@@ -730,12 +813,9 @@ def db_get_estadisticas_usuarios():
         nombres_map = {r["username"]: (r["nombre"] or r["username"]) for r in cur.fetchall()}
 
     def enrich(lst, key):
-        out = []
-        for r in lst:
-            v = r.get(key) or 0
-            if v > 0:
-                out.append({"nombre": nombres_map.get(r["username"], r["username"]), "valor": v, "username": r["username"]})
-        return out
+        return [{"nombre": nombres_map.get(r["username"], r["username"]),
+                 "valor": r.get(key) or 0, "username": r["username"]}
+                for r in lst if (r.get(key) or 0) > 0]
 
     return {
         "top_resultados": enrich(top_resultados, "resultados"),
