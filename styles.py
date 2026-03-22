@@ -254,23 +254,18 @@ def inject_css():
     ::-webkit-scrollbar-thumb {{ background: var(--border2); border-radius: 4px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: var(--text3); }}
 
-    /* ── Stepper del wizard ── */
-    [data-testid="stHorizontalBlock"] button[kind="secondary"] {{
-        padding: 0.15rem 0.2rem !important;
-        font-size: 0.68rem !important;
-        font-weight: 600 !important;
+    /* ── Botones de barra de progreso (punto invisible clickeable) ── */
+    button[kind="secondary"]:has(p) {{
+        opacity: 0 !important;
+        height: 4px !important;
         min-height: 0 !important;
-        height: 28px !important;
-        border-radius: 6px !important;
-        color: var(--text3) !important;
+        padding: 0 !important;
+        border: none !important;
         background: transparent !important;
-        border: 1px solid var(--border) !important;
-    }}
-    [data-testid="stHorizontalBlock"] button[kind="secondary"]:hover {{
-        color: var(--text) !important;
-        background: var(--surface) !important;
-        border-color: var(--border2) !important;
-        transform: none !important;
+        margin-top: -20px !important;
+        position: relative !important;
+        z-index: 5 !important;
+        cursor: pointer !important;
     }}
 
     @media (max-width: 768px) {{

@@ -299,23 +299,23 @@ def pantalla_usuario():
                                 db_guardar_pred(username, fase, idx, gl, gv)
                         st.session_state.grupo_wizard = 12; st.rerun()
 
-                # ── Stepper clickeable ──
-                st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
+                # ── Slider de navegación ──
                 pasos = grupos_con_partidos + ["⭐"]
-                paso_cols = st.columns(len(pasos))
-                for pi, (pcol, paso) in enumerate(zip(paso_cols, pasos)):
-                    es_actual = (pi == gi)
-                    dest = 12 if paso == "⭐" else pi
-                    if es_actual:
-                        pcol.markdown(f"""<div style="text-align:center; font-size:0.7rem; font-weight:800;
-                            color:var(--green); border-bottom:2px solid var(--green);
-                            padding-bottom:3px;">{paso}</div>""", unsafe_allow_html=True)
-                    else:
-                        if pcol.button(paso, key=f"step_{pi}", use_container_width=True):
-                            with st.spinner("Guardando..."):
-                                for idx, (gl, gv) in cambios.items():
-                                    db_guardar_pred(username, fase, idx, gl, gv)
-                            st.session_state.grupo_wizard = dest; st.rerun()
+                n = len(pasos)
+                dest_slider = st.select_slider(
+                    "Ir a",
+                    options=list(range(n)),
+                    value=gi,
+                    format_func=lambda x: (pasos[x] if pasos[x] == "⭐" else f"Grupo {pasos[x]}"),
+                    key="slider_wizard",
+                    label_visibility="collapsed",
+                )
+                if dest_slider != gi:
+                    with st.spinner("Guardando..."):
+                        for idx2, (gl2, gv2) in cambios.items():
+                            db_guardar_pred(username, fase, idx2, gl2, gv2)
+                    st.session_state.grupo_wizard = dest_slider
+                    st.rerun()
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
