@@ -1528,24 +1528,7 @@ def pantalla_ranking():
     </div>
     """, unsafe_allow_html=True)
 
-    # Auto-refresh con streamlit-autorefresh
-    try:
-        from streamlit_autorefresh import st_autorefresh
-        intervalo = st.select_slider(
-            "🔄 Actualizar cada",
-            options=[15, 30, 60, 120],
-            value=30,
-            format_func=lambda x: f"{x} seg",
-            key="ranking_refresh_interval"
-        )
-        count = st_autorefresh(interval=intervalo * 1000, key="ranking_autorefresh")
-        if count > 0:
-            st.cache_data.clear()
-    except ImportError:
-        # Fallback si no está instalado
-        if st.button("🔄 Actualizar ranking", use_container_width=True):
-            st.cache_data.clear()
-            st.rerun()
+
 
     username_actual = st.session_state.get("usuario", "")
 
