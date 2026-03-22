@@ -876,6 +876,110 @@ def db_get_estadisticas_generales():
         "partidos_jugados": partidos_jugados,
     }
 
+@st.cache_data(ttl=60)
+def db_get_estadisticas_usuarios():
+    """
+    Devuelve 4 rankings de usuarios:
+    - más resultados acertados (solo resultado, no exacto)
+    - más goles exactos adivinados
+    - más puntos en fase de Grupos
+    - más puntos en fases finales (Dieciseisavos en adelante)
+    """
+    FASES_FINALES = ["Dieciseisavos", "Octavos", "Cuartos", "Semifinal", "Final"]
+    with get_db() as conn:
+        cur = conn.cursor()
+
+        # 1. Más resultados acertados (exacto de resultado, sin importar goles)
+        cur.execute("""
+            SELECT p.username,
+                   SUM(CASE WHEN
+                       (p.goles_local > p.goles_visita AND r.goles_local > r.goles_visita) OR
+                       (p.goles_local < p.goles_visita AND r.goles_local < r.goles_visita) OR
+                       (p.goles_local = p.goles_visita AND r.goles_local = r.goles_visita)
+                   THEN 1 ELSE 0 END) AS resultados
+            FROM prodes p
+            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
+            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
+            WHERE p.confirmado = 1 AND p.partido_idx >= 0
+            GROUP BY p.username
+            ORDER BY resultados DESC
+        """)
+        top_resultados = [dict(r) for r in cur.fetchall()]
+
+        # 2. Más goles exactos (score exacto)
+        cur.execute("""
+            SELECT p.username,
+                   SUM(CASE WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
+                   THEN 1 ELSE 0 END) AS exactos
+            FROM prodes p
+            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
+            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
+            WHERE p.confirmado = 1 AND p.partido_idx >= 0
+            GROUP BY p.username
+            ORDER BY exactos DESC
+        """)
+        top_exactos = [dict(r) for r in cur.fetchall()]
+
+        # 3. Más puntos en Grupos
+        cur.execute("""
+            SELECT p.username,
+                   SUM(CASE WHEN
+                       (p.goles_local > p.goles_visita AND r.goles_local > r.goles_visita) OR
+                       (p.goles_local < p.goles_visita AND r.goles_local < r.goles_visita) OR
+                       (p.goles_local = p.goles_visita AND r.goles_local = r.goles_visita)
+                   THEN 1 ELSE 0 END) +
+                   SUM(CASE WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
+                   THEN 1 ELSE 0 END) AS puntos_grupos
+            FROM prodes p
+            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
+            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
+            WHERE p.confirmado = 1 AND p.partido_idx >= 0 AND p.fase = 'Grupos'
+            GROUP BY p.username
+            ORDER BY puntos_grupos DESC
+        """)
+        top_grupos = [dict(r) for r in cur.fetchall()]
+
+        # 4. Más puntos en fases finales
+        cur.execute("""
+            SELECT p.username,
+                   SUM(CASE WHEN
+                       (p.goles_local > p.goles_visita AND r.goles_local > r.goles_visita) OR
+                       (p.goles_local < p.goles_visita AND r.goles_local < r.goles_visita) OR
+                       (p.goles_local = p.goles_visita AND r.goles_local = r.goles_visita)
+                   THEN 1 ELSE 0 END) +
+                   SUM(CASE WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
+                   THEN 1 ELSE 0 END) AS puntos_finales
+            FROM prodes p
+            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
+            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
+            WHERE p.confirmado = 1 AND p.partido_idx >= 0
+              AND p.fase IN ('Dieciseisavos','Octavos','Cuartos','Semifinal','Final')
+            GROUP BY p.username
+            ORDER BY puntos_finales DESC
+        """)
+        top_finales = [dict(r) for r in cur.fetchall()]
+
+    # Enriquecer con nombre de usuario
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT username, nombre FROM usuarios WHERE es_admin=0")
+        nombres_map = {r["username"]: (r["nombre"] or r["username"]) for r in cur.fetchall()}
+
+    def enrich(lst, key):
+        out = []
+        for r in lst:
+            v = r.get(key) or 0
+            if v > 0:
+                out.append({"nombre": nombres_map.get(r["username"], r["username"]), "valor": v, "username": r["username"]})
+        return out
+
+    return {
+        "top_resultados": enrich(top_resultados, "resultados"),
+        "top_exactos":    enrich(top_exactos,    "exactos"),
+        "top_grupos":     enrich(top_grupos,      "puntos_grupos"),
+        "top_finales":    enrich(top_finales,     "puntos_finales"),
+    }
+
 def fase_cerrada(fase):
     partidos = db_get_partidos(fase)
     if not partidos:
@@ -1517,6 +1621,52 @@ def pantalla_usuario():
     col2.button("📊 Estadísticas", on_click=cambiar_pantalla, args=(12,), use_container_width=True)
     col3.button("Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
 
+    # ── Destacados ──
+    st.divider()
+    render_destacados_usuarios()
+
+
+def render_destacados_usuarios():
+    """Sección de estadísticas por usuario: los más destacados en distintas categorías."""
+    st.markdown("""
+    <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:3px;
+                color:#e8e8f0; margin-bottom:0.8rem;">🏅 DESTACADOS</div>
+    """, unsafe_allow_html=True)
+
+    stats = db_get_estadisticas_usuarios()
+
+    categorias = [
+        ("top_resultados", "✅ Más resultados acertados", "resultados acertados", "#66aaff"),
+        ("top_exactos",    "🎯 Más aciertos exactos (goles)", "exactos", "#ffd700"),
+        ("top_grupos",     "⚽ Más puntos en Grupos", "pts en Grupos", "#00e870"),
+        ("top_finales",    "🏆 Más puntos en Fases Finales", "pts en Finales", "#ff8844"),
+    ]
+
+    col_a, col_b = st.columns(2)
+    cols = [col_a, col_b, col_a, col_b]
+
+    for i, (key, titulo, unidad, color) in enumerate(categorias):
+        datos = stats.get(key, [])
+        with cols[i]:
+            st.markdown(f"**{titulo}**")
+            if not datos:
+                st.markdown('<div style="color:#606075; font-size:0.82rem; padding:8px 0;">Sin datos aún.</div>', unsafe_allow_html=True)
+            else:
+                top3 = datos[:3]
+                iconos_pos = ["🥇", "🥈", "🥉"]
+                filas = ""
+                for j, d in enumerate(top3):
+                    icono = iconos_pos[j] if j < 3 else str(j + 1)
+                    bg = "rgba(255,255,255,0.04)" if j % 2 == 0 else "transparent"
+                    filas += f"""<tr style="background:{bg};">
+                        <td style="padding:8px 10px; font-size:1rem; width:32px;">{icono}</td>
+                        <td style="padding:8px 6px; color:#e8e8f0; font-weight:600; font-size:0.9rem;">{d['nombre']}</td>
+                        <td style="padding:8px 10px; color:{color}; font-weight:700; text-align:right; font-size:0.95rem;">{d['valor']} <span style="color:#606075; font-size:0.72rem; font-weight:400;">{unidad}</span></td>
+                    </tr>"""
+                st.markdown(f"""<table style="width:100%; border-collapse:collapse; background:#0f0f1a;
+                    border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); margin-bottom:1rem;">
+                    <tbody>{filas}</tbody></table>""", unsafe_allow_html=True)
+
 
 def pantalla_ranking():
     st.markdown("""
@@ -1615,7 +1765,7 @@ def pantalla_ranking():
 
 def pantalla_admin():
     st.title("⚙️ Panel Admin")
-    tabs = st.tabs(["📋 Resumen", "👥 Pendientes", "🔀 Fases", "⚽ Partidos", "📊 Result.", "💰 Consumo", "⭐ Especiales", "👤 Usuarios", "⚠️ Reset", "📥 Exportar"])
+    tabs = st.tabs(["📋 Resumen", "👥 Pendientes", "🔀 Fases", "⚽ Partidos", "📊 Result.", "💰 Consumo", "⭐ Especiales", "👤 Usuarios", "🏅 Destacados", "⚠️ Reset", "📥 Exportar"])
 
     with tabs[0]:
         st.subheader("Resumen general")
@@ -2302,6 +2452,10 @@ def pantalla_admin():
                     st.rerun()
 
     with tabs[8]:
+        st.subheader("🏅 Destacados — Estadísticas por usuario")
+        render_destacados_usuarios()
+
+    with tabs[9]:
         st.subheader("⚠️ Resetear todos los puntajes")
         st.error("Esta acción borrará TODOS los pronósticos, resultados y puntajes de todos los usuarios. No se puede deshacer.")
         with st.form("form_reset_general"):
@@ -2318,7 +2472,7 @@ def pantalla_admin():
                 db_resetear_todos_puntajes()
                 st.success("✅ Todos los puntajes, pronósticos y resultados fueron reseteados.")
 
-    with tabs[9]:
+    with tabs[10]:
         st.subheader("📥 Base de datos de usuarios")
         st.caption("Todos los usuarios aprobados con sus datos personales.")
 
