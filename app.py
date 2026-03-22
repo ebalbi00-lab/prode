@@ -1554,7 +1554,7 @@ def pantalla_ranking():
                          "E": esp, "Total": total, "_username": u["username"], "_pos": pos})
 
         top_n = st.slider("Mostrar top", 5, max(10, len(rows)), min(10, len(rows)))
-        hay_especiales = any(r["E"] > 0 for r in rows)
+        hay_especiales = True  # siempre mostrar columna E
 
         filas_html = ""
         for r in rows[:top_n]:
