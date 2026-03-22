@@ -474,6 +474,9 @@ def db_resetear_todos_puntajes():
         cur.execute("DELETE FROM prodes")
         cur.execute("DELETE FROM resultados")
         cur.execute("DELETE FROM consumo_log")
+        cur.execute("DELETE FROM especiales")
+        cur.execute("DELETE FROM especiales_resultados")
+    st.cache_data.clear()
 
 def db_sumar_consumo(username, puntos, descripcion=""):
     with get_db() as conn:
@@ -1210,6 +1213,8 @@ def pantalla_usuario():
 
             st.markdown("</div>", unsafe_allow_html=True)
             cambios[idx] = (gl, gv)
+            # Autoguardar en cada rerun
+            db_guardar_pred(username, fase, idx, gl, gv)
 
     if fase == "Grupos":
         grupos = [chr(ord('A') + i) for i in range(12)]
@@ -1304,24 +1309,7 @@ def pantalla_usuario():
 
                 with st.form("form_confirmar_especiales"):
                     clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
-                    col_ef1, col_ef2, col_ef3 = st.columns(3)
-                    borrador_esp = col_ef1.form_submit_button("💾 Guardar borrador")
-                    limpiar_esp = col_ef2.form_submit_button("🗑️ Limpiar especiales")
-                    confirmar_esp = col_ef3.form_submit_button("🔒 Confirmar todo", type="primary")
-
-                if borrador_esp:
-                    for idx2, (gl2, gv2) in cambios.items():
-                        db_guardar_pred(username, fase, idx2, gl2, gv2)
-                    for cat, elec in selecciones_esp.items():
-                        if elec and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"]):
-                            db_guardar_especial(username, cat, elec)
-                    st.session_state["msg_esp"] = "💾 Borrador guardado."
-                    st.rerun()
-
-                if limpiar_esp:
-                    db_limpiar_especiales(username)
-                    st.session_state["msg_esp"] = "🗑️ Especiales eliminados. Podés volver a elegir."
-                    st.rerun()
+                    confirmar_esp = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
 
                 if confirmar_esp:
                     if hash_clave(clave_esp_final) != u["clave"]:
@@ -1332,8 +1320,6 @@ def pantalla_usuario():
                         if faltan:
                             st.error(f"Falta completar: {', '.join(faltan)}")
                         else:
-                            for idx2, (gl2, gv2) in cambios.items():
-                                db_guardar_pred(username, fase, idx2, gl2, gv2)
                             db_confirmar_prode(username, fase)
                             for cat, elec in selecciones_esp.items():
                                 if elec and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"]):
@@ -1378,70 +1364,29 @@ def pantalla_usuario():
         for p in partidos:
             render_partido(p)
 
-    # Valores por defecto para variables que pueden no definirse según la fase
     confirmar_btn = False
-    borrador_btn = False
-    limpiar_btn = False
-    borrador_btn_g = False
-    limpiar_btn_g = False
     selecciones_esp = {}  # se sobreescribe en paso 13
 
     if fase != "Grupos" and not confirmado:
         st.divider()
         with st.form("form_confirmar"):
             clave_confirm = st.text_input("Ingresá tu contraseña para confirmar", type="password")
-            col_f1, col_f2, col_f3 = st.columns(3)
-            confirmar_btn = col_f1.form_submit_button("🔒 Confirmar prode", type="primary")
-            borrador_btn  = col_f2.form_submit_button("💾 Guardar borrador")
-            limpiar_btn   = col_f3.form_submit_button("🗑️ Limpiar fase")
+            confirmar_btn = st.form_submit_button("🔒 Confirmar prode", type="primary", use_container_width=True)
 
         if confirmar_btn:
             if hash_clave(clave_confirm) != u["clave"]:
                 st.error("Contraseña incorrecta")
             else:
-                for idx, (gl, gv) in cambios.items():
-                    db_guardar_pred(username, fase, idx, gl, gv)
                 db_confirmar_prode(username, fase)
                 st.session_state["wizard_grupos_completo"] = True
                 st.success("¡Pronósticos confirmados!")
                 st.rerun()
 
-        if borrador_btn:
-            for idx, (gl, gv) in cambios.items():
-                db_guardar_pred(username, fase, idx, gl, gv)
-            st.success("Borrador guardado.")
-
-        if limpiar_btn:
-            db_limpiar_prode_fase(username, fase)
-            st.session_state["msg_fase_limpiada"] = f"🗑️ Pronósticos de {fase} eliminados. Podés empezar de nuevo."
-            st.rerun()
-
-    if "msg_fase_limpiada" in st.session_state:
-        st.success(st.session_state.pop("msg_fase_limpiada"))
-
     elif fase != "Grupos" and confirmado:
         st.success("✅ Pronósticos confirmados para esta fase.")
 
-    # Para grupos wizard en pasos 0-11: guardar borrador sin confirmar
-    if fase == "Grupos" and not confirmado and gi != 12:
-        st.divider()
-        col_bor1, col_bor2 = st.columns(2)
-        with col_bor1.form("form_borrador_grupos"):
-            borrador_btn_g = st.form_submit_button("💾 Guardar borrador", use_container_width=True)
-        if borrador_btn_g:  # type: ignore
-            for idx, (gl, gv) in cambios.items():
-                db_guardar_pred(username, fase, idx, gl, gv)
-            st.session_state["msg_grupos"] = f"💾 Borrador del Grupo {letra} guardado."
-            st.rerun()
-        # Limpiar fase solo si hay algo guardado
-        prode_actual = db_get_prode(username, "Grupos")
-        if prode_actual["pred"]:
-            with col_bor2.form("form_limpiar_grupos"):
-                limpiar_btn_g = st.form_submit_button("🗑️ Limpiar todo lo guardado", use_container_width=True)
-            if limpiar_btn_g:
-                db_limpiar_prode_fase(username, "Grupos")
-                st.session_state["msg_grupos"] = "🗑️ Pronósticos de Grupos eliminados. Podés empezar de nuevo."
-                st.rerun()
+
+
 
     if "msg_grupos" in st.session_state:
         st.success(st.session_state.pop("msg_grupos"))
@@ -2378,7 +2323,7 @@ def pantalla_acerca():
     st.markdown("""
 Pronosticás el resultado de cada partido antes de que empiece.
 Una vez que el partido arranca, tu pronóstico queda bloqueado y no podés modificarlo.
-Podés guardar un borrador y después confirmarlo con tu contraseña cuando estés seguro.
+Tus pronósticos se guardan automáticamente mientras navegás. Al terminar, confirmás todo con tu contraseña.
 """)
     st.divider()
     st.subheader("🏆 Sistema de puntos")
