@@ -1020,7 +1020,8 @@ def pantalla_login():
         registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
 
     if ingresar:
-        login(usuario, clave)
+        with st.spinner("Ingresando..."):
+            login(usuario, clave)
     if registrarse:
         cambiar_pantalla(1)
         st.rerun()
@@ -1104,10 +1105,11 @@ def pantalla_registro_cuenta():
             # En Streamlit Cloud no hay filesystem persistente.
             # Guardamos el nombre original del archivo como referencia.
             comprobante_nombre = comprobante.name
-            db_agregar_pendiente({
-                "username": u_strip, "clave": hash_clave(clave), "comprobante": comprobante_nombre,
-                **st.session_state.registro_temp
-            })
+            with st.spinner("Enviando solicitud..."):
+                db_agregar_pendiente({
+                    "username": u_strip, "clave": hash_clave(clave), "comprobante": comprobante_nombre,
+                    **st.session_state.registro_temp
+                })
             st.session_state.step = 4
             st.rerun()
 
@@ -1350,11 +1352,12 @@ def pantalla_usuario():
                         if faltan:
                             st.error(f"Falta completar: {', '.join(faltan)}")
                         else:
-                            db_confirmar_prode(username, fase)
-                            for cat, elec in selecciones_esp.items():
-                                if elec and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"]):
-                                    db_guardar_especial(username, cat, elec)
-                                    db_confirmar_especial(username, cat)
+                            with st.spinner("Confirmando pronósticos..."):
+                                db_confirmar_prode(username, fase)
+                                for cat, elec in selecciones_esp.items():
+                                    if elec and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"]):
+                                        db_guardar_especial(username, cat, elec)
+                                        db_confirmar_especial(username, cat)
                             st.session_state["wizard_grupos_completo"] = True
                             st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
                             st.rerun()
@@ -1387,18 +1390,21 @@ def pantalla_usuario():
                 st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
                 nav1, nav2, nav3 = st.columns([1, 2, 1])
                 if nav1.button("← Anterior", key="grupo_prev", use_container_width=True, disabled=(gi == 0)):
-                    for idx, (gl, gv) in cambios.items():
-                        db_guardar_pred(username, fase, idx, gl, gv)
+                    with st.spinner("Guardando..."):
+                        for idx, (gl, gv) in cambios.items():
+                            db_guardar_pred(username, fase, idx, gl, gv)
                     st.session_state.grupo_wizard = gi - 1; st.rerun()
                 if gi < total - 1:
                     if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
-                        for idx, (gl, gv) in cambios.items():
-                            db_guardar_pred(username, fase, idx, gl, gv)
+                        with st.spinner("Guardando..."):
+                            for idx, (gl, gv) in cambios.items():
+                                db_guardar_pred(username, fase, idx, gl, gv)
                         st.session_state.grupo_wizard = gi + 1; st.rerun()
                 else:
                     if nav3.button("Siguiente → Especiales ⭐", key="grupo_to_especiales", type="primary", use_container_width=True):
-                        for idx, (gl, gv) in cambios.items():
-                            db_guardar_pred(username, fase, idx, gl, gv)
+                        with st.spinner("Guardando..."):
+                            for idx, (gl, gv) in cambios.items():
+                                db_guardar_pred(username, fase, idx, gl, gv)
                         st.session_state.grupo_wizard = 12; st.rerun()
 
     else:
@@ -1418,7 +1424,8 @@ def pantalla_usuario():
             if hash_clave(clave_confirm) != u["clave"]:
                 st.error("Contraseña incorrecta")
             else:
-                db_confirmar_prode(username, fase)
+                with st.spinner("Confirmando..."):
+                    db_confirmar_prode(username, fase)
                 st.session_state["wizard_grupos_completo"] = True
                 st.success("¡Pronósticos confirmados!")
                 st.rerun()
@@ -1628,7 +1635,8 @@ def pantalla_admin():
             st.write(f"**{fase}:** {confirmados} / {len(todos)} confirmados")
         st.divider()
         if st.button("🔄 Recalcular puntajes"):
-            db_calcular_puntos()
+            with st.spinner("Recalculando..."):
+                db_calcular_puntos()
             st.session_state["msg_resumen"] = "✅ Puntajes recalculados correctamente."
             st.rerun()
 
@@ -1648,12 +1656,14 @@ def pantalla_admin():
                 st.write(f"**Comprobante:** {pend.get('comprobante', '—')}")
                 c1, c2 = st.columns(2)
                 if c1.button("✅ Aprobar", key=f"ap_{pend['id']}"):
-                    db_aprobar_pendiente(pend["id"])
-                    st.cache_data.clear()
+                    with st.spinner("Aprobando..."):
+                        db_aprobar_pendiente(pend["id"])
+                        st.cache_data.clear()
                     st.session_state["msg_pendientes"] = f"✅ {pend['username']} aprobado."
                     st.rerun()
                 if c2.button("❌ Rechazar", key=f"re_{pend['id']}"):
-                    db_rechazar_pendiente(pend["id"])
+                    with st.spinner("Rechazando..."):
+                        db_rechazar_pendiente(pend["id"])
                     st.session_state["msg_pendientes"] = f"⚠️ {pend['username']} rechazado."
                     st.rerun()
 
@@ -1715,17 +1725,19 @@ def pantalla_admin():
                 guardar = col_b1.form_submit_button(f"Guardar Grupo {letra}", type="primary")
                 guardar_todos = col_b2.form_submit_button("Guardar todos los grupos")
             if guardar:
-                for idx_global, l, v in nuevos:
-                    if l and v: db_guardar_partido("Grupos", idx_global, l, v)
-                st.cache_data.clear()
+                with st.spinner(f"Guardando Grupo {letra}..."):
+                    for idx_global, l, v in nuevos:
+                        if l and v: db_guardar_partido("Grupos", idx_global, l, v)
+                    st.cache_data.clear()
                 st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado."
                 st.rerun()
             if guardar_todos:
-                for gr, partidos_gr in GRUPOS_DEFAULT.items():
-                    ini_gr = "ABCDEFGHIJKL".index(gr) * 6
-                    for j, (loc, vis) in enumerate(partidos_gr):
-                        db_guardar_partido("Grupos", ini_gr + j, loc, vis)
-                st.cache_data.clear()
+                with st.spinner("Guardando todos los grupos..."):
+                    for gr, partidos_gr in GRUPOS_DEFAULT.items():
+                        ini_gr = "ABCDEFGHIJKL".index(gr) * 6
+                        for j, (loc, vis) in enumerate(partidos_gr):
+                            db_guardar_partido("Grupos", ini_gr + j, loc, vis)
+                    st.cache_data.clear()
                 st.session_state["msg_grupos"] = "✅ Todos los grupos guardados con los equipos por defecto."
                 st.rerun()
         else:
@@ -1810,8 +1822,9 @@ def pantalla_admin():
                     rv = c_rv.number_input("rv", 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{idx}", label_visibility="collapsed")
                     c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:#fff;'>{bandera(p['visita'])} {p['visita']}</div>", unsafe_allow_html=True)
                     if c_btn.button("💾", key=f"save_{fase_sel}_{idx}", help="Guardar resultado"):
-                        db_guardar_resultado(fase_sel, idx, rl, rv)
-                        db_calcular_puntos()
+                        with st.spinner("Guardando..."):
+                            db_guardar_resultado(fase_sel, idx, rl, rv)
+                            db_calcular_puntos()
                         st.session_state["res_ok"] = f"✅ Guardado: {p['local']} {rl} — {rv} {p['visita']}"
                         st.rerun()
                     if tiene_res:
@@ -2072,15 +2085,14 @@ def pantalla_admin():
                 st.session_state["msg_esp_adm"] = "❌ Contraseña incorrecta."
             else:
                 guardados = 0
-                for cat, ganador in selecciones_adm.items():
-                    if ganador:
-                        db_guardar_resultado_especial(cat, ganador)
-                        guardados += 1
-                if guardados:
-                    db_calcular_puntos_especiales()
-                    st.session_state["msg_esp_adm"] = f"✅ {guardados} resultado(s) guardado(s) y puntos aplicados."
-                else:
-                    st.session_state["msg_esp_adm"] = "⚠️ No seleccionaste ningún ganador."
+                with st.spinner("Guardando resultados y calculando puntos..."):
+                    for cat, ganador in selecciones_adm.items():
+                        if ganador:
+                            db_guardar_resultado_especial(cat, ganador)
+                            guardados += 1
+                    if guardados:
+                        db_calcular_puntos_especiales()
+                st.session_state["msg_esp_adm"] = f"✅ {guardados} resultado(s) guardado(s) y puntos aplicados." if guardados else "⚠️ No seleccionaste ningún ganador."
             st.rerun()
 
         # ── Limpiar resultados especiales ──
@@ -2157,14 +2169,15 @@ def pantalla_admin():
                 elif not nu_nac:
                     st.session_state["err_usuarios"] = "Fecha de nacimiento inválida."
                 else:
-                    with get_db() as conn:
-                        cur = conn.cursor()
-                        cur.execute("""
-                            INSERT INTO usuarios (username, clave, nombre, mail, celular, localidad, nacimiento, es_admin)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                        """, (u_strip, hash_clave(nu_pass), nu_nombre.strip(),
-                              nu_mail.strip(), nu_cel.strip(), nu_loc.strip(), nu_nac, 1 if nu_admin else 0))
-                    st.cache_data.clear()
+                    with st.spinner("Creando usuario..."):
+                        with get_db() as conn:
+                            cur = conn.cursor()
+                            cur.execute("""
+                                INSERT INTO usuarios (username, clave, nombre, mail, celular, localidad, nacimiento, es_admin)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            """, (u_strip, hash_clave(nu_pass), nu_nombre.strip(),
+                                  nu_mail.strip(), nu_cel.strip(), nu_loc.strip(), nu_nac, 1 if nu_admin else 0))
+                        st.cache_data.clear()
                     st.session_state["msg_usuarios"] = f"✅ Usuario **{u_strip}** creado."
                     st.rerun()
 
