@@ -27,6 +27,16 @@ def cambiar_pantalla(step):
     st.session_state.step = step
 
 
+def cerrar_sesion():
+    """Limpia todo el session_state y vuelve al login."""
+    claves_a_limpiar = [k for k in st.session_state.keys()
+                        if k not in ("db_initialized",)]
+    for k in claves_a_limpiar:
+        del st.session_state[k]
+    st.session_state.step = 0
+    st.session_state.usuario = None
+
+
 def normalizar(s: str) -> str:
     """Quita acentos y pasa a minúsculas para búsqueda flexible."""
     return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii').lower()
@@ -89,7 +99,7 @@ def pantalla_usuario():
 
         if not fases_habilitadas:
             st.warning("No hay fases habilitadas aún.")
-            st.button("🚪 Cerrar sesión", key="logout_92", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            st.button("🚪 Cerrar sesión", key="logout_92", on_click=cerrar_sesion, use_container_width=True)
             return
 
         labels = []
@@ -154,7 +164,7 @@ def pantalla_usuario():
             <div style="color:var(--text2); font-size:0.88rem;">Esta fase todavía no fue abierta por el admin.</div>
         </div>""", unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("🚪 Cerrar sesión", key="logout_157", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            st.button("🚪 Cerrar sesión", key="logout_157", on_click=cerrar_sesion, use_container_width=True)
         return
 
     partidos = db_get_partidos(fase)
@@ -165,7 +175,7 @@ def pantalla_usuario():
             <div style="color:var(--text2); font-size:0.88rem;">El admin aún no cargó los partidos de esta fase.</div>
         </div>""", unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("🚪 Cerrar sesión", key="logout_168", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            st.button("🚪 Cerrar sesión", key="logout_168", on_click=cerrar_sesion, use_container_width=True)
         return
 
     prode      = db_get_prode(username, fase)
@@ -326,7 +336,7 @@ def pantalla_usuario():
                     st.rerun()
 
             st.divider()
-            st.button("🚪 Cerrar sesión", key="wiz_cerrar", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+            st.button("🚪 Cerrar sesión", key="wiz_cerrar", on_click=cerrar_sesion, use_container_width=True)
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
@@ -403,7 +413,7 @@ def pantalla_usuario():
     col1, col2, col3 = st.columns(3)
     col1.button("🏆 Ranking",       on_click=cambiar_pantalla, args=(6,),  use_container_width=True)
     col2.button("🏅 Destacados",    on_click=cambiar_pantalla, args=(12,), use_container_width=True)
-    col3.button("🚪 Cerrar sesión", key="logout_402", on_click=cambiar_pantalla, args=(0,),  use_container_width=True)
+    col3.button("🚪 Cerrar sesión", key="logout_402", on_click=cerrar_sesion,  use_container_width=True)
 
 
 # ─── Paso 13: Especiales dentro del wizard de grupos ─────────────────────────

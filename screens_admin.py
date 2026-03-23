@@ -133,7 +133,11 @@ def _tab_pendientes():
             st.write(f"**Celular:** {pend.get('celular', '—')}")
             st.write(f"**Localidad:** {pend.get('localidad', '—')}")
             st.write(f"**Nacimiento:** {pend.get('nacimiento', '—')}")
-            st.write(f"**Comprobante:** {pend.get('comprobante', '—')}")
+            comp = pend.get('comprobante', '')
+            if comp and comp.startswith('data:'):
+                st.markdown(f'<img src="{comp}" style="max-width:100%; max-height:300px; border-radius:8px; margin-top:6px;" />', unsafe_allow_html=True)
+            elif comp:
+                st.write(f"**Comprobante:** {comp}")
             c1, c2 = st.columns(2)
             if c1.button("✅ Aprobar", key=f"ap_{pend['id']}"):
                 with st.spinner("Aprobando..."):
@@ -703,7 +707,8 @@ def _tab_exportar():
         df_filtrado = df_filtrado[df_filtrado["Localidad"].str.contains(filtro_localidad, case=False, na=False)]
 
     st.caption(f"Mostrando {len(df_filtrado)} de {len(df_exp)} usuarios")
-    st.dataframe(df_filtrado[["Usuario","Nombre","Nacimiento","Localidad","Celular","Mail"]], use_container_width=True, hide_index=True)
+    with st.expander(f"Ver lista ({len(df_filtrado)} usuarios)", expanded=False):
+        st.dataframe(df_filtrado[["Usuario","Nombre","Nacimiento","Localidad","Celular","Mail"]], use_container_width=True, hide_index=True)
     st.divider()
 
     cols_registro = ["Usuario", "Nombre", "Nacimiento", "Localidad", "Celular", "Mail"]

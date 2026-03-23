@@ -6,7 +6,7 @@ import re
 import streamlit as st
 
 from db import (
-    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave
+    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, db_get_pendientes
 )
 from constants import FASES
 
@@ -16,14 +16,22 @@ def cambiar_pantalla(step):
 
 
 def login(usuario, clave):
+    # Rate limiting — máx 5 intentos fallidos por sesión
+    intentos = st.session_state.get("login_intentos", 0)
+    if intentos >= 5:
+        st.session_state.login_error = "Demasiados intentos fallidos. Recargá la página."
+        st.rerun()
     u = db_get_usuario(usuario.strip().lower())
     if not u:
-        st.session_state.login_error = "Usuario no existe"
+        st.session_state["login_intentos"] = intentos + 1
+        st.session_state.login_error = "Usuario o clave incorrectos"
         st.rerun()
     elif u["clave"] != hash_clave(clave):
-        st.session_state.login_error = "Clave incorrecta"
+        st.session_state["login_intentos"] = intentos + 1
+        st.session_state.login_error = "Usuario o clave incorrectos"
         st.rerun()
     else:
+        st.session_state["login_intentos"] = 0
         st.session_state.usuario = usuario.strip().lower()
         st.session_state.step = 9 if u["es_admin"] else 5
         st.rerun()
@@ -200,6 +208,8 @@ def pantalla_registro_cuenta():
             st.session_state.reg_error = "El usuario debe tener al menos 3 caracteres"
         elif db_get_usuario(u_strip):
             st.session_state.reg_error = "Usuario ya existe"
+        elif any(p["username"] == u_strip for p in db_get_pendientes()):
+            st.session_state.reg_error = "Ya hay una solicitud pendiente con ese usuario"
         elif len(clave) < 4:
             st.session_state.reg_error = "La clave debe tener al menos 4 caracteres"
         elif clave != confirmar:
@@ -207,11 +217,13 @@ def pantalla_registro_cuenta():
         elif not comprobante:
             st.session_state.reg_error = "Subí el comprobante de pago"
         else:
-            comprobante_nombre = comprobante.name
+            import base64
+            comprobante_b64 = base64.b64encode(comprobante.read()).decode()
+            comprobante_data = f"data:{comprobante.type};base64,{comprobante_b64}"
             with st.spinner("Enviando solicitud..."):
                 db_agregar_pendiente({
                     "username": u_strip, "clave": hash_clave(clave),
-                    "comprobante": comprobante_nombre,
+                    "comprobante": comprobante_data,
                     **st.session_state.registro_temp
                 })
             st.session_state.step = 4
