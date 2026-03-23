@@ -25,7 +25,7 @@ from db import (
     db_get_todos_especiales, db_fusionar_variantes_especial,
     db_get_equipos_grupos, hash_clave, get_db,
 )
-from screens_stats import render_destacados_usuarios
+from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo
 
 
 def cambiar_pantalla(step):
@@ -85,8 +85,7 @@ def pantalla_admin():
         st.divider()
         c1, c2 = st.columns(2)
         c1.button("🏆 Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="admin_rank")
-        if c2.button("🚪 Cerrar sesión", key="admin_logout", use_container_width=True):
-            cambiar_pantalla(0)
+        c2.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True, key="admin_logout")
         return
 
     # Botón volver
@@ -310,13 +309,16 @@ def _tab_partidos():
                 guardar = st.form_submit_button("Guardar partidos", type="primary")
 
             if guardar:
-                guardados = sum(1 for i, l, v in nuevos if l and v and db_guardar_partido(fase_sel, i, l, v) is None)
-                # db_guardar_partido retorna None siempre, contamos los que tienen l y v
-                guardados = sum(1 for _, l, v in nuevos if l and v)
-                for i, l, v in nuevos:
-                    if l and v:
-                        db_guardar_partido(fase_sel, i, l, v)
-                st.success(f"✅ {guardados} partido(s) guardado(s).") if guardados else st.warning("No se guardó ningún partido.")
+                # Validar equipos duplicados
+                errores = [f"Partido {i+1}: mismo equipo de local y visitante" for i, l, v in nuevos if l and v and l == v]
+                if errores:
+                    st.error("⚠️ " + " · ".join(errores))
+                else:
+                    guardados = sum(1 for _, l, v in nuevos if l and v)
+                    for i, l, v in nuevos:
+                        if l and v:
+                            db_guardar_partido(fase_sel, i, l, v)
+                    st.success(f"✅ {guardados} partido(s) guardado(s).") if guardados else st.warning("No se guardó ningún partido.")
 
 
 def _tab_resultados():
@@ -346,8 +348,8 @@ def _tab_resultados():
         idx       = p["idx"]
         tiene_res = idx in resultados_actuales
         rl_prev, rv_prev = resultados_actuales.get(idx, (0, 0))
-        border    = "rgba(0,200,80,0.3)" if tiene_res else "rgba(255,255,255,0.08)"
-        bg        = "rgba(0,200,80,0.05)" if tiene_res else "rgba(255,255,255,0.02)"
+        border    = "rgba(0,200,80,0.3)" if tiene_res else "var(--border2)"
+        bg        = "rgba(0,200,80,0.05)" if tiene_res else "var(--surface)"
 
         st.markdown(f'<div style="background:{bg}; border:1px solid {border}; border-radius:12px; padding:10px 14px; margin:6px 0;">', unsafe_allow_html=True)
         activar = st.checkbox("Cargar resultado", value=tiene_res, key=f"chk_{fase_sel}_{idx}")
@@ -355,7 +357,7 @@ def _tab_resultados():
             c_local, c_rl, c_sep, c_rv, c_visita, c_btn = st.columns([3, 1, 0.4, 1, 3, 1.5])
             c_local.markdown(f"<div style='text-align:right; font-weight:700; font-size:0.9rem; padding-top:9px; color:var(--text);'>{bandera(p['local'])} {p['local']}</div>", unsafe_allow_html=True)
             rl = c_rl.number_input("rl", 0, 15, int(rl_prev), key=f"rl_{fase_sel}_{idx}", label_visibility="collapsed")
-            c_sep.markdown("<div style='text-align:center; padding-top:9px; color:#404058;'>—</div>", unsafe_allow_html=True)
+            c_sep.markdown("<div style='text-align:center; padding-top:9px; color:var(--text3);'>—</div>", unsafe_allow_html=True)
             rv = c_rv.number_input("rv", 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{idx}", label_visibility="collapsed")
             c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:var(--text);'>{bandera(p['visita'])} {p['visita']}</div>", unsafe_allow_html=True)
             if c_btn.button("💾", key=f"save_{fase_sel}_{idx}", help="Guardar resultado"):
@@ -369,7 +371,7 @@ def _tab_resultados():
         else:
             st.markdown(f"""<div style="display:flex; align-items:center; gap:8px; padding:2px 0 4px 0;">
                 <div style="color:var(--text); font-weight:700; font-size:0.9rem; flex:1; text-align:right;">{bandera(p['local'])} {p['local']}</div>
-                <div style="color:#404058; font-size:0.8rem;">vs</div>
+                <div style="color:var(--text3); font-size:0.8rem;">vs</div>
                 <div style="color:var(--text); font-weight:700; font-size:0.9rem; flex:1;">{bandera(p['visita'])} {p['visita']}</div>
             </div>""", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)

@@ -744,6 +744,31 @@ def db_get_puntos_especiales_usuarios():
     return result
 
 
+# ─── Ver pronósticos de otros usuarios ───────────────────────────────────────
+
+@st.cache_data(ttl=60)
+def db_get_prodes_fase_todos(fase):
+    """Devuelve pronósticos confirmados de todos los usuarios para una fase."""
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT p.username, u.nombre, p.partido_idx,
+                   p.goles_local, p.goles_visita
+            FROM prodes p
+            JOIN usuarios u ON u.username = p.username
+            WHERE p.fase = %s AND p.confirmado = 1 AND p.partido_idx >= 0
+            ORDER BY p.username, p.partido_idx
+        """, (fase,))
+        rows = cur.fetchall()
+    result = {}
+    for r in rows:
+        uname = r["username"]
+        if uname not in result:
+            result[uname] = {"nombre": r["nombre"] or uname, "pred": {}}
+        result[uname]["pred"][r["partido_idx"]] = (r["goles_local"], r["goles_visita"])
+    return result
+
+
 # ─── Estadísticas ─────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=60)

@@ -282,7 +282,7 @@ def pantalla_acerca():
     exacto_pts = [3, 6, 9, 12, 15, 18]
     filas_pts  = ""
     for i, fase in enumerate(fases_pts):
-        bg = "rgba(255,255,255,0.03)" if i % 2 == 0 else "transparent"
+        bg = "var(--surface)" if i % 2 == 0 else "transparent"
         filas_pts += (f'<tr style="background:{bg};">'
                       f'<td style="padding:10px 14px; color:var(--text); font-weight:600; font-size:0.92rem;">{fase}</td>'
                       f'<td style="padding:10px 14px; color:var(--blue); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{res_pts[i]}</td>'
@@ -323,7 +323,7 @@ def pantalla_acerca():
     for icono, label, pts in especiales_filas:
         cards_esp += f"""
         <div style="display:flex; justify-content:space-between; align-items:center;
-                    background:rgba(255,255,255,0.03); border:1px solid var(--border);
+                    background:var(--surface); border:1px solid var(--border);
                     border-radius:10px; padding:10px 16px; margin-bottom:6px;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-size:1.2rem;">{icono}</span>

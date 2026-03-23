@@ -17,7 +17,7 @@ from screens_auth import (
     pantalla_registro_cuenta, pantalla_en_revision, pantalla_acerca,
 )
 from screens_usuario import pantalla_usuario
-from screens_stats import pantalla_ranking, pantalla_estadisticas
+from screens_stats import pantalla_ranking, pantalla_estadisticas, pantalla_estadisticas_torneo
 from screens_admin import pantalla_admin
 
 # ─── Inicialización ───────────────────────────────────────────────────────────
@@ -67,29 +67,12 @@ PANTALLAS = {
     9:  pantalla_admin,
     10: pantalla_acerca,
     12: pantalla_estadisticas,
+    13: pantalla_estadisticas_torneo,
 }
 
 pantalla_fn = PANTALLAS.get(st.session_state.step)
 if pantalla_fn:
-    try:
-        pantalla_fn()
-    except Exception as e:
-        st.markdown("""
-        <div style="text-align:center; padding:3rem 1rem;">
-            <div style="font-size:2.5rem; margin-bottom:1rem;">😵</div>
-            <div style="font-family:Bebas Neue,sans-serif; font-size:1.8rem; letter-spacing:3px; color:#ff5566; margin-bottom:0.8rem;">
-                Algo salió mal</div>
-            <div style="color:#8898bb; font-size:0.92rem; line-height:1.75; max-width:380px; margin:0 auto;">
-                Ocurrió un error inesperado. Podés intentar recargar la página.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        if col1.button("🔄 Recargar", use_container_width=True):
-            st.rerun()
-        if col2.button("🏠 Ir al inicio", use_container_width=True):
-            st.session_state.step = 0
-            st.rerun()
+    pantalla_fn()
 else:
     st.session_state.step = 0
     st.rerun()

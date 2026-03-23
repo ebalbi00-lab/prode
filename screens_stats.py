@@ -2,10 +2,12 @@
 screens_stats.py — Pantallas de ranking, destacados y estadísticas.
 """
 import streamlit as st
+from constants import bandera
 
 from db import (
     db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
-    db_get_estadisticas_usuarios,
+    db_get_estadisticas_usuarios, db_get_estadisticas_partidos,
+    db_get_partidos,
 )
 
 
@@ -51,7 +53,7 @@ def render_destacados_usuarios():
                 filas = ""
                 for j, d in enumerate(top3):
                     icono = iconos_pos[j] if j < 3 else str(j + 1)
-                    sep   = "border-top:1px solid rgba(255,255,255,0.06);" if j > 0 else ""
+                    sep   = "border-top:1px solid var(--border);" if j > 0 else ""
                     filas += f"""
                     <div style="display:flex; align-items:center; justify-content:space-between;
                                 padding:7px 0; {sep}">
@@ -76,19 +78,8 @@ def pantalla_ranking():
                     background:linear-gradient(135deg,#ffc840 0%,#ffdd80 50%,#ffa820 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                     background-clip:text; line-height:1.05;">🏆 RANKING</div>
-        <div style="display:inline-block; background:var(--gold-dim); border:1px solid var(--gold-border);
-                    border-radius:20px; padding:3px 18px; font-family:Bebas Neue,sans-serif;
-                    font-size:1rem; color:var(--gold); letter-spacing:3px; margin-top:0.2rem;">TOP 15</div>
-    </div>
     """, unsafe_allow_html=True)
 
-    try:
-        from streamlit_autorefresh import st_autorefresh
-        count = st_autorefresh(interval=60 * 1000, key="ranking_autorefresh")
-        if count > 0:
-            st.cache_data.clear()
-    except ImportError:
-        pass
 
     username_actual = st.session_state.get("usuario", "")
     todos = db_get_todos_usuarios()
@@ -114,17 +105,6 @@ def pantalla_ranking():
         page = st.session_state.get("ranking_page", 0)
         if page >= total_pages:
             page = 0
-
-        col_pg1, col_pg2, col_pg3 = st.columns([1, 3, 1])
-        if total_pages > 1:
-            with col_pg1:
-                if st.button("← Anterior", key="rank_prev", disabled=(page == 0)):
-                    st.session_state["ranking_page"] = page - 1; st.rerun()
-            with col_pg2:
-                st.markdown(f"<div style='text-align:center; color:var(--text3); font-size:0.8rem; padding-top:8px;'>Página {page+1} de {total_pages} · {len(rows)} participantes</div>", unsafe_allow_html=True)
-            with col_pg3:
-                if st.button("Siguiente →", key="rank_next", disabled=(page >= total_pages - 1)):
-                    st.session_state["ranking_page"] = page + 1; st.rerun()
 
         inicio_page = page * POR_PAGINA
         top_n = POR_PAGINA
@@ -175,6 +155,20 @@ def pantalla_ranking():
             unsafe_allow_html=True,
         )
 
+
+        # ── Paginación abajo ──
+        st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
+        col_pg1, col_pg2, col_pg3 = st.columns([1, 3, 1])
+        with col_pg1:
+            if page > 0:
+                if st.button("← Anterior", key="rank_prev"):
+                    st.session_state["ranking_page"] = page - 1; st.rerun()
+        with col_pg2:
+            st.markdown(f"<div style='text-align:center; color:var(--text3); font-size:0.78rem; padding-top:8px;'>{page+1} / {total_pages} &nbsp;·&nbsp; {len(rows)} jugadores</div>", unsafe_allow_html=True)
+        with col_pg3:
+            if st.button("Siguiente →", key="rank_next", disabled=(page >= total_pages - 1)):
+                st.session_state["ranking_page"] = page + 1; st.rerun()
+
         if username_actual and username_actual != "admin":
             pos_actual = next((r["_pos"] for r in rows if r["_username"] == username_actual), None)
             if pos_actual:
@@ -207,3 +201,59 @@ def pantalla_estadisticas():
     st.divider()
     destino = 9 if st.session_state.get("usuario") == "admin" else 5
     st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)
+
+
+def pantalla_estadisticas_torneo():
+    """Pantalla de estadísticas globales del torneo."""
+    st.markdown("""<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;
+        letter-spacing:3px;color:var(--text);margin-bottom:1rem;">📊 Estadísticas del torneo</div>""",
+        unsafe_allow_html=True)
+
+    stats_partidos = db_get_estadisticas_partidos()
+    if not stats_partidos:
+        st.info("Todavía no hay resultados cargados.")
+    else:
+        # Agrupar por fase
+        por_fase = {}
+        for r in stats_partidos:
+            f = r["fase"]
+            if f not in por_fase:
+                por_fase[f] = []
+            por_fase[f].append(r)
+
+        for fase, partidos_stats in por_fase.items():
+            partidos_info = db_get_partidos(fase)
+            info_map = {p["idx"]: p for p in partidos_info}
+
+            st.markdown(f"""<div style="font-family:Bebas Neue,sans-serif;font-size:1.1rem;
+                letter-spacing:2px;color:var(--text2);margin:1rem 0 0.5rem 0;
+                text-transform:uppercase;">{fase}</div>""", unsafe_allow_html=True)
+
+            for r in partidos_stats:
+                p_info = info_map.get(r["partido_idx"], {})
+                local   = p_info.get("local", "?")
+                visita  = p_info.get("visita", "?")
+                total   = r["total_prodes"] or 0
+                exactos = r["exactos"] or 0
+                result  = r["resultados"] or 0
+                rl, rv  = r["rl"], r["rv"]
+                pct_res = int(result / total * 100) if total > 0 else 0
+                pct_ex  = int(exactos / total * 100) if total > 0 else 0
+
+                st.markdown(
+                    f'<div style="background:var(--bg3);border:1px solid var(--border);'
+                    f'border-radius:10px;padding:10px 14px;margin:5px 0;">'
+                    f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+                    f'<span style="font-weight:700;font-size:0.85rem;color:var(--text);">{bandera(local)} {local} {rl}–{rv} {bandera(visita)} {visita}</span>'
+                    f'<span style="font-size:0.72rem;color:var(--text3);">{total} pronósticos</span>'
+                    f'</div>'
+                    f'<div style="display:flex;gap:12px;font-size:0.78rem;">'
+                    f'<span style="color:var(--blue);">✅ Resultado: {result} ({pct_res}%)</span>'
+                    f'<span style="color:var(--green);">🎯 Exacto: {exactos} ({pct_ex}%)</span>'
+                    f'</div></div>',
+                    unsafe_allow_html=True
+                )
+
+    st.divider()
+    destino = 9 if st.session_state.get("usuario") == "admin" else 5
+    st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True, key="back_stats_torneo")

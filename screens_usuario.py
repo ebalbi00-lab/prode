@@ -20,7 +20,8 @@ from db import (
     db_confirmar_especial, db_get_resultado_especial,
     db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
     db_get_equipos_grupos, get_db, hash_clave,
-    db_set_config, db_get_config, db_calcular_puntos
+    db_set_config, db_get_config, db_calcular_puntos,
+    db_get_prodes_fase_todos
 )
 
 
@@ -30,12 +31,13 @@ def cambiar_pantalla(step):
 
 def cerrar_sesion():
     """Limpia todo el session_state y vuelve al login."""
-    claves_a_limpiar = [k for k in st.session_state.keys()
+    claves_a_limpiar = [k for k in list(st.session_state.keys())
                         if k not in ("db_initialized",)]
     for k in claves_a_limpiar:
         del st.session_state[k]
     st.session_state.step = 0
     st.session_state.usuario = None
+    st.session_state.registro_temp = {}
 
 
 def normalizar(s: str) -> str:
@@ -169,20 +171,18 @@ def pantalla_usuario():
                     unsafe_allow_html=True
                 )
 
-            # Menú principal — 2 columnas
+            # Menú principal — grilla 2x3
             c1, c2 = st.columns(2)
             with c1:
                 if st.button("⚽  Mis pronósticos", use_container_width=True, key="menu_prode"):
-                    st.session_state["sub_pantalla"] = "pronosticos"
-                    st.rerun()
+                    st.session_state["sub_pantalla"] = "pronosticos"; st.rerun()
                 if st.button("🏆  Ranking", use_container_width=True, key="menu_ranking"):
-                    cambiar_pantalla(6)
+                    cambiar_pantalla(6); st.rerun()
             with c2:
                 if st.button("📊  Mis puntos", use_container_width=True, key="menu_puntos"):
-                    st.session_state["sub_pantalla"] = "puntos"
-                    st.rerun()
+                    st.session_state["sub_pantalla"] = "puntos"; st.rerun()
                 if st.button("🏅  Destacados", use_container_width=True, key="menu_dest"):
-                    cambiar_pantalla(12)
+                    cambiar_pantalla(12); st.rerun()
 
             st.divider()
             if st.session_state.get("confirmar_logout_main"):
@@ -229,6 +229,64 @@ def pantalla_usuario():
                 <div style="font-size:0.8rem;color:var(--text3);">Posición {posicion} de {len(ranking)}</div>
             </div>
             """, unsafe_allow_html=True)
+            return
+
+
+        # ── Sub-pantalla ver pronósticos de otros ──
+        if sub == "otros":
+            if st.button("← Volver", key="back_otros"):
+                st.session_state["sub_pantalla"] = "inicio"; st.rerun()
+            st.markdown("#### 👀 Pronósticos de todos")
+
+            fases_cerradas = [f for f in fases_habilitadas if fases_confirmadas.get(f)]
+            if not fases_cerradas:
+                st.info("Todavía no confirmaste ninguna fase. Los pronósticos de otros se muestran después de confirmar la tuya.")
+                return
+
+            fase_ver = st.selectbox("Fase", fases_cerradas, key="otros_fase_sel")
+            partidos_ver = db_get_partidos(fase_ver)
+            resultados_ver = db_get_resultado_completo(fase_ver)
+            todos_prodes = db_get_prodes_fase_todos(fase_ver)
+
+            if not todos_prodes:
+                st.info("Nadie confirmó pronósticos para esta fase todavía.")
+                return
+
+            for p in partidos_ver:
+                idx_p = p["idx"]
+                nom_l = f"{bandera(p['local'])} {p['local']}"
+                nom_v = f"{bandera(p['visita'])} {p['visita']}"
+                res_real = resultados_ver.get(idx_p)
+                res_str = f"{res_real[0]}–{res_real[1]}" if res_real else "pendiente"
+
+                header = (
+                    '<div style="background:var(--bg3);border:1px solid var(--border);' +
+                    'border-radius:12px;padding:10px 14px;margin:8px 0;">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+                    f'<span style="font-weight:700;font-size:0.85rem;color:var(--text);">{nom_l} vs {nom_v}</span>' +
+                    f'<span style="font-size:0.72rem;color:var(--text3);">Real: <b>{res_str}</b></span>' +
+                    '</div>'
+                )
+                filas = ""
+                for uname, udata in sorted(todos_prodes.items()):
+                    gl_u, gv_u = udata["pred"].get(idx_p, ("?", "?"))
+                    es_yo = uname == username
+                    if res_real and gl_u != "?":
+                        rl, rv = res_real
+                        exacto = gl_u == rl and gv_u == rv
+                        ok = (gl_u > gv_u and rl > rv) or (gl_u < gv_u and rl < rv) or (gl_u == gv_u and rl == rv)
+                        icono = "🎯" if exacto else ("✅" if ok else "❌")
+                    else:
+                        icono = ""
+                    yo = ' <span style="background:var(--green-dim);color:var(--green);font-size:0.6rem;padding:1px 5px;border-radius:8px;">vos</span>' if es_yo else ""
+                    filas += (
+                        '<div style="display:flex;justify-content:space-between;padding:4px 0;' +
+                        'border-top:1px solid var(--border);font-size:0.82rem;">' +
+                        f'<span style="color:var(--text2);">{udata["nombre"]}{yo}</span>' +
+                        f'<span style="color:var(--text);font-family:JetBrains Mono,monospace;">{gl_u}–{gv_u} {icono}</span>' +
+                        '</div>'
+                    )
+                st.markdown(header + filas + "</div>", unsafe_allow_html=True)
             return
 
         # ── Sub-pantalla pronósticos — continúa abajo con el código existente ──
@@ -319,8 +377,8 @@ def pantalla_usuario():
         gl_prev, gv_prev = pred.get(idx, (0, 0))
         res_real    = resultados_fase.get(idx)
         iconos      = ""
-        color_card  = "rgba(255,255,255,0.03)"
-        border_card = "rgba(255,255,255,0.08)"
+        color_card  = "var(--surface)"
+        border_card = "var(--border2)"
         res_str     = ""
 
         if res_real:
@@ -330,11 +388,11 @@ def pantalla_usuario():
             iconos  = ("✅" if acierto_res else "❌") + (" 🎯" if acierto_exacto else "")
             res_str = f"{rl} — {rv}"
             if acierto_exacto:
-                color_card = "rgba(0,200,80,0.07)";  border_card = "rgba(0,200,80,0.3)"
+                color_card = "var(--green-dim)"; border_card = "var(--green-glow)"
             elif acierto_res:
-                color_card = "rgba(0,150,255,0.06)"; border_card = "rgba(0,150,255,0.25)"
+                color_card = "var(--blue-dim)"; border_card = "var(--blue-border)"
             else:
-                color_card = "rgba(255,60,60,0.05)"; border_card = "rgba(255,60,60,0.2)"
+                color_card = "var(--red-dim)"; border_card = "var(--red-border)"
 
         nom_local  = f"{bandera(p['local'])} {p['local']}"
         nom_visita = f"{bandera(p['visita'])} {p['visita']}"
@@ -349,11 +407,11 @@ def pantalla_usuario():
                 <div style="display:flex;align-items:center;gap:6px;">
                     <div style="flex:1;text-align:right;font-weight:700;font-size:0.88rem;
                                 color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{nom_local}</div>
-                    <div style="background:var(--bg);border-radius:8px;padding:4px 10px;
+                    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;
                                 font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--green);
                                 min-width:36px;text-align:center;flex-shrink:0;">{gl_prev}</div>
                     <div style="color:var(--text3);font-size:0.8rem;flex-shrink:0;">:</div>
-                    <div style="background:var(--bg);border-radius:8px;padding:4px 10px;
+                    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;
                                 font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--green);
                                 min-width:36px;text-align:center;flex-shrink:0;">{gv_prev}</div>
                     <div style="flex:1;text-align:left;font-weight:700;font-size:0.88rem;
@@ -560,20 +618,20 @@ def pantalla_usuario():
             resultado_real = db_get_resultado_especial(cat)
 
             if not elec:
-                bg_c = "rgba(255,255,255,0.02)"; border_c = "rgba(255,255,255,0.05)"
+                bg_c = "var(--surface)"; border_c = "var(--surface)"
                 derecha = '<span style="color:var(--text3); font-size:0.8rem;">Sin completar</span>'
             elif resultado_real:
                 acierto  = elec == resultado_real
                 icono    = "🎯" if acierto else "❌"
-                bg_c     = "rgba(0,200,80,0.06)" if acierto else "rgba(255,60,60,0.05)"
-                border_c = "rgba(0,200,80,0.25)" if acierto else "rgba(255,60,60,0.2)"
+                bg_c     = "var(--green-dim)" if acierto else "var(--red-dim)"
+                border_c = "var(--green-glow)" if acierto else "var(--red-border)"
                 derecha  = (f'<b style="color:var(--text)">{elec}</b>'
-                            f'<span style="margin:0 8px; color:#404058;">→</span>'
+                            f'<span style="margin:0 8px; color:var(--text3);">→</span>'
                             f'<span style="color:var(--text2); font-size:0.8rem;">Real: </span>'
                             f'<b style="color:var(--text)">{resultado_real}</b>'
                             f'<span style="margin-left:6px; font-size:1rem;">{icono}</span>')
             else:
-                bg_c = "rgba(255,255,255,0.03)"; border_c = "rgba(255,255,255,0.07)"
+                bg_c = "var(--surface)"; border_c = "var(--border)"
                 derecha = f'<b style="color:var(--text)">{elec}</b>'
 
             st.markdown(f"""<div style="background:{bg_c}; border:1px solid {border_c};
@@ -615,7 +673,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
 
         if res_real_w:
             acierto_w = elec_w == res_real_w
-            st.markdown(f"<div style='color:var(--text2); font-size:0.9rem; margin-bottom:8px;'>Resultado oficial: <b style='color:#fff'>{res_real_w}</b> {'🎯' if acierto_w else '❌'} — Tu pronóstico: <b style='color:#fff'>{elec_w or '—'}</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='color:var(--text2); font-size:0.9rem; margin-bottom:8px;'>Resultado oficial: <b style='color:var(--text)'>{res_real_w}</b> {'🎯' if acierto_w else '❌'} — Tu pronóstico: <b style='color:var(--text)'>{elec_w or '—'}</b></div>", unsafe_allow_html=True)
             selecciones_esp[cat] = elec_w
         elif esp_w and esp_w["confirmado"]:
             st.markdown(f"<div style='color:var(--green); font-size:0.9rem; margin-bottom:8px;'>✅ Confirmado: <b>{elec_w}</b></div>", unsafe_allow_html=True)
