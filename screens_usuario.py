@@ -332,7 +332,7 @@ def pantalla_usuario():
 
         st.divider()
 
-    # ── Validaciones ──────────────────────────────────────────────────────────
+    # ── Validaciones ────────────────────────────────────────────────────────────
     if not fases.get(fase, False):
         st.markdown("""<div style="background:rgba(255,180,0,0.08); border:1.5px solid rgba(255,180,0,0.25);
                     border-radius:12px; padding:14px 18px; margin:1rem 0;">
@@ -358,7 +358,7 @@ def pantalla_usuario():
     confirmado = prode["confirmado"]
     pred       = prode["pred"]
 
-    # ── 3) Pronósticos ────────────────────────────────────────────────────────
+    # ── 3) Pronósticos ────────────────────────────────────────────────────────────
     estado_badge = ('<span style="background:var(--green-dim);color:var(--green);font-size:0.65rem;font-weight:700;'
                     'letter-spacing:1px;text-transform:uppercase;padding:2px 9px;border-radius:20px;'
                     'border:1px solid var(--green-glow);margin-left:8px;">Confirmado ✓</span>') if confirmado else ""
@@ -572,7 +572,7 @@ def pantalla_usuario():
             sin_confirmar = [idx for idx in total_partidos if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
 
             if sin_confirmar:
-                st.warning(f"⚠️ Confirmá todos los partidos antes de continuar ({len(sin_confirmar)} pendiente{'s' if len(sin_confirmar) > 1 else ''}).")
+                st.warning(f"⚠️ Hay pronósticos sin confirmar.")
 
             with st.form("form_confirmar"):
                 clave_confirm = st.text_input("Ingresá tu contraseña para confirmar", type="password")
@@ -724,6 +724,41 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
     if "msg_esp" in st.session_state:
         st.success(st.session_state.pop("msg_esp"))
 
+    # ── Diálogo de confirmación ──
+    if st.session_state.get("mostrar_dialogo_confirm_esp"):
+        st.warning("⚠️ ¿Querés continuar sin confirmar todos los pronósticos?")
+        c1, c2 = st.columns(2)
+        if c1.button("Sí, confirmar igual", key="btn_confirmar_sin_ok_esp"):
+            partidos_ok = st.session_state.get("partidos_ok", {})
+            partidos_indices = [p["idx"] for p in partidos if p["idx"] >= 0]
+            sin_confirmar = [idx for idx in partidos_indices if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
+            
+            esp_confirmados = {cat: db_get_especial(username, cat) for cat in CATEGORIAS_ESPECIALES}
+            sin_elegir = [info["label"] for cat, info in CATEGORIAS_ESPECIALES.items()
+                          if selecciones_esp.get(cat) is None and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"])]
+            
+            if sin_elegir:
+                st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
+            else:
+                with st.spinner("Confirmando pronósticos..."):
+                    db_confirmar_prode(username, fase)
+                    for cat, elec in selecciones_esp.items():
+                        if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
+                            db_guardar_especial(username, cat, elec)
+                            db_confirmar_especial(username, cat)
+                    db_calcular_puntos()
+                st.session_state["wizard_grupos_completo"] = True
+                st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
+                db_set_config(f"wizard_pos_{username}", "0")
+                st.session_state["mostrar_dialogo_confirm_esp"] = False
+                st.rerun()
+        
+        if c2.button("No, volver atrás", key="btn_cancelar_confirm_esp"):
+            st.session_state["mostrar_dialogo_confirm_esp"] = False
+            st.rerun()
+        return
+
+    # ── Formulario de confirmación ──
     with st.form("form_confirmar_especiales"):
         clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
         confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
@@ -732,11 +767,13 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
         if hash_clave(clave_esp_final) != u["clave"]:
             st.error("Contraseña incorrecta.")
         else:
-            # Verificar que todos los partidos tengan checkbox marcado
             partidos_ok = st.session_state.get("partidos_ok", {})
-            partidos_sin_ok = [idx for idx in pred if not partidos_ok.get(f"ok_{fase}_{idx}", False) and idx >= 0]
-            if partidos_sin_ok:
-                st.error(f"⚠️ Faltan confirmar {len(partidos_sin_ok)} partido(s). Volvé a los grupos y marcá todos los pronósticos.")
+            partidos_indices = [p["idx"] for p in partidos if p["idx"] >= 0]
+            sin_confirmar = [idx for idx in partidos_indices if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
+            
+            if sin_confirmar:
+                st.session_state["mostrar_dialogo_confirm_esp"] = True
+                st.rerun()
             else:
                 esp_confirmados = {cat: db_get_especial(username, cat) for cat in CATEGORIAS_ESPECIALES}
                 sin_elegir = [info["label"] for cat, info in CATEGORIAS_ESPECIALES.items()

@@ -1,80 +1,84 @@
 """
-styles.py — CSS global. Los colores base en .streamlit/config.toml.
+styles.py — CSS global. Tema profesional premium: Azul oscuro + Modo claro elegante.
 """
 import streamlit as st
 
-DARK = dict(
-    bg="#0f1923", bg2="#162030", bg3="#1c2e3f",
-    text="#e8edf8", text2="#8898bb", text3="#445070",
-    border="rgba(100,160,255,0.18)", border2="rgba(100,160,255,0.40)",
-    hover_border="rgba(100,180,255,0.6)",
-    shadow="rgba(0,5,20,0.55)", surface2="rgba(255,255,255,0.10)",
-    input_bg="#1c2e3f", input_text="#e8edf8",
-    grad1="rgba(30,80,200,0.15)", grad2="rgba(0,180,255,0.08)", grad3="rgba(0,220,110,0.07)",
-    green="#00e87a", green2="#00c860",
-    green_dim="rgba(0,220,110,0.12)", green_glow="rgba(0,200,96,0.28)",
-    gold="#ffc840", gold_dim="rgba(255,200,64,0.12)", gold_border="rgba(255,200,64,0.30)",
-    blue="#5599ff", blue_dim="rgba(85,153,255,0.10)", blue_border="rgba(85,153,255,0.30)",
-    red="#ff5566", red_dim="rgba(255,85,102,0.10)", red_border="rgba(255,85,102,0.30)",
-    orange="#ff8844", orange_dim="rgba(255,136,68,0.12)", orange_border="rgba(255,136,68,0.30)",
-    table_bg="#162030", table_head="rgba(100,160,255,0.07)", table_row="rgba(100,160,255,0.03)",
-    scheme="dark", bg_html="#0f1923",
+DARK_THEME = dict(
+    bg="#0f1419", bg2="#151b24", bg3="#1a2332",
+    text="#f5f7fa", text2="#b8c5d6", text3="#7a8a9e",
+    border="rgba(255,255,255,0.08)", border2="rgba(255,255,255,0.12)",
+    hover_border="rgba(212,175,55,0.5)",
+    shadow="rgba(0,0,0,0.3)", surface2="rgba(255,255,255,0.04)",
+    input_bg="#111820", input_text="#f5f7fa",
+    grad1="rgba(212,175,55,0.06)", grad2="rgba(79,172,254,0.05)", grad3="rgba(212,175,55,0.04)",
+    gold="#d4af37", gold2="#e6c547", gold3="#b8941f",
+    gold_dim="rgba(212,175,55,0.10)", gold_glow="rgba(212,175,55,0.25)",
+    blue="#4facfe", blue2="#00f2fe", blue_dim="rgba(79,172,254,0.10)", blue_border="rgba(79,172,254,0.25)",
+    cyan="#00f2fe", cyan_dim="rgba(0,242,254,0.10)", cyan_border="rgba(0,242,254,0.25)",
+    red="#ff6b6b", red_dim="rgba(255,107,107,0.10)", red_border="rgba(255,107,107,0.25)",
+    orange="#ff922b", orange_dim="rgba(255,146,43,0.10)", orange_border="rgba(255,146,43,0.25)",
+    green="#51cf66", green2="#37b24d", green_dim="rgba(81,207,102,0.10)", green_border="rgba(81,207,102,0.25)",
+    table_bg="#111820", table_head="rgba(212,175,55,0.08)", table_row="rgba(212,175,55,0.03)",
+    scheme="dark", bg_html="#0f1419",
 )
 
-LIGHT = dict(
-    bg="#f0f4fb", bg2="#e4eaf5", bg3="#ffffff",
-    text="#111827", text2="#4a5568", text3="#9aa5b4",
-    border="rgba(0,60,180,0.15)", border2="rgba(0,60,180,0.30)",
-    hover_border="rgba(0,60,180,0.5)",
-    shadow="rgba(0,0,0,0.10)", surface2="rgba(0,0,0,0.07)",
-    input_bg="#ffffff", input_text="#111827",
-    grad1="rgba(30,80,200,0.05)", grad2="rgba(0,150,255,0.04)", grad3="rgba(0,180,80,0.04)",
-    green="#007a40", green2="#005c30",
-    green_dim="rgba(0,122,64,0.10)", green_glow="rgba(0,100,50,0.22)",
-    gold="#9a6800", gold_dim="rgba(154,104,0,0.10)", gold_border="rgba(154,104,0,0.28)",
-    blue="#1a56db", blue_dim="rgba(26,86,219,0.10)", blue_border="rgba(26,86,219,0.28)",
-    red="#c81e3a", red_dim="rgba(200,30,58,0.10)", red_border="rgba(200,30,58,0.28)",
-    orange="#b45309", orange_dim="rgba(180,83,9,0.10)", orange_border="rgba(180,83,9,0.28)",
-    table_bg="#ffffff", table_head="rgba(0,60,180,0.05)", table_row="rgba(0,60,180,0.02)",
-    scheme="light", bg_html="#f0f4fb",
+LIGHT_THEME = dict(
+    bg="#fafbfc", bg2="#f6f8fa", bg3="#ffffff",
+    text="#0d1117", text2="#424a55", text3="#57606a",
+    border="rgba(27,31,36,0.08)", border2="rgba(27,31,36,0.15)",
+    hover_border="rgba(184,148,31,0.6)",
+    shadow="rgba(0,0,0,0.06)", surface2="rgba(27,31,36,0.04)",
+    input_bg="#ffffff", input_text="#0d1117",
+    grad1="rgba(212,175,55,0.04)", grad2="rgba(79,172,254,0.03)", grad3="rgba(212,175,55,0.02)",
+    gold="#b8861b", gold2="#d4af37", gold3="#9a6b14",
+    gold_dim="rgba(184,134,27,0.10)", gold_glow="rgba(184,134,27,0.20)",
+    blue="#0969da", blue2="#0a63d4", blue_dim="rgba(9,105,218,0.10)", blue_border="rgba(9,105,218,0.20)",
+    cyan="#0891b2", cyan_dim="rgba(8,145,178,0.10)", cyan_border="rgba(8,145,178,0.20)",
+    red="#cf222e", red_dim="rgba(207,34,46,0.10)", red_border="rgba(207,34,46,0.20)",
+    orange="#fb8500", orange_dim="rgba(251,133,0,0.10)", orange_border="rgba(251,133,0,0.20)",
+    green="#1a7f37", green2="#0d4a1a", green_dim="rgba(26,127,55,0.10)", green_border="rgba(26,127,55,0.20)",
+    table_bg="#ffffff", table_head="rgba(212,175,55,0.06)", table_row="rgba(212,175,55,0.02)",
+    scheme="light", bg_html="#fafbfc",
 )
 
 
 def get_tema() -> str:
-    t = st.query_params.get("t", "dark")
-    return t if t in ("dark", "light") else "dark"
+    """Retorna el tema actual."""
+    return st.query_params.get("t", "dark")
 
 
 def toggle_tema():
+    """Alterna entre tema claro y oscuro."""
     actual = get_tema()
     st.query_params["t"] = "light" if actual == "dark" else "dark"
     st.rerun()
 
 
 def render_tema_boton():
+    """Renderiza el botón para cambiar de tema."""
     tema = get_tema()
     icono = "☀️" if tema == "dark" else "🌙"
+    
     col1, col2 = st.columns([11, 1])
     with col2:
-        if st.button(icono, key="_tema_btn"):
+        if st.button(icono, key="_tema_btn", help="Cambiar tema", use_container_width=True):
             toggle_tema()
 
 
 def inject_css():
+    """Inyecta CSS con tema profesional premium."""
     tema = get_tema()
-    v = DARK if tema == "dark" else LIGHT
-
-    # CSS de botones con valores interpolados directamente (sin variables CSS)
-    btn_bg     = v['bg3']
-    btn_border = v['border2']
-    btn_text   = v['text']
-    btn_green  = v['green']
-    btn_green2 = v['green2']
-    btn_glow   = v['green_glow']
+    v = DARK_THEME if tema == "dark" else LIGHT_THEME
 
     st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
+    * {{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }}
 
     :root {{
         color-scheme: {v['scheme']};
@@ -95,179 +99,402 @@ def inject_css():
         --table-bg:     {v['table_bg']};
         --table-head:   {v['table_head']};
         --table-row:    {v['table_row']};
+        --gold:         {v['gold']};
+        --gold2:        {v['gold2']};
+        --gold-dim:     {v['gold_dim']};
+        --gold-glow:    {v['gold_glow']};
+        --blue:         {v['blue']};
+        --blue2:        {v['blue2']};
+        --blue-dim:     {v['blue_dim']};
+        --cyan:         {v['cyan']};
+        --cyan-dim:     {v['cyan_dim']};
+        --red:          {v['red']};
+        --red-dim:      {v['red_dim']};
+        --orange:       {v['orange']};
+        --orange-dim:   {v['orange_dim']};
         --green:        {v['green']};
         --green2:       {v['green2']};
         --green-dim:    {v['green_dim']};
-        --green-glow:   {v['green_glow']};
-        --gold:         {v['gold']};
-        --gold-dim:     {v['gold_dim']};
-        --gold-border:  {v['gold_border']};
-        --blue:         {v['blue']};
-        --blue-dim:     {v['blue_dim']};
-        --blue-border:  {v['blue_border']};
-        --red:          {v['red']};
-        --red-dim:      {v['red_dim']};
-        --red-border:   {v['red_border']};
-        --orange:       {v['orange']};
-        --orange-dim:   {v['orange_dim']};
-        --orange-border:{v['orange_border']};
-        --radius:       14px;
-        --radius-sm:    9px;
+        --radius:       12px;
+        --radius-sm:    8px;
+        --radius-lg:    16px;
     }}
 
-    html, body {{ background-color: {v['bg_html']} !important; color: {v['text']} !important; }}
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main, .block-container {{
-        background-color: var(--bg) !important; color: var(--text) !important;
+    html, body {{ 
+        background-color: {v['bg_html']} !important; 
+        color: {v['text']} !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 400 !important;
     }}
+    
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main, .block-container {{
+        background-color: var(--bg) !important; 
+        color: var(--text) !important;
+    }}
+    
     .stApp {{
-        background: var(--bg) !important;
-        background-image:
-            radial-gradient(ellipse 70% 50% at 10% 60%, {v['grad1']} 0%, transparent 100%),
-            radial-gradient(ellipse 55% 40% at 90% 15%, {v['grad2']} 0%, transparent 100%),
-            radial-gradient(ellipse 45% 35% at 50% 95%, {v['grad3']} 0%, transparent 100%) !important;
+        background: linear-gradient(135deg, {v['bg']} 0%, {v['bg2']} 50%, {v['bg']} 100%) !important;
+        background-attachment: fixed !important;
         min-height: 100vh;
     }}
-    *, *::before, *::after {{ box-sizing: border-box; }}
-    html, body {{ font-family: 'Outfit', sans-serif; -webkit-font-smoothing: antialiased; }}
+    
     #MainMenu, footer, header {{ visibility: hidden; }}
-    .block-container {{ padding-top: 2.5rem !important; padding-bottom: 4rem !important; max-width: 860px !important; }}
+    .block-container {{ 
+        padding-top: 2.5rem !important; 
+        padding-bottom: 3.5rem !important; 
+        max-width: 900px !important; 
+    }}
 
+    /* ===== TYPOGRAPHY ===== */
     h1 {{
-        font-family: 'Bebas Neue', sans-serif !important; font-size: 3rem !important; letter-spacing: 3px !important;
-        background: linear-gradient(135deg, var(--green) 0%, var(--green2) 100%) !important;
-        -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
-        background-clip: text !important; margin-bottom: 0.15rem !important; line-height: 1.05 !important;
+        font-family: 'Inter', sans-serif !important; 
+        font-size: 3.2rem !important; 
+        font-weight: 900 !important;
+        letter-spacing: -1px !important;
+        background: linear-gradient(135deg, {v['gold']} 0%, {v['gold2']} 100%) !important;
+        -webkit-background-clip: text !important; 
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important; 
+        margin: 1.5rem 0 1rem 0 !important; 
+        line-height: 1.1 !important;
     }}
-    h2 {{ font-family: 'Bebas Neue', sans-serif !important; font-size: 1.7rem !important; letter-spacing: 2px !important; color: var(--text) !important; margin-top: 0.3rem !important; }}
-    h3 {{ font-family: 'Outfit', sans-serif !important; font-weight: 700 !important; color: var(--text2) !important; font-size: 0.72rem !important; text-transform: uppercase !important; letter-spacing: 2px !important; }}
+    
+    h2 {{ 
+        font-family: 'Inter', sans-serif !important; 
+        font-size: 2rem !important; 
+        font-weight: 800 !important;
+        letter-spacing: -0.5px !important;
+        color: var(--text) !important; 
+        margin: 1.5rem 0 0.8rem 0 !important; 
+        line-height: 1.2 !important;
+    }}
+    
+    h3 {{ 
+        font-family: 'Inter', sans-serif !important; 
+        font-weight: 700 !important; 
+        color: var(--gold) !important; 
+        font-size: 1rem !important; 
+        text-transform: uppercase !important; 
+        letter-spacing: 1px !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }}
 
-    .stTextInput > div > div > input, .stPasswordInput > div > div > input {{
-        background: var(--input-bg) !important; border: 1.5px solid var(--border2) !important;
-        border-radius: var(--radius-sm) !important; color: var(--input-text) !important;
-        padding: 0.65rem 1rem !important; font-family: 'Outfit', sans-serif !important;
-        font-size: 0.97rem !important; font-weight: 500 !important;
-        -webkit-text-fill-color: var(--input-text) !important; caret-color: var(--green) !important;
+    p, div, span, li {{
+        color: var(--text) !important;
     }}
-    .stTextInput > div > div > input:focus, .stPasswordInput > div > div > input:focus {{
-        border-color: var(--green2) !important; box-shadow: 0 0 0 3px var(--green-dim) !important;
-        -webkit-text-fill-color: var(--input-text) !important;
-    }}
-    .stTextInput > div > div > input::placeholder, .stPasswordInput > div > div > input::placeholder {{
-        color: var(--text3) !important; -webkit-text-fill-color: var(--text3) !important;
-    }}
-    .stTextInput label, .stPasswordInput label, .stSelectbox label, .stNumberInput label,
-    .stFileUploader label, .stRadio label, .stDateInput label {{
-        color: var(--text2) !important; font-size: 0.75rem !important; font-weight: 600 !important;
-        text-transform: uppercase !important; letter-spacing: 1.2px !important;
-    }}
-    .stSelectbox > div > div {{
-        background: var(--input-bg) !important; border: 1.5px solid var(--border2) !important;
-        border-radius: var(--radius-sm) !important; color: var(--input-text) !important;
-        -webkit-text-fill-color: var(--input-text) !important;
-    }}
-    .stSelectbox > div > div > div {{ color: var(--input-text) !important; -webkit-text-fill-color: var(--input-text) !important; }}
+
+    /* ===== INPUTS ===== */
+    .stTextInput > div > div > input, 
+    .stPasswordInput > div > div > input,
     .stNumberInput > div > div > input {{
-        background: var(--input-bg) !important; border: 1.5px solid var(--border2) !important;
-        border-radius: var(--radius-sm) !important; color: var(--input-text) !important;
-        -webkit-text-fill-color: var(--input-text) !important; caret-color: var(--green) !important;
-        text-align: center !important; font-size: 1.5rem !important; font-weight: 800 !important;
-        font-family: 'JetBrains Mono', monospace !important;
+        background: var(--input-bg) !important; 
+        border: 1.5px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important; 
+        color: var(--input-text) !important;
+        padding: 0.85rem 1.1rem !important; 
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.95rem !important; 
+        font-weight: 500 !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
     }}
-    .stNumberInput > div > div > input:focus {{ border-color: var(--green2) !important; box-shadow: 0 0 0 3px var(--green-dim) !important; }}
-
-    .stSuccess {{ background: var(--green-dim) !important; border: 1px solid var(--green-glow) !important; border-radius: var(--radius-sm) !important; color: var(--green) !important; }}
-    .stError   {{ background: var(--red-dim)   !important; border: 1px solid var(--red-border)   !important; border-radius: var(--radius-sm) !important; color: var(--red)   !important; }}
-    .stWarning {{ background: var(--gold-dim)   !important; border: 1px solid var(--gold-border)  !important; border-radius: var(--radius-sm) !important; color: var(--gold)  !important; }}
-    .stInfo    {{ background: var(--blue-dim)   !important; border: 1px solid var(--blue-border)  !important; border-radius: var(--radius-sm) !important; color: var(--blue)  !important; }}
-
-    [data-testid="stMetric"] {{ background: var(--bg3) !important; border: 1.5px solid var(--border) !important; border-radius: var(--radius) !important; padding: 1.1rem 1.3rem !important; position: relative !important; overflow: hidden !important; }}
-    [data-testid="stMetric"]::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green2), transparent); opacity: 0.5; }}
-    [data-testid="stMetricLabel"] {{ color: var(--text2) !important; font-size: 0.72rem !important; text-transform: uppercase !important; letter-spacing: 1.4px !important; font-weight: 600 !important; }}
-    [data-testid="stMetricValue"] {{ color: var(--green) !important; font-family: 'Bebas Neue', sans-serif !important; font-size: 2.4rem !important; letter-spacing: 1.5px !important; line-height: 1.1 !important; }}
-
-    [data-testid="stDataFrame"] {{ border-radius: var(--radius) !important; overflow: hidden !important; border: 1px solid var(--border) !important; }}
-
-    .stTabs [data-baseweb="tab-list"] {{ background: var(--bg3) !important; border-radius: var(--radius) !important; padding: 5px !important; gap: 3px !important; border: 1.5px solid var(--border) !important; }}
-    .stTabs [data-baseweb="tab"] {{ background: transparent !important; border-radius: var(--radius-sm) !important; color: var(--text2) !important; font-family: 'Outfit', sans-serif !important; font-weight: 600 !important; font-size: 0.78rem !important; padding: 0.42rem 0.85rem !important; }}
-    .stTabs [data-baseweb="tab"]:hover {{ color: var(--text) !important; background: var(--surface2) !important; }}
-    .stTabs [aria-selected="true"] {{ background: var(--green-dim) !important; color: var(--green) !important; border: 1px solid var(--green-glow) !important; }}
-
-    .stRadio [data-testid="stMarkdownContainer"] p {{ color: var(--text) !important; font-weight: 500 !important; }}
-    .stRadio > div {{ background: var(--bg3) !important; border-radius: var(--radius) !important; padding: 0.55rem 1rem !important; border: 1.5px solid var(--border) !important; }}
-    .stCheckbox, [data-testid="stToggle"] {{ color: var(--text) !important; }}
-
-    .streamlit-expanderHeader {{ background: var(--bg3) !important; border-radius: var(--radius-sm) !important; border: 1.5px solid var(--border) !important; color: var(--text) !important; font-weight: 600 !important; }}
-    .streamlit-expanderContent {{ background: var(--surface) !important; border: 1.5px solid var(--border) !important; border-top: none !important; border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important; }}
-
-    hr {{ border: none !important; border-top: 1px solid var(--border) !important; margin: 1.6rem 0 !important; }}
-    .stCaption, caption {{ color: var(--text3) !important; font-size: 0.78rem !important; }}
-    .stMarkdown p {{ color: var(--text2) !important; line-height: 1.75 !important; }}
-    .stMarkdown strong {{ color: var(--text) !important; font-weight: 700 !important; }}
-    [data-testid="stFileUploader"] {{ background: var(--surface) !important; border: 1.5px dashed var(--border2) !important; border-radius: var(--radius) !important; }}
-    [data-testid="stForm"] {{ background: var(--bg3) !important; border: 1.5px solid var(--border) !important; border-radius: var(--radius) !important; padding: 1.6rem !important; }}
-    .stSpinner > div {{ border-top-color: var(--green) !important; }}
-
-    ::-webkit-scrollbar {{ width: 5px; height: 5px; }}
-    ::-webkit-scrollbar-track {{ background: var(--bg); }}
-    ::-webkit-scrollbar-thumb {{ background: var(--border2); border-radius: 4px; }}
-
-    @media (max-width: 768px) {{
-        .block-container {{ padding-left: 0.8rem !important; padding-right: 0.8rem !important; padding-top: 1rem !important; }}
-        h1 {{ font-size: 2.3rem !important; }}
-        h2 {{ font-size: 1.4rem !important; }}
-        .stTabs [data-baseweb="tab"] {{ font-size: 0.68rem !important; padding: 0.3rem 0.45rem !important; }}
-        .stTabs [data-baseweb="tab-list"] {{ flex-wrap: wrap !important; gap: 2px !important; }}
-        .stTextInput > div > div > input, .stPasswordInput > div > div > input {{ font-size: 16px !important; }}
-        [data-testid="stMetricValue"] {{ font-size: 1.8rem !important; }}
-        .stNumberInput > div > div > input {{ font-size: 1.5rem !important; }}
+    
+    .stTextInput > div > div > input:focus, 
+    .stPasswordInput > div > div > input:focus,
+    .stNumberInput > div > div > input:focus {{
+        border-color: var(--gold) !important; 
+        box-shadow: 0 0 0 3px var(--gold-dim), 0 4px 12px {v['shadow']} !important;
+        outline: none !important;
+        background: var(--bg3) !important;
     }}
-    </style>
-    """, unsafe_allow_html=True)
-
-    # Botones — CSS separado con valores hardcodeados interpolados desde Python
-    st.markdown(f"""
-    <style>
-    [data-testid="stButton"] button,
-    [data-testid="stFormSubmitButton"] button {{
-        background-color: {btn_bg} !important;
-        border: 1.5px solid {btn_border} !important;
-        border-radius: 8px !important;
-        color: {btn_text} !important;
-        -webkit-text-fill-color: {btn_text} !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 600 !important;
-        font-size: 0.88rem !important;
-        padding: 0.5rem 1.2rem !important;
-        min-height: 2.4rem !important;
-        transition: all 0.16s ease !important;
+    
+    .stTextInput > div > div > input::placeholder, 
+    .stPasswordInput > div > div > input::placeholder {{
+        color: var(--text3) !important; 
     }}
-    [data-testid="stButton"] button:hover,
-    [data-testid="stFormSubmitButton"] button:hover {{
-        filter: brightness(1.3) !important;
-    }}
-    [data-testid="stButton"] button p,
-    [data-testid="stButton"] button span,
-    [data-testid="stButton"] button div,
-    [data-testid="stFormSubmitButton"] button p,
-    [data-testid="stFormSubmitButton"] button span {{
-        color: {btn_text} !important;
-        -webkit-text-fill-color: {btn_text} !important;
-    }}
-    [data-testid="stButton"] button[data-testid="baseButton-primary"],
-    [data-testid="stFormSubmitButton"] button[data-testid="baseButton-primary"] {{
-        background: linear-gradient(135deg, {btn_green2} 0%, {btn_green} 100%) !important;
-        border: none !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+    
+    .stTextInput label, 
+    .stPasswordInput label, 
+    .stSelectbox label, 
+    .stNumberInput label,
+    .stFileUploader label, 
+    .stRadio label, 
+    .stDateInput label {{
+        color: var(--text2) !important; 
+        font-size: 0.75rem !important; 
         font-weight: 700 !important;
-        box-shadow: 0 4px 18px {btn_glow} !important;
+        text-transform: uppercase !important; 
+        letter-spacing: 1.5px !important;
+        margin-bottom: 0.6rem !important;
     }}
-    [data-testid="stButton"] button[data-testid="baseButton-primary"] p,
-    [data-testid="stButton"] button[data-testid="baseButton-primary"] span,
-    [data-testid="stFormSubmitButton"] button[data-testid="baseButton-primary"] p,
-    [data-testid="stFormSubmitButton"] button[data-testid="baseButton-primary"] span {{
+    
+    .stSelectbox > div > div {{
+        background: var(--input-bg) !important; 
+        border: 1.5px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important; 
+        color: var(--input-text) !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
+    }}
+    
+    .stSelectbox > div > div > div {{ 
+        color: var(--input-text) !important; 
+    }}
+
+    /* ===== BUTTONS SECUNDARIOS ===== */
+    .stButton > button {{
+        background-color: var(--bg3) !important;
+        color: var(--text) !important;
+        border: 2px solid var(--border2) !important;
+        border-radius: var(--radius-sm) !important;
+        padding: 0.8rem 2rem !important;
+        font-weight: 700 !important;
+        font-size: 0.92rem !important;
+        font-family: 'Inter', sans-serif !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }}
+    
+    .stButton > button::before {{
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(90deg, transparent, rgba(212,175,55,0.15), transparent) !important;
+        transition: left 0.5s ease !important;
+    }}
+    
+    .stButton > button:hover {{
+        border-color: var(--gold) !important;
+        background-color: rgba(212,175,55,0.08) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px {v['shadow']} !important;
+    }}
+
+    .stButton > button:hover::before {{
+        left: 100% !important;
+    }}
+
+    .stButton > button:active {{
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 4px {v['shadow']} !important;
+    }}
+
+    .stButton > button:disabled {{
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+    }}
+
+    /* ===== BUTTONS PRIMARY (Ingresar, Registrarse) - VERDE ===== */
+    .stButton > button[kind="primary"] {{
+        background: linear-gradient(135deg, var(--green) 0%, var(--green2) 100%) !important;
         color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+        border: none !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 12px rgba(81,207,102,0.3) !important;
+    }}
+
+    .stButton > button[kind="primary"]:hover {{
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 20px rgba(81,207,102,0.4) !important;
+    }}
+
+    .stButton > button[kind="primary"]:active {{
+        transform: translateY(-1px) !important;
+    }}
+
+    /* ===== BOTÓN TEMA ===== */
+    #_tema_btn {{
+        font-size: 1.5rem !important;
+        padding: 0.5rem 0.8rem !important;
+        border: 2px solid var(--gold) !important;
+        background: var(--bg3) !important;
+        border-radius: var(--radius-sm) !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
+        transition: all 0.3s ease !important;
+    }}
+
+    #_tema_btn:hover {{
+        background: rgba(212,175,55,0.12) !important;
+        box-shadow: 0 4px 12px rgba(212,175,55,0.2) !important;
+        transform: scale(1.05) !important;
+    }}
+
+    #_tema_btn:active {{
+        transform: scale(0.95) !important;
+    }}
+
+    /* ===== DIVIDERS ===== */
+    .stDivider {{ 
+        border: none !important;
+        height: 1px !important;
+        background: linear-gradient(90deg, transparent, var(--border2), transparent) !important;
+        margin: 1.5rem 0 !important;
+    }}
+
+    /* ===== MESSAGES ===== */
+    .stSuccess, .stError, .stWarning, .stInfo {{
+        border-radius: var(--radius-sm) !important;
+        border-left: 4px solid !important;
+        padding: 1.1rem 1.4rem !important;
+        margin: 1.2rem 0 !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
+        font-weight: 500 !important;
+        color: var(--text) !important;
+    }}
+
+    .stSuccess {{ 
+        background-color: var(--green-dim) !important;
+        border-left-color: var(--green) !important;
+    }}
+    
+    .stError {{ 
+        background-color: var(--red-dim) !important;
+        border-left-color: var(--red) !important;
+    }}
+    
+    .stWarning {{ 
+        background-color: var(--orange-dim) !important;
+        border-left-color: var(--orange) !important;
+    }}
+    
+    .stInfo {{ 
+        background-color: var(--blue-dim) !important;
+        border-left-color: var(--blue) !important;
+    }}
+
+    /* ===== CHECKBOX ===== */
+    .stCheckbox > label {{
+        color: var(--text) !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        margin-bottom: 0.5rem !important;
+    }}
+
+    /* ===== FORM ===== */
+    .stForm {{
+        background: var(--bg3) !important;
+        border-radius: var(--radius) !important;
+        padding: 2rem !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
+    }}
+
+    /* ===== MARKDOWN ===== */
+    .markdown-text-container {{
+        color: var(--text) !important;
+    }}
+
+    /* ===== SUBHEADER ===== */
+    .stSubheader {{
+        color: var(--text) !important;
+        font-weight: 700 !important;
+    }}
+
+    /* ===== CAPTION ===== */
+    .stCaption {{
+        color: var(--text3) !important;
+        font-size: 0.85rem !important;
+    }}
+
+    /* ===== METRIC ===== */
+    [data-testid="stMetricContainer"] {{
+        background: var(--bg3) !important;
+        border-radius: var(--radius) !important;
+        border: 1px solid var(--border) !important;
+        padding: 1.5rem !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
+    }}
+
+    /* ===== TABLE ===== */
+    .stDataFrame {{
+        border-radius: var(--radius) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: 0 2px 8px {v['shadow']} !important;
+    }}
+
+    thead {{
+        background-color: var(--table-head) !important;
+    }}
+
+    tbody tr {{
+        border-color: var(--border) !important;
+    }}
+
+    tbody tr:nth-child(odd) {{
+        background-color: var(--table-row) !important;
+    }}
+
+    /* ===== EXPANDABLE ===== */
+    .streamlit-expanderHeader {{
+        background: var(--bg2) !important;
+        border-radius: var(--radius-sm) !important;
+        border: 1px solid var(--border) !important;
+    }}
+
+    /* ===== TABS ===== */
+    [data-testid="stTabs"] button {{
+        color: var(--text2) !important;
+        font-weight: 600 !important;
+        font-family: 'Inter', sans-serif !important;
+    }}
+
+    [data-testid="stTabs"] button[aria-selected="true"] {{
+        color: var(--gold) !important;
+        border-bottom-color: var(--gold) !important;
+    }}
+
+    /* ===== SCROLL ===== */
+    ::-webkit-scrollbar {{
+        width: 8px !important;
+    }}
+
+    ::-webkit-scrollbar-track {{
+        background: var(--bg2) !important;
+    }}
+
+    ::-webkit-scrollbar-thumb {{
+        background: var(--gold) !important;
+        border-radius: 4px !important;
+    }}
+
+    ::-webkit-scrollbar-thumb:hover {{
+        background: var(--gold2) !important;
+    }}
+
+    /* ===== SPINNER ===== */
+    .stSpinner {{
+        color: var(--gold) !important;
+    }}
+
+    /* ===== GENERAL ===== */
+    [data-testid="column"] {{
+        padding: 0.5rem !important;
+    }}
+
+    .stWarning, .stError, .stInfo, .stSuccess {{
+        animation: slideIn 0.3s ease !important;
+    }}
+
+    @keyframes slideIn {{
+        from {{
+            opacity: 0 !important;
+            transform: translateY(-10px) !important;
+        }}
+        to {{
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }}
     }}
     </style>
     """, unsafe_allow_html=True)
