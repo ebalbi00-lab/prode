@@ -31,7 +31,7 @@ def get_connection_pool():
         st.error("⚠️ No se encontró DATABASE_URL.")
         st.stop()
     return psycopg2.pool.ThreadedConnectionPool(
-        minconn=3, maxconn=15, dsn=url,
+        minconn=2, maxconn=10, dsn=url,
         cursor_factory=psycopg2.extras.RealDictCursor,
         keepalives=1, keepalives_idle=30,
         keepalives_interval=10, keepalives_count=5,
@@ -41,7 +41,22 @@ def get_connection_pool():
 @contextmanager
 def get_db():
     pool = get_connection_pool()
-    conn = pool.getconn()
+    conn = None
+    for intento in range(3):
+        try:
+            conn = pool.getconn()
+            # Verificar que la conexión esté viva
+            conn.cursor().execute("SELECT 1")
+            break
+        except Exception:
+            if conn:
+                try:
+                    pool.putconn(conn, close=True)
+                except Exception:
+                    pass
+                conn = None
+            if intento == 2:
+                raise
     try:
         yield conn
         conn.commit()
@@ -49,7 +64,8 @@ def get_db():
         conn.rollback()
         raise
     finally:
-        pool.putconn(conn)
+        if conn:
+            pool.putconn(conn)
 
 
 # ─── Helpers de invalidación quirúrgica ──────────────────────────────────────
@@ -200,7 +216,7 @@ def db_registro_abierto():
 
 # ─── Usuarios ─────────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=60)
 def db_get_usuario(username):
     with get_db() as conn:
         cur = conn.cursor()
@@ -209,7 +225,7 @@ def db_get_usuario(username):
         return dict(row) if row else None
 
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=120)
 def db_get_todos_usuarios():
     with get_db() as conn:
         cur = conn.cursor()
@@ -350,7 +366,7 @@ def db_limpiar_resultados_especiales():
 
 # ─── Pronósticos ──────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=30)
 def db_get_prode(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -389,7 +405,7 @@ def db_confirmar_prode(username, fase):
     _invalidar_usuarios()
 
 
-@st.cache_data(ttl=20)
+@st.cache_data(ttl=60)
 def db_fase_confirmada(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
@@ -412,7 +428,7 @@ def db_limpiar_prode_fase(username, fase):
 
 # ─── Pendientes ───────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=30)
 def db_get_pendientes():
     with get_db() as conn:
         cur = conn.cursor()
@@ -663,7 +679,7 @@ def db_limpiar_especiales(username):
         _invalidar_especial(username, cat)
 
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=120)
 def db_get_puntos_especiales_usuarios():
     result = {}
     for cat, info in CATEGORIAS_ESPECIALES.items():

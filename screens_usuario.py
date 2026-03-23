@@ -234,6 +234,13 @@ def pantalla_usuario():
             gv = col_gv.number_input("Visita", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
             col_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.95rem; padding-top:10px; color:var(--text); line-height:1.4;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
+            if "partidos_ok" not in st.session_state:
+                st.session_state["partidos_ok"] = {}
+            ok_key = f"ok_{fase}_{idx}"
+            actual = st.session_state["partidos_ok"].get(ok_key, False)
+            checked = st.checkbox("✔ Confirmo el pronóstico de este partido", value=actual, key=f"chk_{fase}_{idx}")
+            if checked != actual:
+                st.session_state["partidos_ok"][ok_key] = checked
             cambios[idx] = (gl, gv)
 
     # ── Fase Grupos con wizard ────────────────────────────────────────────────
@@ -261,7 +268,7 @@ def pantalla_usuario():
             total  = len(grupos_con_partidos)
 
             if gi == 12:
-                _render_paso_especiales(username, u, fase, total, partidos)
+                _render_paso_especiales(username, u, fase, total, partidos, pred)
             else:
                 letra = grupos_con_partidos[min(gi, len(grupos_con_partidos) - 1)]
                 st.markdown(f"""
@@ -401,7 +408,7 @@ def pantalla_usuario():
 
 # ─── Paso 13: Especiales dentro del wizard de grupos ─────────────────────────
 
-def _render_paso_especiales(username, u, fase, total, partidos):
+def _render_paso_especiales(username, u, fase, total, partidos, pred):
     st.markdown("""
     <div style='display:flex; align-items:center; gap:10px; margin:0.5rem 0 0.8rem 0;'>
         <div style='height:1px; flex:1; background:var(--surface2);'></div>
@@ -432,23 +439,43 @@ def _render_paso_especiales(username, u, fase, total, partidos):
             selecciones_esp[cat] = elec_w
         else:
             if cat == "campeon":
-                ops_w = [f"{bandera(e)} {e}" for e in eq_wiz]
+                ops_w = ["— Elegí un equipo —"] + [f"{bandera(e)} {e}" for e in eq_wiz]
                 d2n_w = {f"{bandera(e)} {e}": e for e in eq_wiz}
-                idx_w = next((i for i, e in enumerate(eq_wiz) if e == elec_w), 0)
+                if elec_w:
+                    disp_elec = f"{bandera(elec_w)} {elec_w}"
+                    idx_w = ops_w.index(disp_elec) if disp_elec in ops_w else 0
+                else:
+                    idx_w = 0
                 sel_w = st.selectbox("Seleccioná el equipo", ops_w, index=idx_w, key=f"esp_sel_{cat}")
-                selecciones_esp[cat] = d2n_w.get(sel_w, sel_w)
+                selecciones_esp[cat] = d2n_w.get(sel_w, None) if sel_w != "— Elegí un equipo —" else None
             else:
                 lista_w = ARQUEROS_MUNDIALISTAS if cat == "arquero" else JUGADORES_MUNDIALISTAS
                 label_w = "arquero" if cat == "arquero" else "jugador"
-                busq_w  = st.text_input(f"Buscar {label_w}", value="", key=f"esp_busq_{cat}", placeholder="Escribí el nombre (con o sin acento)...")
-                filtrados_w = [j for j in lista_w if normalizar(busq_w) in normalizar(j)] if busq_w else lista_w
-                if not filtrados_w:
-                    st.caption("No se encontró ningún jugador con ese nombre.")
-                    selecciones_esp[cat] = elec_w
+
+                # Mostrar selección actual — solo del session_state, nunca pre-cargado
+                sel_actual = st.session_state.get(f"esp_elegido_{cat}")
+                if sel_actual:
+                    st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
+                selecciones_esp[cat] = sel_actual
+
+                # Buscador — solo muestra si no hay selección o si el usuario quiere cambiar
+                if st.session_state.get(f"esp_cambiar_{cat}", not bool(sel_actual)):
+                    busq_w = st.text_input(f"Buscar {label_w}", value="", key=f"esp_busq_{cat}", placeholder="Escribí el nombre (con o sin acento)...")
+                    if busq_w:
+                        filtrados_w = [j for j in lista_w if normalizar(busq_w) in normalizar(j)][:8]
+                        if not filtrados_w:
+                            st.caption("No se encontró ningún jugador.")
+                        else:
+                            for jug in filtrados_w:
+                                if st.button(jug, key=f"jug_{cat}_{jug}", use_container_width=True):
+                                    st.session_state[f"esp_elegido_{cat}"] = jug
+                                    st.session_state[f"esp_cambiar_{cat}"] = False
+                                    selecciones_esp[cat] = jug
+                                    st.rerun()
                 else:
-                    idx_w = filtrados_w.index(elec_w) if elec_w in filtrados_w else 0
-                    sel_w = st.selectbox(f"Seleccioná el {label_w}", filtrados_w, index=idx_w, key=f"esp_sel_{cat}")
-                    selecciones_esp[cat] = sel_w
+                    if st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}"):
+                        st.session_state[f"esp_cambiar_{cat}"] = True
+                        st.rerun()
 
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
@@ -464,23 +491,31 @@ def _render_paso_especiales(username, u, fase, total, partidos):
         if hash_clave(clave_esp_final) != u["clave"]:
             st.error("Contraseña incorrecta.")
         else:
-            faltan = [info["label"] for cat, info in CATEGORIAS_ESPECIALES.items()
-                      if not selecciones_esp.get(cat) and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"])]
-            if faltan:
-                st.error(f"Falta completar: {', '.join(faltan)}")
+            # Verificar que todos los partidos tengan checkbox marcado
+            partidos_ok = st.session_state.get("partidos_ok", {})
+            partidos_sin_ok = [idx for idx in pred if not partidos_ok.get(f"ok_{fase}_{idx}", False) and idx >= 0]
+            if partidos_sin_ok:
+                st.error(f"⚠️ Faltan confirmar {len(partidos_sin_ok)} partido(s). Volvé a los grupos y marcá todos los pronósticos.")
             else:
-                with st.spinner("Confirmando pronósticos..."):
-                    db_confirmar_prode(username, fase)
-                    for cat, elec in selecciones_esp.items():
-                        if elec and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"]):
-                            db_guardar_especial(username, cat, elec)
-                            db_confirmar_especial(username, cat)
-                st.session_state["wizard_grupos_completo"] = True
-                st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
-                st.rerun()
+                esp_confirmados = {cat: db_get_especial(username, cat) for cat in CATEGORIAS_ESPECIALES}
+                sin_elegir = [info["label"] for cat, info in CATEGORIAS_ESPECIALES.items()
+                              if selecciones_esp.get(cat) is None and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"])]
+                if sin_elegir:
+                    st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
+                else:
+                    with st.spinner("Confirmando pronósticos..."):
+                        db_confirmar_prode(username, fase)
+                        for cat, elec in selecciones_esp.items():
+                            if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
+                                db_guardar_especial(username, cat, elec)
+                                db_confirmar_especial(username, cat)
+                    st.session_state["wizard_grupos_completo"] = True
+                    st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
+                    st.rerun()
 
     for cat, elec in selecciones_esp.items():
-        if elec and not (db_get_especial(username, cat) and db_get_especial(username, cat)["confirmado"]):
+        esp_actual = db_get_especial(username, cat)
+        if elec and not (esp_actual and esp_actual["confirmado"]):
             db_guardar_especial(username, cat, elec)
 
     st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
