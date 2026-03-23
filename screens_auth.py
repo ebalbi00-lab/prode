@@ -298,6 +298,61 @@ def pantalla_acerca():
         </div>""", unsafe_allow_html=True)
 
     st.divider()
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">⭐ Pronósticos especiales</div>""", unsafe_allow_html=True)
+    st.markdown("Además de los partidos, podés ganar puntos extra acertando estos pronósticos especiales:")
+    especiales_filas = [
+        ("🏆", "Campeón del mundo", "20 pts"),
+        ("👟", "Goleador del torneo", "10 pts"),
+        ("🧤", "Mejor arquero", "8 pts"),
+        ("🌟", "Mejor jugador", "8 pts"),
+    ]
+    cards_esp = ""
+    for icono, label, pts in especiales_filas:
+        cards_esp += f"""
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    background:rgba(255,255,255,0.03); border:1px solid var(--border);
+                    border-radius:10px; padding:10px 16px; margin-bottom:6px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.2rem;">{icono}</span>
+                <span style="color:var(--text); font-weight:600; font-size:0.92rem;">{label}</span>
+            </div>
+            <span style="color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.2rem; letter-spacing:1px;">+{pts}</span>
+        </div>"""
+    st.markdown(f'<div style="margin-bottom:0.5rem;">{cards_esp}</div>', unsafe_allow_html=True)
+
+    st.divider()
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">🏅 Premios destacados</div>""", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
+                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
+        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🎁 Premio sorpresa para los destacados</div>
+        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
+            Al finalizar el torneo se premiarán los mejores en cada categoría del ranking de destacados:<br>
+            <span style="color:var(--text);">🥇 Más resultados acertados &nbsp;·&nbsp; 🎯 Más exactos &nbsp;·&nbsp; 👑 Rey de grupos &nbsp;·&nbsp; 🔥 Rey de finales</span><br><br>
+            Los premios son una <strong style="color:var(--gold);">sorpresa</strong> — se revelarán al finalizar la competencia.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">🎉 Premios durante la competencia</div>""", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background:var(--blue-dim); border:1.5px solid var(--blue-border);
+                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
+        <div style="color:var(--blue); font-weight:700; font-size:0.88rem; margin-bottom:8px;">⚡ Premios sorpresa en el camino</div>
+        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
+            A lo largo del torneo se irán otorgando <strong style="color:var(--text);">diversos premios sorpresa</strong> 
+            en momentos especiales de la competencia — fase de grupos, octavos, cuartos, semifinales y más.<br><br>
+            Estar activo, consumir en el local y seguir de cerca cada partido puede sumar puntos 
+            y acceso a premios exclusivos. <span style="color:var(--blue);">¡Seguí participando!</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
     with st.expander("¿Puedo modificar mi pronóstico después de confirmarlo?"):
         st.write("No. Una vez que confirmás con tu contraseña, el pronóstico queda bloqueado definitivamente.")
     with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
