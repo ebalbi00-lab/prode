@@ -19,7 +19,8 @@ from db import (
     db_fase_confirmada, db_get_especial, db_guardar_especial,
     db_confirmar_especial, db_get_resultado_especial,
     db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
-    db_get_equipos_grupos, get_db, hash_clave
+    db_get_equipos_grupos, get_db, hash_clave,
+    db_set_config, db_get_config, db_calcular_puntos
 )
 
 
@@ -71,18 +72,22 @@ def pantalla_usuario():
 
     # ── 0) Header ─────────────────────────────────────────────────────────────
     st.markdown(f"""
-    <div style="display:flex; align-items:center; gap:14px; padding:0.3rem 0 1.2rem 0;
-                border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:1.2rem;">
-        <div style="width:46px; height:46px; border-radius:50%;
-                    background:linear-gradient(135deg,#00c860,#009944);
-                    display:flex; align-items:center; justify-content:center;
-                    font-size:1.3rem; font-weight:800; color:var(--text); flex-shrink:0;
-                    box-shadow:0 4px 14px rgba(0,200,96,0.35);">
-            {nombre_display[0].upper()}
+    <div style="display:flex; align-items:center; justify-content:space-between;
+                padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:50%;
+                        background:linear-gradient(135deg,#00c860,#009944);
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:1.1rem; font-weight:800; color:#fff; flex-shrink:0;">
+                {nombre_display[0].upper()}
+            </div>
+            <div>
+                <div style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text); line-height:1.1;">{nombre_display}</div>
+                <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px;">Mundial 2026</div>
+            </div>
         </div>
-        <div>
-            <div style="font-family:Bebas Neue,sans-serif; font-size:1.6rem; letter-spacing:2px; color:var(--text); line-height:1.1;">{nombre_display}</div>
-            <div style="font-size:0.72rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; font-weight:600;">Panel de pronósticos</div>
+        <div style="text-align:right;">
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px;">Prode Il Baigo</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -117,7 +122,7 @@ def pantalla_usuario():
         labels = []
         fase_idx = 0
 
-    # ── 1) Puntos + posición (solo si ya completó grupos) ─────────────────────
+    # ── 1) Panel principal con sub-pantallas ─────────────────────────────────
     if grupos_completados:
         u_fresh      = db_get_usuario(username)
         _pts_esp_all = db_get_puntos_especiales_usuarios()
@@ -126,32 +131,145 @@ def pantalla_usuario():
         _todos_rank  = db_get_todos_usuarios()
         ranking      = sorted(_todos_rank, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_all.get(x["username"], 0), reverse=True)
         posicion     = next((i + 1 for i, x in enumerate(ranking) if x["username"] == username), "—")
+        emoji_pos    = {1:"🥇",2:"🥈",3:"🥉"}.get(posicion, "🏅") if isinstance(posicion, int) else "🏅"
 
-        st.markdown(f"""<div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
-                    border-radius:10px; padding:10px 16px; margin-bottom:0.8rem;
-                    display:flex; align-items:center; gap:10px;">
-            <span style="font-size:1.3rem;">🏆</span>
-            <span style="color:var(--text2); font-size:0.9rem;">Tu posición actual:</span>
-            <span style="color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.3rem; letter-spacing:1px;">
-                {posicion}° de {len(ranking)}</span>
+        # Sub-pantalla activa
+        sub = st.session_state.get("sub_pantalla", "inicio")
+
+        # ── Menú de inicio ──
+        if sub == "inicio":
+            # Card de posición grande
+            st.markdown(f"""
+            <div style="background:var(--gold-dim);border:1.5px solid var(--gold-border);
+                        border-radius:16px;padding:20px 24px;margin-bottom:1.2rem;
+                        display:flex;align-items:center;gap:16px;">
+                <span style="font-size:2.5rem;">{emoji_pos}</span>
+                <div>
+                    <div style="font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;">Tu posición</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--gold);letter-spacing:2px;line-height:1;">{posicion}° de {len(ranking)}</div>
+                    <div style="font-size:0.82rem;color:var(--text2);margin-top:2px;">{total_pts} puntos totales</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Aviso pendientes
+            pendientes_info = []
+            for f_check in fases_habilitadas:
+                if not fases_confirmadas.get(f_check):
+                    pts_f  = db_get_partidos(f_check)
+                    pred_f = db_get_prode(username, f_check)["pred"]
+                    sin_cargar = len([p for p in pts_f if p["idx"] not in pred_f])
+                    if sin_cargar > 0:
+                        pendientes_info.append(f"{f_check} ({sin_cargar})")
+            if pendientes_info:
+                st.markdown(
+                    '<div style="background:var(--gold-dim);border:1px solid var(--gold-border);'
+                    'border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:0.85rem;color:var(--gold);">'
+                    '⚠️ Pronósticos pendientes: ' + " · ".join(pendientes_info) + '</div>',
+                    unsafe_allow_html=True
+                )
+
+            # Menú principal — 2 columnas
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("⚽  Mis pronósticos", use_container_width=True, key="menu_prode"):
+                    st.session_state["sub_pantalla"] = "pronosticos"
+                    st.rerun()
+                if st.button("🏆  Ranking", use_container_width=True, key="menu_ranking"):
+                    cambiar_pantalla(6)
+            with c2:
+                if st.button("📊  Mis puntos", use_container_width=True, key="menu_puntos"):
+                    st.session_state["sub_pantalla"] = "puntos"
+                    st.rerun()
+                if st.button("🏅  Destacados", use_container_width=True, key="menu_dest"):
+                    cambiar_pantalla(12)
+
+            st.divider()
+            if st.session_state.get("confirmar_logout_main"):
+                st.warning("¿Seguro que querés cerrar sesión?")
+                c1b, c2b = st.columns(2)
+                if c1b.button("Sí, cerrar", key="main_cerrar_ok", type="primary", use_container_width=True):
+                    cerrar_sesion(); st.rerun()
+                if c2b.button("Cancelar", key="main_cerrar_cancel", use_container_width=True):
+                    st.session_state["confirmar_logout_main"] = False; st.rerun()
+            else:
+                if st.button("🚪 Cerrar sesión", key="logout_402", use_container_width=True):
+                    st.session_state["confirmar_logout_main"] = True; st.rerun()
+            return
+
+        # ── Sub-pantalla puntos ──
+        if sub == "puntos":
+            if st.button("← Volver", key="back_puntos"):
+                st.session_state["sub_pantalla"] = "inicio"; st.rerun()
+            st.markdown(f"""
+            <div style="margin:0.5rem 0 1rem 0;">
+                <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);">📊 Mis puntos</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Resultados acertados</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--blue);">{u_fresh["puntos"]}</div>
+                </div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Marcadores exactos</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--green);">{u_fresh["goles"]}</div>
+                </div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Puntos de consumo</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--orange);">{u_fresh["consumo"]}</div>
+                </div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Pronósticos especiales</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--gold);">{pts_esp_user}</div>
+                </div>
+            </div>
+            <div style="background:var(--green-dim);border:1.5px solid var(--green-glow);border-radius:12px;padding:16px;text-align:center;margin-bottom:1rem;">
+                <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Total</div>
+                <div style="font-family:Bebas Neue,sans-serif;font-size:3rem;color:var(--green);letter-spacing:2px;">{total_pts}</div>
+                <div style="font-size:0.8rem;color:var(--text3);">Posición {posicion} de {len(ranking)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            return
+
+        # ── Sub-pantalla pronósticos — continúa abajo con el código existente ──
+        if st.button("← Volver al inicio", key="back_prode"):
+            st.session_state["sub_pantalla"] = "inicio"; st.rerun()
+        st.markdown(f"""<div style="margin:0.5rem 0 1rem 0;">
+            <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);">⚽ Mis pronósticos</div>
         </div>""", unsafe_allow_html=True)
-        st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.7rem;">Mis puntos</div>""", unsafe_allow_html=True)
-        col_a, col_b, col_c, col_d, col_e = st.columns(5)
-        col_a.metric("Resultados",    u_fresh["puntos"])
-        col_b.metric("Goles",         u_fresh["goles"])
-        col_c.metric("Consumo",       u_fresh["consumo"])
-        col_d.metric("⭐ Especiales", pts_esp_user)
-        col_e.metric("Total",         total_pts)
+
+        # Partidos pendientes
+        pendientes_info = []
+        for f_check in fases_habilitadas:
+            if not fases_confirmadas.get(f_check):
+                pts_f  = db_get_partidos(f_check)
+                pred_f = db_get_prode(username, f_check)["pred"]
+                sin_cargar = len([p for p in pts_f if p["idx"] not in pred_f])
+                if sin_cargar > 0:
+                    pendientes_info.append(f"<b>{f_check}</b>: {sin_cargar} partido{'s' if sin_cargar > 1 else ''}")
+        if pendientes_info:
+            st.markdown(
+                '<div style="background:var(--gold-dim);border:1px solid var(--gold-border);'
+                'border-radius:10px;padding:10px 14px;margin-bottom:0.5rem;font-size:0.85rem;color:var(--gold);">'
+                '⚠️ Pendientes de cargar: ' + " &nbsp;·&nbsp; ".join(pendientes_info) + '</div>',
+                unsafe_allow_html=True
+            )
 
         # ── 2) Selector de fases ──────────────────────────────────────────────
         st.divider()
-        cols_fases = st.columns(len(fases_habilitadas))
-        for i, (col, f, lbl) in enumerate(zip(cols_fases, fases_habilitadas, labels)):
-            es_activa = (i == fase_idx)
-            if col.button(lbl, key=f"fase_btn_{f}", use_container_width=True,
-                          type="primary" if es_activa else "secondary"):
-                st.session_state["fase_sel_idx"] = i
+        if len(fases_habilitadas) <= 3:
+            cols_fases = st.columns(len(fases_habilitadas))
+            for i, (col, f, lbl) in enumerate(zip(cols_fases, fases_habilitadas, labels)):
+                es_activa = (i == fase_idx)
+                if col.button(lbl, key=f"fase_btn_{f}", use_container_width=True,
+                              type="primary" if es_activa else "secondary"):
+                    st.session_state["fase_sel_idx"] = i
+                    st.rerun()
+        else:
+            sel_fase = st.selectbox("Fase", labels, index=fase_idx, key="fase_sel_box", label_visibility="collapsed")
+            nuevo_idx = labels.index(sel_fase)
+            if nuevo_idx != fase_idx:
+                st.session_state["fase_sel_idx"] = nuevo_idx
                 st.rerun()
 
         st.divider()
@@ -222,27 +340,36 @@ def pantalla_usuario():
         nom_visita = f"{bandera(p['visita'])} {p['visita']}"
 
         if confirmado:
+            real_row = f"""<div style="text-align:center;font-size:0.7rem;color:var(--text3);margin-top:4px;">
+                Real: <span style="color:var(--text2);font-weight:600;">{res_str}</span>
+                <span style="margin-left:6px;">{iconos}</span></div>""" if res_str else (f'<div style="text-align:center;font-size:0.9rem;margin-top:2px;">{iconos}</div>' if iconos else "")
             st.markdown(f"""
-            <div style="background:{color_card}; border:1px solid {border_card};
-                        border-radius:12px; padding:12px 16px; margin:6px 0;
-                        display:flex; align-items:center; justify-content:space-between; gap:6px;">
-                <div style="color:var(--text); font-weight:700; font-size:0.95rem; flex:1; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{nom_local}</div>
-                <div style="font-family:Bebas Neue,sans-serif; font-size:1.6rem; color:var(--green); min-width:20px; text-align:center; flex-shrink:0;">{gl_prev}</div>
-                <div style="color:#404058; font-size:0.9rem; flex-shrink:0;">—</div>
-                <div style="font-family:Bebas Neue,sans-serif; font-size:1.6rem; color:var(--green); min-width:20px; text-align:center; flex-shrink:0;">{gv_prev}</div>
-                <div style="color:var(--text); font-weight:700; font-size:0.95rem; flex:1; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{nom_visita}</div>
-                {f'<div style="font-size:1rem; flex-shrink:0;">{iconos}</div>' if iconos else ""}
+            <div style="background:{color_card};border:1px solid {border_card};
+                        border-radius:12px;padding:10px 14px;margin:5px 0;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="flex:1;text-align:right;font-weight:700;font-size:0.88rem;
+                                color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{nom_local}</div>
+                    <div style="background:var(--bg);border-radius:8px;padding:4px 10px;
+                                font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--green);
+                                min-width:36px;text-align:center;flex-shrink:0;">{gl_prev}</div>
+                    <div style="color:var(--text3);font-size:0.8rem;flex-shrink:0;">:</div>
+                    <div style="background:var(--bg);border-radius:8px;padding:4px 10px;
+                                font-family:Bebas Neue,sans-serif;font-size:1.5rem;color:var(--green);
+                                min-width:36px;text-align:center;flex-shrink:0;">{gv_prev}</div>
+                    <div style="flex:1;text-align:left;font-weight:700;font-size:0.88rem;
+                                color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{nom_visita}</div>
+                </div>
+                {real_row}
             </div>
-            {f'<div style="text-align:center; font-size:0.72rem; color:var(--text3); margin:-2px 0 4px 0;">Real: <span style="color:var(--text2);">{res_str}</span></div>' if res_str else ""}
             """, unsafe_allow_html=True)
         else:
-            st.markdown(f"""<div style="background:var(--table-row); border:1px solid var(--border);
-                        border-radius:12px; padding:12px 16px; margin:6px 0;">""", unsafe_allow_html=True)
-            col_local, col_gl, col_gv, col_visita = st.columns([3, 1, 1, 3])
-            col_local.markdown(f"<div style='text-align:right; font-weight:700; font-size:0.95rem; padding-top:10px; color:var(--text); line-height:1.4;'>{nom_local}</div>", unsafe_allow_html=True)
-            gl = col_gl.number_input("Local",  min_value=0, max_value=10, value=int(gl_prev), key=f"gl_{fase}_{idx}", label_visibility="collapsed")
-            gv = col_gv.number_input("Visita", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
-            col_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.95rem; padding-top:10px; color:var(--text); line-height:1.4;'>{nom_visita}</div>", unsafe_allow_html=True)
+            st.markdown(f'<div style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:10px 12px;margin:5px 0;">', unsafe_allow_html=True)
+            col_local, col_gl, col_sep, col_gv, col_visita = st.columns([3, 1, 0.3, 1, 3])
+            col_local.markdown(f"<div style='text-align:right;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_local}</div>", unsafe_allow_html=True)
+            gl = col_gl.number_input("L", min_value=0, max_value=10, value=int(gl_prev), key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+            col_sep.markdown("<div style='text-align:center;padding-top:10px;color:var(--text3);font-size:0.8rem;'>:</div>", unsafe_allow_html=True)
+            gv = col_gv.number_input("V", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+            col_visita.markdown(f"<div style='text-align:left;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             if "partidos_ok" not in st.session_state:
                 st.session_state["partidos_ok"] = {}
@@ -263,16 +390,41 @@ def pantalla_usuario():
             st.session_state["wizard_grupos_completo"] = True
 
         if st.session_state.get("wizard_grupos_completo", False):
-            grupo_sel = st.selectbox("Elegí el grupo", [f"Grupo {l}" for l in grupos_con_partidos])
-            letra_sel = grupo_sel[-1]
+            n_grupos = len(grupos_con_partidos)
+            gi_conf = st.session_state.get("gi_conf", 0)
+            if gi_conf >= n_grupos:
+                gi_conf = 0
+
+            letra_sel = grupos_con_partidos[gi_conf]
+            st.markdown(f"""
+            <div style='display:flex; align-items:center; gap:10px; margin:0.5rem 0 0.8rem 0;'>
+                <div style='height:1px; flex:1; background:var(--surface2);'></div>
+                <div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:var(--green); letter-spacing:3px;'>GRUPO {letra_sel}</div>
+                <div style='height:1px; flex:1; background:var(--surface2);'></div>
+            </div>
+            """, unsafe_allow_html=True)
+
             inicio    = "ABCDEFGHIJKL".index(letra_sel) * 6
             partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
-            st.markdown(f"<div style='font-family:Bebas Neue,sans-serif; font-size:1.1rem; color:var(--text3); letter-spacing:3px; margin-top:0.5rem; text-transform:uppercase;'>GRUPO {letra_sel}</div>", unsafe_allow_html=True)
             for p in partidos_grupo:
                 render_partido(p)
+
+            dest_conf = st.select_slider(
+                "Grupo",
+                options=list(range(n_grupos)),
+                value=gi_conf,
+                format_func=lambda x: f"Grupo {grupos_con_partidos[x]}",
+                key=f"slider_conf_{gi_conf}",
+                label_visibility="collapsed",
+            )
+            if dest_conf != gi_conf:
+                st.session_state["gi_conf"] = dest_conf
+                st.rerun()
         else:
             if "grupo_wizard" not in st.session_state:
-                st.session_state.grupo_wizard = 0
+                # Recuperar último grupo visitado de la DB
+                ultimo = db_get_config(f"wizard_pos_{username}", "0")
+                st.session_state.grupo_wizard = int(ultimo) if ultimo and ultimo.isdigit() else 0
             gi_raw = st.session_state.grupo_wizard
             gi     = gi_raw if gi_raw == 12 else max(0, min(gi_raw, len(grupos_con_partidos) - 1))
             total  = len(grupos_con_partidos)
@@ -302,20 +454,20 @@ def pantalla_usuario():
                         with st.spinner("Guardando..."):
                             for idx, (gl, gv) in cambios.items():
                                 db_guardar_pred(username, fase, idx, gl, gv)
-                        st.session_state.grupo_wizard = gi - 1; st.rerun()
+                        st.session_state.grupo_wizard = gi - 1; db_set_config(f'wizard_pos_{username}', str(gi - 1)); st.rerun()
 
                 if gi < total - 1:
                     if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
                         with st.spinner("Guardando..."):
                             for idx, (gl, gv) in cambios.items():
                                 db_guardar_pred(username, fase, idx, gl, gv)
-                        st.session_state.grupo_wizard = gi + 1; st.rerun()
+                        st.session_state.grupo_wizard = gi + 1; db_set_config(f'wizard_pos_{username}', str(gi + 1)); st.rerun()
                 else:
                     if nav3.button("Siguiente → Especiales ⭐", key="grupo_to_especiales", type="primary", use_container_width=True):
                         with st.spinner("Guardando..."):
                             for idx, (gl, gv) in cambios.items():
                                 db_guardar_pred(username, fase, idx, gl, gv)
-                        st.session_state.grupo_wizard = 12; st.rerun()
+                        st.session_state.grupo_wizard = 12; db_set_config(f'wizard_pos_{username}', '12'); st.rerun()
 
                 # ── Slider de navegación ──
                 pasos = grupos_con_partidos + ["⭐"]
@@ -333,10 +485,19 @@ def pantalla_usuario():
                         for idx2, (gl2, gv2) in cambios.items():
                             db_guardar_pred(username, fase, idx2, gl2, gv2)
                     st.session_state.grupo_wizard = dest_slider
-                    st.rerun()
+                    db_set_config(f'wizard_pos_{username}', str(dest_slider)); st.rerun()
 
             st.divider()
-            st.button("🚪 Cerrar sesión", key="wiz_cerrar", on_click=cerrar_sesion, use_container_width=True)
+            if st.session_state.get("confirmar_logout_wiz"):
+                st.warning("¿Seguro que querés cerrar sesión? Los pronósticos no confirmados pueden perderse.")
+                c1, c2 = st.columns(2)
+                if c1.button("Sí, cerrar", key="wiz_cerrar_ok", type="primary", use_container_width=True):
+                    cerrar_sesion(); st.rerun()
+                if c2.button("Cancelar", key="wiz_cerrar_cancel", use_container_width=True):
+                    st.session_state["confirmar_logout_wiz"] = False; st.rerun()
+            else:
+                if st.button("🚪 Cerrar sesión", key="wiz_cerrar", use_container_width=True):
+                    st.session_state["confirmar_logout_wiz"] = True; st.rerun()
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
@@ -345,15 +506,29 @@ def pantalla_usuario():
 
         if not confirmado:
             st.divider()
+            # Verificar checkboxes
+            if "partidos_ok" not in st.session_state:
+                st.session_state["partidos_ok"] = {}
+            partidos_ok = st.session_state["partidos_ok"]
+            total_partidos = [p["idx"] for p in partidos]
+            sin_confirmar = [idx for idx in total_partidos if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
+
+            if sin_confirmar:
+                st.warning(f"⚠️ Confirmá todos los partidos antes de continuar ({len(sin_confirmar)} pendiente{'s' if len(sin_confirmar) > 1 else ''}).")
+
             with st.form("form_confirmar"):
                 clave_confirm = st.text_input("Ingresá tu contraseña para confirmar", type="password")
-                confirmar_btn = st.form_submit_button("🔒 Confirmar prode", type="primary", use_container_width=True)
+                confirmar_btn = st.form_submit_button("🔒 Confirmar prode", type="primary", use_container_width=True, disabled=bool(sin_confirmar))
             if confirmar_btn:
                 if hash_clave(clave_confirm) != u["clave"]:
                     st.error("Contraseña incorrecta")
                 else:
                     with st.spinner("Confirmando..."):
+                        # Primero guardar todos los pronósticos
+                        for idx_c, (gl_c, gv_c) in cambios.items():
+                            db_guardar_pred(username, fase, idx_c, gl_c, gv_c)
                         db_confirmar_prode(username, fase)
+                        db_calcular_puntos()
                     st.session_state["wizard_grupos_completo"] = True
                     st.success("¡Pronósticos confirmados!")
                     st.rerun()
@@ -410,10 +585,8 @@ def pantalla_usuario():
 
     # ── 5) Botones de navegación ──────────────────────────────────────────────
     st.divider()
-    col1, col2, col3 = st.columns(3)
-    col1.button("🏆 Ranking",       on_click=cambiar_pantalla, args=(6,),  use_container_width=True)
-    col2.button("🏅 Destacados",    on_click=cambiar_pantalla, args=(12,), use_container_width=True)
-    col3.button("🚪 Cerrar sesión", key="logout_402", on_click=cerrar_sesion,  use_container_width=True)
+    if st.button("← Volver al inicio", key="logout_402", use_container_width=True):
+        st.session_state["sub_pantalla"] = "inicio"; st.rerun()
 
 
 # ─── Paso 13: Especiales dentro del wizard de grupos ─────────────────────────
@@ -519,8 +692,10 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                             if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
                                 db_guardar_especial(username, cat, elec)
                                 db_confirmar_especial(username, cat)
+                        db_calcular_puntos()
                     st.session_state["wizard_grupos_completo"] = True
                     st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
+                    db_set_config(f"wizard_pos_{username}", "0")
                     st.rerun()
 
     for cat, elec in selecciones_esp.items():

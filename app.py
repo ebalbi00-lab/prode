@@ -23,8 +23,25 @@ from screens_admin import pantalla_admin
 # ─── Inicialización ───────────────────────────────────────────────────────────
 
 if "db_initialized" not in st.session_state:
-    init_db()
-    st.session_state["db_initialized"] = True
+    try:
+        init_db()
+        st.session_state["db_initialized"] = True
+    except Exception as e:
+        st.markdown("""
+        <div style="text-align:center; padding:4rem 1rem;">
+            <div style="font-size:3rem; margin-bottom:1rem;">⚠️</div>
+            <div style="font-family:Bebas Neue,sans-serif; font-size:2rem; letter-spacing:3px; color:#ff5566; margin-bottom:0.8rem;">
+                Error de conexión</div>
+            <div style="color:#8898bb; font-size:0.95rem; line-height:1.75; max-width:400px; margin:0 auto;">
+                No se pudo conectar a la base de datos.<br>
+                Por favor intentá recargar la página en unos segundos.<br><br>
+                Si el problema persiste, contactá al administrador.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("🔄 Reintentar"):
+            st.rerun()
+        st.stop()
 
 if "step" not in st.session_state:
     st.session_state.step = 0
@@ -54,8 +71,25 @@ PANTALLAS = {
 
 pantalla_fn = PANTALLAS.get(st.session_state.step)
 if pantalla_fn:
-    pantalla_fn()
+    try:
+        pantalla_fn()
+    except Exception as e:
+        st.markdown("""
+        <div style="text-align:center; padding:3rem 1rem;">
+            <div style="font-size:2.5rem; margin-bottom:1rem;">😵</div>
+            <div style="font-family:Bebas Neue,sans-serif; font-size:1.8rem; letter-spacing:3px; color:#ff5566; margin-bottom:0.8rem;">
+                Algo salió mal</div>
+            <div style="color:#8898bb; font-size:0.92rem; line-height:1.75; max-width:380px; margin:0 auto;">
+                Ocurrió un error inesperado. Podés intentar recargar la página.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        if col1.button("🔄 Recargar", use_container_width=True):
+            st.rerun()
+        if col2.button("🏠 Ir al inicio", use_container_width=True):
+            st.session_state.step = 0
+            st.rerun()
 else:
-    st.error("Pantalla no encontrada.")
     st.session_state.step = 0
     st.rerun()

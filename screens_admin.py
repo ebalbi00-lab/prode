@@ -33,91 +33,155 @@ def cambiar_pantalla(step):
 
 
 def pantalla_admin():
-    st.markdown("""
-    <div style="display:flex; align-items:center; gap:12px; padding:0.3rem 0 1.2rem 0;
-                border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:1rem;">
-        <div style="width:42px; height:42px; border-radius:10px;
-                    background:var(--gold-dim); border:1.5px solid var(--gold-border);
-                    display:flex; align-items:center; justify-content:center; font-size:1.3rem;">⚙️</div>
-        <div>
-            <div style="font-family:Bebas Neue,sans-serif; font-size:1.7rem; letter-spacing:2px; color:var(--text); line-height:1.1;">Panel Admin</div>
-            <div style="font-size:0.7rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; font-weight:600;">Prode Il Baigo · Mundial 2026</div>
+    _pend_count = len(db_get_pendientes())
+    pend_html = f'<div style="background:var(--red);color:#fff;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</div>' if _pend_count > 0 else '<div style="color:var(--green);font-size:0.78rem;font-weight:600;">✅ Sin pendientes</div>'
+    st.markdown(f"""
+    <div style="display:flex;align-items:center;justify-content:space-between;
+                padding:0.4rem 0 1rem 0;border-bottom:1px solid var(--border);margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--gold-dim);
+                        border:1.5px solid var(--gold-border);display:flex;align-items:center;
+                        justify-content:center;font-size:1.2rem;">⚙️</div>
+            <div>
+                <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);line-height:1.05;">Panel Admin</div>
+                <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">Prode Il Baigo · Mundial 2026</div>
+            </div>
         </div>
+        {pend_html}
     </div>
     """, unsafe_allow_html=True)
 
-    tabs = st.tabs(["📋 Resumen", "👥 Pendientes", "🔀 Fases", "⚽ Partidos", "📊 Result.", "💰 Consumo", "⭐ Especiales", "👤 Usuarios", "🏅 Destacados", "⚠️ Reset", "📥 Exportar"])
+    # ── Menú de secciones ──
+    sec = st.session_state.get("admin_sec", "inicio")
 
-    with tabs[0]:
-        _tab_resumen()
-    with tabs[1]:
-        _tab_pendientes()
-    with tabs[2]:
-        _tab_fases()
-    with tabs[3]:
-        _tab_partidos()
-    with tabs[4]:
-        _tab_resultados()
-    with tabs[5]:
-        _tab_consumo()
-    with tabs[6]:
-        _tab_especiales()
-    with tabs[7]:
-        _tab_usuarios()
-    with tabs[8]:
-        st.subheader("🏅 Destacados — Estadísticas por usuario")
+    SECCIONES = [
+        ("resumen",     "📋", "Resumen",     "Estado general y confirmaciones"),
+        ("pendientes",  "👥", "Pendientes",  "Aprobar o rechazar solicitudes"),
+        ("fases",       "🔀", "Fases",       "Habilitar fases del torneo"),
+        ("partidos",    "⚽", "Partidos",    "Cargar equipos de cada partido"),
+        ("resultados",  "📊", "Resultados",  "Ingresar marcadores reales"),
+        ("consumo",     "💰", "Consumo",     "Sumar puntos de consumo"),
+        ("especiales",  "⭐", "Especiales",  "Resultados especiales"),
+        ("usuarios",    "👤", "Usuarios",    "Gestionar usuarios"),
+        ("destacados",  "🏅", "Destacados",  "Estadísticas por jugador"),
+        ("reset",       "⚠️", "Reset",       "Resetear fases o todo"),
+        ("exportar",    "📥", "Exportar",    "Descargar base de datos"),
+    ]
+
+    if sec == "inicio":
+        cols_menu = st.columns(2)
+        for i, (key, icono, titulo, desc) in enumerate(SECCIONES):
+            badge = f' <span style="background:var(--red);color:#fff;font-size:0.65rem;padding:1px 7px;border-radius:10px;font-family:Outfit,sans-serif;">{_pend_count}</span>' if key == "pendientes" and _pend_count > 0 else ""
+            with cols_menu[i % 2]:
+                st.markdown(f"""<div style="background:var(--bg3);border:1px solid var(--border);
+                    border-radius:12px;padding:14px 16px;margin-bottom:2px;">
+                    <div style="font-size:1.1rem;margin-bottom:3px;">{icono}</div>
+                    <div style="font-weight:700;color:var(--text);font-size:0.9rem;">{titulo}{badge}</div>
+                    <div style="color:var(--text3);font-size:0.72rem;margin-top:1px;">{desc}</div>
+                </div>""", unsafe_allow_html=True)
+                if st.button("Abrir", key=f"menu_{key}", use_container_width=True):
+                    st.session_state["admin_sec"] = key; st.rerun()
+
+        st.divider()
+        c1, c2 = st.columns(2)
+        c1.button("🏆 Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="admin_rank")
+        if c2.button("🚪 Cerrar sesión", key="admin_logout", use_container_width=True):
+            cambiar_pantalla(0)
+        return
+
+    # Botón volver
+    if st.button("← Volver al menú", key="admin_back"):
+        st.session_state["admin_sec"] = "inicio"; st.rerun()
+
+    if sec == "resumen":      _tab_resumen()
+    elif sec == "pendientes": _tab_pendientes()
+    elif sec == "fases":      _tab_fases()
+    elif sec == "partidos":   _tab_partidos()
+    elif sec == "resultados": _tab_resultados()
+    elif sec == "consumo":    _tab_consumo()
+    elif sec == "especiales": _tab_especiales()
+    elif sec == "usuarios":   _tab_usuarios()
+    elif sec == "destacados":
+        st.subheader("🏅 Destacados")
         render_destacados_usuarios()
-    with tabs[9]:
-        _tab_reset()
-    with tabs[10]:
-        _tab_exportar()
-
-    st.divider()
-    col1, col2 = st.columns(2)
-    col1.button("🏆 Ver Ranking",   on_click=cambiar_pantalla, args=(6,),  use_container_width=True)
-    col2.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+    elif sec == "reset":      _tab_reset()
+    elif sec == "exportar":   _tab_exportar()
 
 
 # ─── Tabs ─────────────────────────────────────────────────────────────────────
 
 def _tab_resumen():
-    st.subheader("Resumen general")
     if "msg_resumen" in st.session_state:
         st.success(st.session_state.pop("msg_resumen"))
 
-    todos     = db_get_todos_usuarios()
+    todos      = db_get_todos_usuarios()
     pendientes = db_get_pendientes()
-    fases     = db_get_fases()
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Usuarios activos",       len(todos))
-    col2.metric("Solicitudes pendientes", len(pendientes))
-    col3.metric("Fases habilitadas",      sum(1 for v in fases.values() if v))
-    col4.metric("Total consumo acumulado", sum(u["consumo"] for u in todos))
+    fases      = db_get_fases()
+    fases_hab  = sum(1 for v in fases.values() if v)
+    total_cons = sum(u["consumo"] for u in todos)
 
-    st.divider()
-    st.subheader("Inscripciones")
-    registro_abierto = db_registro_abierto()
-    nuevo_estado = st.toggle("Registro abierto", value=registro_abierto, key="toggle_registro")
-    if nuevo_estado != registro_abierto:
-        db_set_config("registro_abierto", "1" if nuevo_estado else "0"); st.rerun()
+    # Cards de resumen
+    st.markdown(f"""
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:1rem;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Usuarios</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--green);">{len(todos)}</div>
+        </div>
+        <div style="background:{'var(--red-dim)' if pendientes else 'var(--bg3)'};border:1px solid {'var(--red-border)' if pendientes else 'var(--border)'};border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Pendientes</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{'var(--red)' if pendientes else 'var(--text3)'};">{len(pendientes)}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Fases activas</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--blue);">{fases_hab}</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Consumo total</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--orange);">{total_cons}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.divider()
-    st.subheader("Confirmaciones por fase")
+    # Confirmaciones por fase como barras de progreso
     with get_db() as _conn:
         _cur = _conn.cursor()
         _cur.execute("SELECT fase, COUNT(DISTINCT username) as cnt FROM prodes WHERE confirmado=1 AND partido_idx=-1 GROUP BY fase")
         _conf_map = {r["fase"]: r["cnt"] for r in _cur.fetchall()}
-    for fase in FASES:
-        if not fases.get(fase):
-            continue
-        st.write(f"**{fase}:** {_conf_map.get(fase, 0)} / {len(todos)} confirmados")
+
+    total_u = len(todos) or 1
+    fases_activas = [f for f in FASES if fases.get(f)]
+    if fases_activas:
+        st.markdown("<div style='margin-bottom:0.8rem;'>", unsafe_allow_html=True)
+        for fase in fases_activas:
+            cnt  = _conf_map.get(fase, 0)
+            pct  = int(cnt / total_u * 100)
+            color = "var(--green)" if pct == 100 else "var(--blue)" if pct > 50 else "var(--gold)"
+            st.markdown(f"""
+            <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                    <span style="font-size:0.8rem;font-weight:600;color:var(--text);">{fase}</span>
+                    <span style="font-size:0.75rem;color:var(--text3);">{cnt} / {len(todos)}</span>
+                </div>
+                <div style="background:var(--border);border-radius:4px;height:6px;">
+                    <div style="background:{color};border-radius:4px;height:100%;width:{pct}%;transition:width 0.3s;"></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.divider()
-    if st.button("🔄 Recalcular puntajes"):
-        with st.spinner("Recalculando..."):
-            db_calcular_puntos()
-        st.session_state["msg_resumen"] = "✅ Puntajes recalculados correctamente."
-        st.rerun()
+    col_r1, col_r2 = st.columns(2)
+    registro_abierto = db_registro_abierto()
+    with col_r1:
+        nuevo_estado = st.toggle("📋 Registro abierto", value=registro_abierto, key="toggle_registro")
+        if nuevo_estado != registro_abierto:
+            db_set_config("registro_abierto", "1" if nuevo_estado else "0"); st.rerun()
+    with col_r2:
+        if st.button("🔄 Recalcular puntajes", use_container_width=True):
+            with st.spinner("Recalculando..."):
+                db_calcular_puntos()
+            st.session_state["msg_resumen"] = "✅ Puntajes recalculados."
+            st.rerun()
 
 
 def _tab_pendientes():
@@ -656,7 +720,67 @@ def _tab_usuarios():
 
 
 def _tab_reset():
-    st.subheader("⚠️ Resetear todos los puntajes")
+    st.subheader("⚠️ Resetear puntajes")
+
+    # ── Reset por fase ──────────────────────────────────────────────────────
+    st.markdown("**Resetear una fase específica**")
+    st.caption("Borra los pronósticos y resultados de una sola fase y recalcula los puntajes.")
+
+    fases_con_datos = []
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT DISTINCT fase FROM (
+                SELECT fase FROM prodes WHERE partido_idx >= 0
+                UNION
+                SELECT fase FROM resultados
+            ) sub ORDER BY fase
+        """)
+        fases_con_datos = [r["fase"] for r in cur.fetchall()]
+
+    if not fases_con_datos:
+        st.info("No hay fases con datos para resetear.")
+    else:
+        with st.form("form_reset_fase"):
+            fase_reset = st.selectbox("Fase a resetear", fases_con_datos, key="fase_reset_sel")
+            pw_reset_f = st.text_input("Tu contraseña de admin", type="password", key="pw_reset_fase")
+            reset_fase_btn = st.form_submit_button(f"🗑️ Resetear fase", type="primary")
+        if reset_fase_btn:
+            admin_rf = db_get_usuario(st.session_state.usuario)
+            if admin_rf["clave"] != hash_clave(pw_reset_f):
+                st.error("Contraseña incorrecta.")
+            else:
+                with get_db() as conn:
+                    cur = conn.cursor()
+                    cur.execute("DELETE FROM prodes WHERE fase=%s", (fase_reset,))
+                    cur.execute("DELETE FROM resultados WHERE fase=%s", (fase_reset,))
+                db_calcular_puntos()
+                st.cache_data.clear()
+                st.success(f"✅ Fase {fase_reset} reseteada.")
+                st.rerun()
+
+    st.divider()
+
+    # ── Recalcular puntajes ─────────────────────────────────────────────────
+    st.markdown("**Recalcular puntajes**")
+    st.caption("Vuelve a calcular todos los puntos en base a los pronósticos y resultados actuales.")
+    with st.form("form_recalcular"):
+        pw_recalc = st.text_input("Tu contraseña de admin", type="password", key="pw_recalcular")
+        recalc_btn = st.form_submit_button("🔄 Recalcular puntajes", type="primary")
+    if recalc_btn:
+        admin_rc = db_get_usuario(st.session_state.usuario)
+        if admin_rc["clave"] != hash_clave(pw_recalc):
+            st.error("Contraseña incorrecta.")
+        else:
+            db_calcular_puntos()
+            st.cache_data.clear()
+            st.success("✅ Puntajes recalculados correctamente.")
+            st.rerun()
+
+    st.divider()
+
+    # ── Reset total ─────────────────────────────────────────────────────────
+    st.markdown("**Resetear todo**")
     st.error("Esta acción borrará TODOS los pronósticos, resultados y puntajes. No se puede deshacer.")
     with st.form("form_reset_general"):
         clave_admin_r = st.text_input("Tu contraseña de admin para confirmar", type="password")

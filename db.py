@@ -185,7 +185,7 @@ def hash_clave(clave: str) -> str:
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=120)
+@st.cache_data(ttl=15)
 def db_get_config(clave, default=None):
     with get_db() as conn:
         cur = conn.cursor()
@@ -426,6 +426,18 @@ def db_limpiar_prode_fase(username, fase):
     _invalidar_prode(username, fase)
 
 
+def db_resetear_prodes_fase(fase):
+    """Admin: resetea todos los pronósticos confirmados de una fase para que usuarios puedan re-cargar."""
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM prodes WHERE fase=%s", (fase,))
+    try:
+        db_fase_confirmada.clear()
+        db_get_todos_usuarios.clear()
+    except Exception:
+        pass
+
+
 # ─── Pendientes ───────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=30)
@@ -535,9 +547,14 @@ def db_calcular_puntos():
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
-            WITH mult AS (
-                SELECT unnest(ARRAY['Grupos','Dieciseisavos','Octavos','Cuartos','Semifinal','Final']) AS fase,
-                       unnest(ARRAY[1,2,3,4,5,6]) AS m
+            WITH mult (fase, m) AS (
+                VALUES
+                    ('Grupos',        1),
+                    ('Dieciseisavos', 2),
+                    ('Octavos',       3),
+                    ('Cuartos',       4),
+                    ('Semifinal',     5),
+                    ('Final',         6)
             ),
             calc AS (
                 SELECT

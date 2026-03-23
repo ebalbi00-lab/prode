@@ -108,9 +108,28 @@ def pantalla_ranking():
                          "R": u["puntos"], "G": u["goles"], "C": u["consumo"],
                          "E": esp, "Total": total, "_username": u["username"], "_pos": pos})
 
-        top_n = min(15, len(rows))
+        # Paginación
+        POR_PAGINA = 20
+        total_pages = max(1, (len(rows) + POR_PAGINA - 1) // POR_PAGINA)
+        page = st.session_state.get("ranking_page", 0)
+        if page >= total_pages:
+            page = 0
+
+        col_pg1, col_pg2, col_pg3 = st.columns([1, 3, 1])
+        if total_pages > 1:
+            with col_pg1:
+                if st.button("← Anterior", key="rank_prev", disabled=(page == 0)):
+                    st.session_state["ranking_page"] = page - 1; st.rerun()
+            with col_pg2:
+                st.markdown(f"<div style='text-align:center; color:var(--text3); font-size:0.8rem; padding-top:8px;'>Página {page+1} de {total_pages} · {len(rows)} participantes</div>", unsafe_allow_html=True)
+            with col_pg3:
+                if st.button("Siguiente →", key="rank_next", disabled=(page >= total_pages - 1)):
+                    st.session_state["ranking_page"] = page + 1; st.rerun()
+
+        inicio_page = page * POR_PAGINA
+        top_n = POR_PAGINA
         filas_html = ""
-        for r in rows[:top_n]:
+        for r in rows[inicio_page:inicio_page + top_n]:
             es_yo = r["_username"] == username_actual
             pos   = r["_pos"]
             if pos == 1:
@@ -158,16 +177,23 @@ def pantalla_ranking():
 
         if username_actual and username_actual != "admin":
             pos_actual = next((r["_pos"] for r in rows if r["_username"] == username_actual), None)
-            if pos_actual and pos_actual > top_n:
+            if pos_actual:
                 fila = next(r for r in rows if r["_username"] == username_actual)
                 st.divider()
+                bg_pos = "var(--green-dim)" if pos_actual <= 3 else "var(--surface)"
+                border_pos = "var(--green-glow)" if pos_actual <= 3 else "var(--border2)"
+                emoji_pos = {1: "🥇", 2: "🥈", 3: "🥉"}.get(pos_actual, "📍")
                 st.markdown(f"""
-                <div style="background:var(--green-dim); border:1.5px solid var(--green-glow);
+                <div style="background:{bg_pos}; border:1.5px solid {border_pos};
                             border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:1.4rem;">📍</span>
+                    <span style="font-size:1.6rem;">{emoji_pos}</span>
                     <div>
-                        <div style="color:var(--text2); font-size:0.78rem; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Tu posición</div>
-                        <div style="color:var(--text); font-weight:700; font-size:1rem;">{fila['Nombre']} — <span style="color:var(--green);">{pos_actual}° lugar</span> · <span style="color:var(--gold);">{fila['Total']} pts</span></div>
+                        <div style="color:var(--text3); font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Tu posición</div>
+                        <div style="color:var(--text); font-weight:700; font-size:1rem;">
+                            {fila['Nombre']} &nbsp;·&nbsp;
+                            <span style="color:var(--green);">{pos_actual}° lugar</span> &nbsp;·&nbsp;
+                            <span style="color:var(--gold);">{fila['Total']} pts</span>
+                        </div>
                     </div>
                 </div>""", unsafe_allow_html=True)
 
