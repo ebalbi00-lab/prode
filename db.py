@@ -347,10 +347,20 @@ def db_renombrar_equipo_global(nombre_actual, nuevo_nombre):
         cur.execute("UPDATE especiales SET eleccion=%s WHERE eleccion=%s", (nuevo_nombre, nombre_actual))
         cur.execute("UPDATE especiales_resultados SET resultado=%s WHERE resultado=%s", (nuevo_nombre, nombre_actual))
 
-    # El renombre debe verse en toda la app inmediatamente.
-    # Limpiamos todo el cache de datos para evitar cualquier valor viejo.
     try:
-        st.cache_data.clear()
+        db_get_partidos.clear("Grupos")
+    except Exception:
+        pass
+    try:
+        db_get_equipos_grupos.clear()
+    except Exception:
+        pass
+    try:
+        db_get_todos_especiales.clear()
+    except Exception:
+        pass
+    try:
+        db_get_resultado_especial.clear("campeon")
     except Exception:
         pass
 @st.cache_data(ttl=300)
@@ -587,7 +597,7 @@ def db_get_consumo_log(username=None):
 # ─── Puntajes ─────────────────────────────────────────────────────────────────
 
 def db_calcular_puntos():
-    """Recalcula puntos de partidos. Preserva puntos de especiales ya calculados."""
+    """Recalcula solo puntos de partidos y exactos. Los especiales se calculan aparte."""
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -618,25 +628,9 @@ def db_calcular_puntos():
                 JOIN mult x ON x.fase = p.fase
                 WHERE p.confirmado = 1 AND p.partido_idx >= 0
                 GROUP BY p.username
-            ),
-            pts_esp AS (
-                SELECT username, SUM(info_pts) AS pts_especiales
-                FROM (
-                    SELECT e.username,
-                           CASE e.categoria
-                               WHEN 'campeon'  THEN 20
-                               WHEN 'goleador' THEN 10
-                               WHEN 'arquero'  THEN 8
-                               WHEN 'jugador'  THEN 8
-                               ELSE 0
-                           END AS info_pts
-                    FROM especiales e
-                    JOIN especiales_resultados er ON er.categoria = e.categoria AND er.resultado = e.eleccion
-                    WHERE e.confirmado = 1
-                ) sub GROUP BY username
             )
             UPDATE usuarios u
-            SET puntos = COALESCE(c.puntos, 0) + COALESCE(pe.pts_especiales, 0),
+            SET puntos = COALESCE(c.puntos, 0),
                 goles  = COALESCE(c.goles, 0)
             FROM (
                 SELECT u2.username,
@@ -646,7 +640,6 @@ def db_calcular_puntos():
                 LEFT JOIN calc c2 ON c2.username = u2.username
                 WHERE u2.es_admin = 0
             ) c
-            LEFT JOIN pts_esp pe ON pe.username = c.username
             WHERE u.username = c.username
         """)
     try:
@@ -708,33 +701,16 @@ def db_guardar_resultado_especial(categoria, resultado):
 
 
 def db_calcular_puntos_especiales():
-    """Suma puntos especiales. Seguro contra doble ejecución — guarda en config cuáles categorías ya fueron calculadas."""
-    with get_db() as conn:
-        cur = conn.cursor()
-        for cat, info in CATEGORIAS_ESPECIALES.items():
-            resultado = db_get_resultado_especial(cat)
-            if not resultado:
-                continue
-            # Verificar si ya se calculó esta categoría
-            cur.execute("SELECT valor FROM config WHERE clave=%s", (f"esp_calculado_{cat}",))
-            row = cur.fetchone()
-            if row and row["valor"] == resultado:
-                continue  # Ya calculado para este resultado, saltar
-            cur.execute("""
-                UPDATE usuarios SET puntos = puntos + %s
-                WHERE username IN (
-                    SELECT username FROM especiales
-                    WHERE categoria=%s AND eleccion=%s AND confirmado=1
-                )
-            """, (info["puntos"], cat, resultado))
-            # Marcar como calculado
-            cur.execute(
-                "INSERT INTO config (clave, valor) VALUES (%s, %s) ON CONFLICT (clave) DO UPDATE SET valor=EXCLUDED.valor",
-                (f"esp_calculado_{cat}", resultado)
-            )
+    """
+    No suma nada en usuarios.puntos.
+    Solo invalida caches porque los especiales se leen dinámicamente
+    desde db_get_puntos_especiales_usuarios().
+    """
     try:
         db_get_todos_usuarios.clear()
         db_get_puntos_especiales_usuarios.clear()
+        db_get_estadisticas_usuarios.clear()
+        db_get_estadisticas_generales.clear()
     except Exception:
         pass
 
