@@ -78,7 +78,7 @@ def pantalla_usuario():
                 padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
         <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:40px; height:40px; border-radius:50%;
-                        background:linear-gradient(135deg,#00c860,#009944);
+                        background:linear-gradient(135deg,#2f7cff,#76b4ff);
                         display:flex; align-items:center; justify-content:center;
                         font-size:1.1rem; font-weight:800; color:#fff; flex-shrink:0;">
                 {nombre_display[0].upper()}

@@ -6,7 +6,7 @@ import re
 import streamlit as st
 
 from db import (
-    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, db_get_pendientes
+    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, db_get_pendientes, db_get_pago_config
 )
 from constants import FASES
 
@@ -57,9 +57,9 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 def pantalla_login():
     st.markdown("""
     <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
-        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
+        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 6px 18px rgba(47,124,255,0.22));">⚽</div>
         <div style="font-family:Bebas Neue,sans-serif; font-size:3.8rem; letter-spacing:5px;
-                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
+                    background:linear-gradient(135deg,#2f7cff 0%,#67a8ff 60%,#99c5ff 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                     background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
         <div style="display:inline-block; background:var(--gold-dim); border:1px solid var(--gold-border);
@@ -161,31 +161,38 @@ def pantalla_registro_cuenta():
     </div>
     """, unsafe_allow_html=True)
 
+    pago = db_get_pago_config()
+    titular_pago = pago.get("titular", "Il Baigo")
+    alias_pago = pago.get("alias", "prode.mundial.2026")
+    cvu_pago = pago.get("cvu", "0000003100000000000000")
+    instrucciones_pago = pago.get("instrucciones", "")
+
     with st.form("form_registro_cuenta"):
         usuario   = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
         clave     = st.text_input("Clave (mínimo 4 caracteres)", type="password")
         confirmar = st.text_input("Confirmar clave", type="password")
-        st.markdown("""
+        st.markdown(f"""
         <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                     border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
                         color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
-                <span style="color:var(--text); font-weight:700; font-size:0.88rem;">Il Baigo</span>
+                <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular_pago or "—"}</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
-                <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">prode.mundial.2026</span>
+                <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias_pago or "—"}</span>
             </div>
             <div style="margin-bottom:2px;">
                 <span style="color:var(--text2); font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:1px;">CVU — tocá para copiar</span>
             </div>
-            <input type="text" value="0000003100000000000000" readonly onclick="this.select();" ontouchstart="this.select();"
+            <input type="text" value="{cvu_pago or ''}" readonly onclick="this.select();" ontouchstart="this.select();"
                 style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
                        color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
                        padding:8px 12px; cursor:pointer; outline:none; box-sizing:border-box;
                        -webkit-user-select:all; user-select:all;" />
+            {("<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>" + instrucciones_pago + "</div>") if instrucciones_pago else ""}
         </div>
         """, unsafe_allow_html=True)
         comprobante = st.file_uploader("Comprobante de pago")

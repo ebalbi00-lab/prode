@@ -1,6 +1,5 @@
 """
 app.py — Punto de entrada principal.
-El tema oscuro/claro se guarda en ?t= (query_params) — persiste entre recargas.
 """
 import streamlit as st
 
@@ -10,7 +9,7 @@ st.set_page_config(
     page_icon="⚽"
 )
 
-from styles import inject_css, render_tema_boton
+from styles import inject_css
 from db import init_db
 from screens_auth import (
     pantalla_login, pantalla_registro_datos,
@@ -30,9 +29,9 @@ if "db_initialized" not in st.session_state:
         st.markdown("""
         <div style="text-align:center; padding:4rem 1rem;">
             <div style="font-size:3rem; margin-bottom:1rem;">⚠️</div>
-            <div style="font-family:Bebas Neue,sans-serif; font-size:2rem; letter-spacing:3px; color:#ff5566; margin-bottom:0.8rem;">
+            <div style="font-family:Bebas Neue,sans-serif; font-size:2rem; letter-spacing:3px; color:var(--red); margin-bottom:0.8rem;">
                 Error de conexión</div>
-            <div style="color:#8898bb; font-size:0.95rem; line-height:1.75; max-width:400px; margin:0 auto;">
+            <div style="color:var(--text2); font-size:0.95rem; line-height:1.75; max-width:400px; margin:0 auto;">
                 No se pudo conectar a la base de datos.<br>
                 Por favor intentá recargar la página en unos segundos.<br><br>
                 Si el problema persiste, contactá al administrador.
@@ -50,10 +49,9 @@ if "usuario" not in st.session_state:
 if "registro_temp" not in st.session_state:
     st.session_state.registro_temp = {}
 
-# ─── Tema + CSS ───────────────────────────────────────────────────────────────
+# ─── CSS ─────────────────────────────────────────────────────────────────────
 
-inject_css()          # CSS generado según tema actual en query_params
-render_tema_boton()   # Botón ☀️/🌙 arriba a la derecha
+inject_css()
 
 # ─── Router ───────────────────────────────────────────────────────────────────
 

@@ -27,10 +27,10 @@ def render_destacados_usuarios():
 
     stats = db_get_estadisticas_usuarios()
     categorias = [
-        ("top_resultados", "✅ Más resultados", "resultados acertados", "#5599ff", "rgba(85,153,255,0.12)", "rgba(85,153,255,0.3)"),
-        ("top_exactos",    "🎯 Más exactos",    "scores exactos",       "#ffc840", "rgba(255,200,64,0.12)", "rgba(255,200,64,0.3)"),
-        ("top_grupos",     "⚽ Rey de grupos",   "pts en Grupos",        "#00e87a", "rgba(0,232,122,0.12)", "rgba(0,232,122,0.3)"),
-        ("top_finales",    "🏆 Rey de finales",  "pts en Finales",       "#ff8844", "rgba(255,136,68,0.12)", "rgba(255,136,68,0.3)"),
+        ("top_resultados", "✅ Más resultados", "resultados acertados", "#3b82f6", "rgba(59,130,246,0.12)", "rgba(59,130,246,0.28)"),
+        ("top_exactos",    "🎯 Más exactos",    "scores exactos",       "#2563eb", "rgba(37,99,235,0.11)", "rgba(37,99,235,0.24)"),
+        ("top_grupos",     "⚽ Rey de grupos",   "pts en Grupos",        "#14b8a6", "rgba(20,184,166,0.11)", "rgba(20,184,166,0.24)"),
+        ("top_finales",    "🏆 Rey de finales",  "pts en Finales",       "#0ea5e9", "rgba(14,165,233,0.11)", "rgba(14,165,233,0.24)"),
     ]
     col_a, col_b = st.columns(2)
     cols = [col_a, col_b, col_a, col_b]
@@ -75,9 +75,9 @@ def pantalla_ranking():
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
                     color:var(--text3); margin-bottom:0.3rem;">Il Baigo — Mundial 2026</div>
         <div style="font-family:Bebas Neue,sans-serif; font-size:3.2rem; letter-spacing:4px;
-                    background:linear-gradient(135deg,#ffc840 0%,#ffdd80 50%,#ffa820 100%);
+                    background:linear-gradient(135deg,#ffc940 0%,#ffd86b 45%,#ffb300 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.05;">🏆 RANKING</div>
+                    background-clip:text; line-height:1.05; text-shadow:0 4px 18px rgba(255,200,40,0.35);">🏆 RANKING</div>
     """, unsafe_allow_html=True)
 
 
@@ -113,11 +113,11 @@ def pantalla_ranking():
             es_yo = r["_username"] == username_actual
             pos   = r["_pos"]
             if pos == 1:
-                pos_color = "#ffc840"; bg = "rgba(255,200,64,0.07)"; bl = "3px solid rgba(255,200,64,0.5)"
+                pos_color = "#2563eb"; bg = "rgba(37,99,235,0.08)"; bl = "3px solid rgba(37,99,235,0.24)"
             elif pos == 2:
-                pos_color = "#c0c8d8"; bg = "rgba(192,200,216,0.05)"; bl = "3px solid rgba(192,200,216,0.3)"
+                pos_color = "#4f86f7"; bg = "rgba(79,134,247,0.07)"; bl = "3px solid rgba(79,134,247,0.20)"
             elif pos == 3:
-                pos_color = "#cd8040"; bg = "rgba(205,128,64,0.06)"; bl = "3px solid rgba(205,128,64,0.35)"
+                pos_color = "#14b8a6"; bg = "rgba(20,184,166,0.07)"; bl = "3px solid rgba(20,184,166,0.22)"
             elif es_yo:
                 pos_color = "#00e87a"; bg = "rgba(0,232,122,0.07)"; bl = "3px solid rgba(0,200,96,0.5)"
             else:

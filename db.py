@@ -202,10 +202,28 @@ def db_set_config(clave, valor):
             (clave, valor)
         )
     try:
-        db_get_config.clear(clave, None)
-        db_get_config.clear(clave, "dark")
-        db_get_config.clear(clave, "1")
-        db_get_config.clear(clave, "0")
+        db_get_config.clear()
+    except Exception:
+        pass
+
+
+@st.cache_data(ttl=300)
+def db_get_pago_config():
+    return {
+        "titular": db_get_config("pago_titular", "Il Baigo"),
+        "alias": db_get_config("pago_alias", "prode.mundial.2026"),
+        "cvu": db_get_config("pago_cvu", "0000003100000000000000"),
+        "instrucciones": db_get_config("pago_instrucciones", "Transferí y subí el comprobante de pago."),
+    }
+
+
+def db_set_pago_config(titular, alias, cvu, instrucciones=""):
+    db_set_config("pago_titular", (titular or "").strip())
+    db_set_config("pago_alias", (alias or "").strip())
+    db_set_config("pago_cvu", (cvu or "").strip())
+    db_set_config("pago_instrucciones", (instrucciones or "").strip())
+    try:
+        db_get_pago_config.clear()
     except Exception:
         pass
 

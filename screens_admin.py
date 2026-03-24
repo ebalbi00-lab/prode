@@ -21,6 +21,7 @@ from db import (
     db_aprobar_pendiente, db_rechazar_pendiente,
     db_reset_clave, db_borrar_usuario, db_resetear_todos_puntajes,
     db_registro_abierto, db_set_config,
+    db_get_pago_config, db_set_pago_config,
     db_get_especial, db_get_resultado_especial, db_guardar_resultado_especial,
     db_get_todos_especiales, db_fusionar_variantes_especial,
     db_get_equipos_grupos, hash_clave, get_db,
@@ -61,6 +62,7 @@ def pantalla_admin():
         ("partidos",    "⚽", "Partidos",    "Cargar equipos de cada partido"),
         ("resultados",  "📊", "Resultados",  "Ingresar marcadores reales"),
         ("consumo",     "💰", "Consumo",     "Sumar puntos de consumo"),
+        ("pagos",       "💳", "Pagos",       "Editar datos del registro"),
         ("especiales",  "⭐", "Especiales",  "Resultados especiales"),
         ("usuarios",    "👤", "Usuarios",    "Gestionar usuarios"),
         ("destacados",  "🏅", "Destacados",  "Estadísticas por jugador"),
@@ -98,6 +100,7 @@ def pantalla_admin():
     elif sec == "partidos":   _tab_partidos()
     elif sec == "resultados": _tab_resultados()
     elif sec == "consumo":    _tab_consumo()
+    elif sec == "pagos":      _tab_pagos()
     elif sec == "especiales": _tab_especiales()
     elif sec == "usuarios":   _tab_usuarios()
     elif sec == "destacados":
@@ -446,18 +449,36 @@ def _tab_consumo():
         if filtro_usuario: df_log = df_log[df_log["Usuario"].str.contains(filtro_usuario, case=False, na=False)]
         if filtro_desde:   df_log = df_log[df_log["Fecha"].dt.date >= filtro_desde]
         if filtro_hasta:   df_log = df_log[df_log["Fecha"].dt.date <= filtro_hasta]
-        df_log["Fecha"] = df_log["Fecha"].dt.strftime("%d/%m/%Y %H:%M")
-        PAGINA_SIZE   = 20
-        total         = len(df_log)
+        df_log = df_log.sort_values("Fecha", ascending=False).reset_index(drop=True)
+        PAGINA_SIZE = 10
+        total = len(df_log)
         if total == 0:
             st.info("No hay registros con esos filtros.")
         else:
             total_paginas = max(1, (total - 1) // PAGINA_SIZE + 1)
-            pagina        = st.number_input("Página", min_value=1, max_value=total_paginas, value=1, step=1)
-            inicio        = (pagina - 1) * PAGINA_SIZE
-            fin           = inicio + PAGINA_SIZE
-            st.caption(f"Mostrando {min(fin, total)} de {total} registros — Página {pagina}/{total_paginas}")
-            slice_df = df_log.iloc[inicio:fin]
+            pagina_actual = int(st.session_state.get("consumo_hist_page", 1))
+            if pagina_actual > total_paginas:
+                pagina_actual = total_paginas
+            if pagina_actual < 1:
+                pagina_actual = 1
+
+            nav1, nav2, nav3 = st.columns([1, 2, 1])
+            with nav1:
+                if st.button("← Anterior", key="consumo_prev", use_container_width=True, disabled=pagina_actual <= 1):
+                    st.session_state["consumo_hist_page"] = pagina_actual - 1
+                    st.rerun()
+            with nav2:
+                st.markdown(f"<div style='text-align:center; padding-top:0.55rem; color:var(--text2); font-size:0.9rem;'>Página <strong>{pagina_actual}</strong> de <strong>{total_paginas}</strong></div>", unsafe_allow_html=True)
+            with nav3:
+                if st.button("Siguiente →", key="consumo_next", use_container_width=True, disabled=pagina_actual >= total_paginas):
+                    st.session_state["consumo_hist_page"] = pagina_actual + 1
+                    st.rerun()
+
+            inicio = (pagina_actual - 1) * PAGINA_SIZE
+            fin = inicio + PAGINA_SIZE
+            st.caption(f"Mostrando los últimos {len(df_log.iloc[inicio:fin])} consumos de un total de {total} registros.")
+            slice_df = df_log.iloc[inicio:fin].copy()
+            slice_df["Fecha"] = slice_df["Fecha"].dt.strftime("%d/%m/%Y %H:%M")
             filas_log = ""
             for _, row in slice_df.iterrows():
                 filas_log += f"""<tr>
@@ -582,6 +603,67 @@ def _tab_especiales():
                 st.session_state["msg_esp_adm"] = "🗑️ Resultados especiales eliminados y puntajes recalculados."
             st.rerun()
 
+
+def _tab_pagos():
+    st.subheader("Datos de pago del registro")
+
+    if "msg_pagos" in st.session_state:
+        st.success(st.session_state.pop("msg_pagos"))
+
+    pago = db_get_pago_config()
+    titular_default = pago.get("titular", "")
+    alias_default = pago.get("alias", "")
+    cvu_default = pago.get("cvu", "")
+    instrucciones_default = pago.get("instrucciones", "")
+
+    with st.form("form_admin_pagos"):
+        titular = st.text_input("Titular", value=titular_default)
+        alias = st.text_input("Alias", value=alias_default)
+        cvu = st.text_input("CVU", value=cvu_default)
+        instrucciones = st.text_area(
+            "Texto adicional",
+            value=instrucciones_default,
+            placeholder="Ej: Transferí, subí el comprobante y aguardá aprobación."
+        )
+        guardar = st.form_submit_button("Guardar cambios", type="primary", use_container_width=True)
+
+    if guardar:
+        if not titular.strip():
+            st.error("Completá el titular.")
+            return
+        if not alias.strip():
+            st.error("Completá el alias.")
+            return
+        if not cvu.strip():
+            st.error("Completá el CVU.")
+            return
+
+        db_set_pago_config(titular, alias, cvu, instrucciones)
+        st.session_state["msg_pagos"] = "✅ Datos de pago actualizados."
+        st.rerun()
+
+    st.divider()
+    st.markdown("Vista previa")
+    st.markdown(f"""
+    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
+                border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+                    color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
+            <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular_default}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
+            <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias_default}</span>
+        </div>
+        <input type="text" value="{cvu_default}" readonly
+            style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
+                   color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
+                   padding:8px 12px; box-sizing:border-box;" />
+        {f"<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>{instrucciones_default}</div>" if instrucciones_default else ""}
+    </div>
+    """, unsafe_allow_html=True)
 
 def _tab_usuarios():
     st.subheader("👤 Gestión de usuarios")
