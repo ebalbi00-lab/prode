@@ -57,14 +57,14 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 def pantalla_login():
     st.markdown("""
     <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
-        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 6px 18px rgba(47,124,255,0.22));">⚽</div>
+        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
         <div style="font-family:Bebas Neue,sans-serif; font-size:3.8rem; letter-spacing:5px;
-                    background:linear-gradient(135deg,#2f7cff 0%,#67a8ff 60%,#99c5ff 100%);
+                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                     background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
-        <div style="display:inline-block; background:var(--gold-dim); border:1px solid var(--gold-border);
-                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:var(--gold);
-                    font-weight:700; letter-spacing:3px; text-transform:uppercase;">⚽ MUNDIAL 2026</div>
+        <div style="display:inline-block; background:linear-gradient(135deg,rgba(255,210,76,0.18),rgba(255,190,32,0.12)); border:1px solid rgba(228,175,33,0.35);
+                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#d49a00;
+                    font-weight:800; letter-spacing:3px; text-transform:uppercase; box-shadow:0 4px 14px rgba(212,154,0,0.10);">⚽ MUNDIAL 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -152,6 +152,12 @@ def pantalla_registro_datos():
 
 
 def pantalla_registro_cuenta():
+    pago = db_get_pago_config()
+    titular_pago = pago.get("titular", "Il Baigo")
+    alias_pago = pago.get("alias", "prode.mundial.2026")
+    cvu_pago = pago.get("cvu", "0000003100000000000000")
+    instrucciones_pago = pago.get("instrucciones", "")
+
     st.markdown("""
     <div style="padding:0.5rem 0 1rem 0;">
         <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
@@ -160,12 +166,6 @@ def pantalla_registro_cuenta():
             Cuenta y pago</div>
     </div>
     """, unsafe_allow_html=True)
-
-    pago = db_get_pago_config()
-    titular_pago = pago.get("titular", "Il Baigo")
-    alias_pago = pago.get("alias", "prode.mundial.2026")
-    cvu_pago = pago.get("cvu", "0000003100000000000000")
-    instrucciones_pago = pago.get("instrucciones", "")
 
     with st.form("form_registro_cuenta"):
         usuario   = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
@@ -187,12 +187,12 @@ def pantalla_registro_cuenta():
             <div style="margin-bottom:2px;">
                 <span style="color:var(--text2); font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:1px;">CVU — tocá para copiar</span>
             </div>
-            <input type="text" value="{cvu_pago or ''}" readonly onclick="this.select();" ontouchstart="this.select();"
+            <input type="text" value="{cvu_pago or ""}" readonly onclick="this.select();" ontouchstart="this.select();"
                 style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
                        color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
                        padding:8px 12px; cursor:pointer; outline:none; box-sizing:border-box;
                        -webkit-user-select:all; user-select:all;" />
-            {("<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>" + instrucciones_pago + "</div>") if instrucciones_pago else ""}
+            {"<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>" + instrucciones_pago + "</div>" if instrucciones_pago else ""}
         </div>
         """, unsafe_allow_html=True)
         comprobante = st.file_uploader("Comprobante de pago")

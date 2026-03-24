@@ -45,6 +45,11 @@ def normalizar(s: str) -> str:
     return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii').lower()
 
 
+def nombre_equipo_display(nombre: str) -> str:
+    b = bandera(nombre)
+    return f"{b} {nombre}" if b else str(nombre)
+
+
 def pantalla_usuario():
     username = st.session_state.usuario
     u = db_get_usuario(username)
@@ -78,7 +83,7 @@ def pantalla_usuario():
                 padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
         <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:40px; height:40px; border-radius:50%;
-                        background:linear-gradient(135deg,#2f7cff,#76b4ff);
+                        background:linear-gradient(135deg,#00c860,#009944);
                         display:flex; align-items:center; justify-content:center;
                         font-size:1.1rem; font-weight:800; color:#fff; flex-shrink:0;">
                 {nombre_display[0].upper()}
@@ -254,8 +259,8 @@ def pantalla_usuario():
 
             for p in partidos_ver:
                 idx_p = p["idx"]
-                nom_l = f"{bandera(p['local'])} {p['local']}"
-                nom_v = f"{bandera(p['visita'])} {p['visita']}"
+                nom_l = nombre_equipo_display(p['local'])
+                nom_v = nombre_equipo_display(p['visita'])
                 res_real = resultados_ver.get(idx_p)
                 res_str = f"{res_real[0]}–{res_real[1]}" if res_real else "pendiente"
 
@@ -394,8 +399,8 @@ def pantalla_usuario():
             else:
                 color_card = "var(--red-dim)"; border_card = "var(--red-border)"
 
-        nom_local  = f"{bandera(p['local'])} {p['local']}"
-        nom_visita = f"{bandera(p['visita'])} {p['visita']}"
+        nom_local  = nombre_equipo_display(p['local'])
+        nom_visita = nombre_equipo_display(p['visita'])
 
         if confirmado:
             real_row = f"""<div style="text-align:center;font-size:0.7rem;color:var(--text3);margin-top:4px;">
@@ -680,10 +685,10 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
             selecciones_esp[cat] = elec_w
         else:
             if cat == "campeon":
-                ops_w = ["— Elegí un equipo —"] + [f"{bandera(e)} {e}" for e in eq_wiz]
-                d2n_w = {f"{bandera(e)} {e}": e for e in eq_wiz}
+                ops_w = ["— Elegí un equipo —"] + [nombre_equipo_display(e) for e in eq_wiz]
+                d2n_w = {nombre_equipo_display(e): e for e in eq_wiz}
                 if elec_w:
-                    disp_elec = f"{bandera(elec_w)} {elec_w}"
+                    disp_elec = nombre_equipo_display(elec_w)
                     idx_w = ops_w.index(disp_elec) if disp_elec in ops_w else 0
                 else:
                     idx_w = 0

@@ -20,17 +20,26 @@ from db import (
     db_get_consumo_log, db_sumar_consumo, db_eliminar_consumo_log,
     db_aprobar_pendiente, db_rechazar_pendiente,
     db_reset_clave, db_borrar_usuario, db_resetear_todos_puntajes,
-    db_registro_abierto, db_set_config,
-    db_get_pago_config, db_set_pago_config,
+    db_registro_abierto, db_set_config, db_get_pago_config, db_set_pago_config,
     db_get_especial, db_get_resultado_especial, db_guardar_resultado_especial,
     db_get_todos_especiales, db_fusionar_variantes_especial,
-    db_get_equipos_grupos, hash_clave, get_db,
+    db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, get_db,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo
 
 
 def cambiar_pantalla(step):
     st.session_state.step = step
+
+
+def _fmt_equipo(nombre: str) -> str:
+    nombre = str(nombre or "").strip()
+    if not nombre:
+        return "—"
+    icono = bandera(nombre)
+    if icono == "🏳️" and _norm(nombre).startswith("rep") and nombre[3:].isdigit():
+        icono = "🔹"
+    return f"{icono} {nombre}"
 
 
 def pantalla_admin():
@@ -62,7 +71,7 @@ def pantalla_admin():
         ("partidos",    "⚽", "Partidos",    "Cargar equipos de cada partido"),
         ("resultados",  "📊", "Resultados",  "Ingresar marcadores reales"),
         ("consumo",     "💰", "Consumo",     "Sumar puntos de consumo"),
-        ("pagos",       "💳", "Pagos",       "Editar datos del registro"),
+        ("pagos",       "💳", "Pagos",       "Editar datos de pago del registro"),
         ("especiales",  "⭐", "Especiales",  "Resultados especiales"),
         ("usuarios",    "👤", "Usuarios",    "Gestionar usuarios"),
         ("destacados",  "🏅", "Destacados",  "Estadísticas por jugador"),
@@ -236,38 +245,114 @@ def _tab_partidos():
 
     if fase_sel == "Grupos":
         partidos_cargados = db_get_partidos("Grupos")
-        grupos_con_datos  = set()
+        grupos_con_datos = set()
         for p in partidos_cargados:
             letra_g = "ABCDEFGHIJKL"[p["idx"] // 6]
             grupos_con_datos.add(letra_g)
 
         opciones_grupos = [f"{'✅' if l in grupos_con_datos else '○'} Grupo {l}" for l in "ABCDEFGHIJKL"]
-        grupo_sel_raw   = st.selectbox("Grupo", opciones_grupos)
-        letra           = grupo_sel_raw[-1]
-        inicio          = "ABCDEFGHIJKL".index(letra) * 6
-        existentes_map  = {p["idx"]: p for p in partidos_cargados}
-        defaults        = GRUPOS_DEFAULT.get(letra, [("", "")] * 6)
+        grupo_sel_raw = st.selectbox("Grupo", opciones_grupos)
+        letra = grupo_sel_raw[-1]
+        inicio = "ABCDEFGHIJKL".index(letra) * 6
+        existentes_map = {p["idx"]: p for p in partidos_cargados}
+        defaults = GRUPOS_DEFAULT.get(letra, [("", "")] * 6)
+
+        equipos_existentes = db_get_equipos_grupos()
+        equipos_base = sorted(
+            set([
+                *equipos_existentes,
+                *[eq for partido in defaults for eq in partido if eq],
+                *[f"rep{i}" for i in range(1, 7)],
+            ]),
+            key=lambda x: str(x).lower()
+        )
+
+        st.markdown("### Editar nombres de equipos")
+        st.caption("Esto reemplaza el nombre en partidos y selecciones especiales donde ya exista.")
+        c_ren1, c_ren2 = st.columns([1.2, 1.2])
+        equipo_actual = c_ren1.selectbox(
+            "Equipo actual",
+            options=equipos_base,
+            format_func=_fmt_equipo,
+            key=f"ren_equipo_{letra}",
+        )
+        nuevo_nombre = c_ren2.text_input(
+            "Nuevo nombre",
+            value=equipo_actual,
+            key=f"ren_equipo_nuevo_{letra}",
+        )
+        if st.button("Guardar nuevo nombre", key=f"ren_equipo_btn_{letra}", use_container_width=True):
+            nombre_limpio = (nuevo_nombre or "").strip()
+            if not equipo_actual:
+                st.error("Seleccioná un equipo.")
+            elif not nombre_limpio:
+                st.error("Escribí el nuevo nombre.")
+            elif nombre_limpio == equipo_actual:
+                st.warning("El nombre nuevo es igual al actual.")
+            else:
+                db_renombrar_equipo_global(equipo_actual, nombre_limpio)
+
+                # No tocar valores de widgets ya instanciados en este mismo render.
+                # Se limpian las keys y el rerun reconstruye todo con el nombre nuevo.
+                for k in [f"ren_equipo_{letra}", f"ren_equipo_nuevo_{letra}"]:
+                    if k in st.session_state:
+                        del st.session_state[k]
+
+                st.session_state["msg_grupos"] = f"✅ {equipo_actual} ahora es {nombre_limpio}."
+                st.rerun()
+
+        st.divider()
 
         with st.form(f"form_grupo_{letra}"):
             nuevos = []
             for j in range(6):
                 idx_global = inicio + j
                 prev = existentes_map.get(idx_global, {})
+                local_actual = prev.get("local", defaults[j][0])
+                visita_actual = prev.get("visita", defaults[j][1])
+
+                opciones_local = equipos_base[:]
+                if local_actual and local_actual not in opciones_local:
+                    opciones_local.append(local_actual)
+                opciones_local = sorted(set(opciones_local), key=lambda x: str(x).lower())
+
+                opciones_visita = equipos_base[:]
+                if visita_actual and visita_actual not in opciones_visita:
+                    opciones_visita.append(visita_actual)
+                opciones_visita = sorted(set(opciones_visita), key=lambda x: str(x).lower())
+
                 c1, c2 = st.columns(2)
-                l = c1.text_input("Local",     value=prev.get("local",  defaults[j][0]), key=f"gl_{letra}_{j}")
-                v = c2.text_input("Visitante", value=prev.get("visita", defaults[j][1]), key=f"gv_{letra}_{j}")
+                l = c1.selectbox(
+                    "Local",
+                    options=opciones_local,
+                    index=opciones_local.index(local_actual) if local_actual in opciones_local else 0,
+                    format_func=_fmt_equipo,
+                    key=f"gl_{letra}_{j}",
+                )
+                v = c2.selectbox(
+                    "Visitante",
+                    options=opciones_visita,
+                    index=opciones_visita.index(visita_actual) if visita_actual in opciones_visita else 0,
+                    format_func=_fmt_equipo,
+                    key=f"gv_{letra}_{j}",
+                )
                 nuevos.append((idx_global, l, v))
+
             col_b1, col_b2 = st.columns(2)
-            guardar      = col_b1.form_submit_button(f"Guardar Grupo {letra}", type="primary")
+            guardar = col_b1.form_submit_button(f"Guardar Grupo {letra}", type="primary")
             guardar_todos = col_b2.form_submit_button("Guardar todos los grupos")
 
         if guardar:
-            with st.spinner(f"Guardando Grupo {letra}..."):
-                for idx_global, l, v in nuevos:
-                    if l and v: db_guardar_partido("Grupos", idx_global, l, v)
-                st.cache_data.clear()
-            st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado."
-            st.rerun()
+            errores = [f"Partido {((idx_global - inicio) + 1)}: mismo equipo de local y visitante" for idx_global, l, v in nuevos if l and v and l == v]
+            if errores:
+                st.error("⚠️ " + " · ".join(errores))
+            else:
+                with st.spinner(f"Guardando Grupo {letra}..."):
+                    for idx_global, l, v in nuevos:
+                        if l and v:
+                            db_guardar_partido("Grupos", idx_global, l, v)
+                st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado."
+                st.rerun()
 
         if guardar_todos:
             with st.spinner("Guardando todos los grupos..."):
@@ -275,44 +360,39 @@ def _tab_partidos():
                     ini_gr = "ABCDEFGHIJKL".index(gr) * 6
                     for j, (loc, vis) in enumerate(partidos_gr):
                         db_guardar_partido("Grupos", ini_gr + j, loc, vis)
-                st.cache_data.clear()
             st.session_state["msg_grupos"] = "✅ Todos los grupos guardados con los equipos por defecto."
             st.rerun()
 
     else:
         cant = {"Dieciseisavos": 16, "Octavos": 8, "Cuartos": 4, "Semifinal": 2, "Final": 1}[fase_sel]
         partidos_existentes = db_get_partidos(fase_sel)
-        existentes_map      = {p["idx"]: p for p in partidos_existentes}
-        equipos_grupos      = db_get_equipos_grupos()
+        existentes_map = {p["idx"]: p for p in partidos_existentes}
+        equipos_grupos = db_get_equipos_grupos()
 
         if not equipos_grupos:
             st.warning("⚠️ Primero cargá los partidos de la fase de Grupos.")
         else:
-            NINGUNO   = "— Seleccionar —"
-            opciones  = [NINGUNO] + [f"{bandera(e)} {e}" for e in equipos_grupos]
-            disp_a_n  = {f"{bandera(e)} {e}": e for e in equipos_grupos}
+            NINGUNO = "— Seleccionar —"
+            opciones = [NINGUNO] + equipos_grupos
 
             with st.form(f"form_{fase_sel}"):
                 nuevos = []
                 for i in range(cant):
-                    prev          = existentes_map.get(i, {})
-                    prev_local    = prev.get("local",  "")
-                    prev_visita   = prev.get("visita", "")
-                    disp_local    = f"{bandera(prev_local)} {prev_local}"   if prev_local  else NINGUNO
-                    disp_visita   = f"{bandera(prev_visita)} {prev_visita}" if prev_visita else NINGUNO
-                    idx_local     = opciones.index(disp_local)  if disp_local  in opciones else 0
-                    idx_visita    = opciones.index(disp_visita) if disp_visita in opciones else 0
+                    prev = existentes_map.get(i, {})
+                    prev_local = prev.get("local", "")
+                    prev_visita = prev.get("visita", "")
+                    idx_local = opciones.index(prev_local) if prev_local in opciones else 0
+                    idx_visita = opciones.index(prev_visita) if prev_visita in opciones else 0
 
                     st.markdown(f"<div style='color:var(--text3); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; margin-top:0.8rem; margin-bottom:0.2rem;'>Partido {i+1}</div>", unsafe_allow_html=True)
-                    c1, c2     = st.columns(2)
-                    sel_local  = c1.selectbox("Local",     opciones, index=idx_local,  key=f"{fase_sel}_l_{i}")
-                    sel_visita = c2.selectbox("Visitante", opciones, index=idx_visita, key=f"{fase_sel}_v_{i}")
-                    nuevos.append((i, disp_a_n.get(sel_local, ""), disp_a_n.get(sel_visita, "")))
+                    c1, c2 = st.columns(2)
+                    sel_local = c1.selectbox("Local", opciones, index=idx_local, format_func=lambda x: x if x == NINGUNO else _fmt_equipo(x), key=f"{fase_sel}_l_{i}")
+                    sel_visita = c2.selectbox("Visitante", opciones, index=idx_visita, format_func=lambda x: x if x == NINGUNO else _fmt_equipo(x), key=f"{fase_sel}_v_{i}")
+                    nuevos.append((i, "" if sel_local == NINGUNO else sel_local, "" if sel_visita == NINGUNO else sel_visita))
 
                 guardar = st.form_submit_button("Guardar partidos", type="primary")
 
             if guardar:
-                # Validar equipos duplicados
                 errores = [f"Partido {i+1}: mismo equipo de local y visitante" for i, l, v in nuevos if l and v and l == v]
                 if errores:
                     st.error("⚠️ " + " · ".join(errores))
@@ -449,36 +529,18 @@ def _tab_consumo():
         if filtro_usuario: df_log = df_log[df_log["Usuario"].str.contains(filtro_usuario, case=False, na=False)]
         if filtro_desde:   df_log = df_log[df_log["Fecha"].dt.date >= filtro_desde]
         if filtro_hasta:   df_log = df_log[df_log["Fecha"].dt.date <= filtro_hasta]
-        df_log = df_log.sort_values("Fecha", ascending=False).reset_index(drop=True)
-        PAGINA_SIZE = 10
-        total = len(df_log)
+        df_log["Fecha"] = df_log["Fecha"].dt.strftime("%d/%m/%Y %H:%M")
+        PAGINA_SIZE   = 20
+        total         = len(df_log)
         if total == 0:
             st.info("No hay registros con esos filtros.")
         else:
             total_paginas = max(1, (total - 1) // PAGINA_SIZE + 1)
-            pagina_actual = int(st.session_state.get("consumo_hist_page", 1))
-            if pagina_actual > total_paginas:
-                pagina_actual = total_paginas
-            if pagina_actual < 1:
-                pagina_actual = 1
-
-            nav1, nav2, nav3 = st.columns([1, 2, 1])
-            with nav1:
-                if st.button("← Anterior", key="consumo_prev", use_container_width=True, disabled=pagina_actual <= 1):
-                    st.session_state["consumo_hist_page"] = pagina_actual - 1
-                    st.rerun()
-            with nav2:
-                st.markdown(f"<div style='text-align:center; padding-top:0.55rem; color:var(--text2); font-size:0.9rem;'>Página <strong>{pagina_actual}</strong> de <strong>{total_paginas}</strong></div>", unsafe_allow_html=True)
-            with nav3:
-                if st.button("Siguiente →", key="consumo_next", use_container_width=True, disabled=pagina_actual >= total_paginas):
-                    st.session_state["consumo_hist_page"] = pagina_actual + 1
-                    st.rerun()
-
-            inicio = (pagina_actual - 1) * PAGINA_SIZE
-            fin = inicio + PAGINA_SIZE
-            st.caption(f"Mostrando los últimos {len(df_log.iloc[inicio:fin])} consumos de un total de {total} registros.")
-            slice_df = df_log.iloc[inicio:fin].copy()
-            slice_df["Fecha"] = slice_df["Fecha"].dt.strftime("%d/%m/%Y %H:%M")
+            pagina        = st.number_input("Página", min_value=1, max_value=total_paginas, value=1, step=1)
+            inicio        = (pagina - 1) * PAGINA_SIZE
+            fin           = inicio + PAGINA_SIZE
+            st.caption(f"Mostrando {min(fin, total)} de {total} registros — Página {pagina}/{total_paginas}")
+            slice_df = df_log.iloc[inicio:fin]
             filas_log = ""
             for _, row in slice_df.iterrows():
                 filas_log += f"""<tr>
@@ -514,6 +576,70 @@ def _tab_consumo():
             db_eliminar_consumo_log(int(id_eliminar)); db_calcular_puntos()
             st.session_state["msg_consumo"] = f"✅ Registro #{int(id_eliminar)} eliminado y puntos descontados."
             st.rerun()
+
+
+
+def _tab_pagos():
+    st.subheader("Datos de pago del registro")
+
+    if "msg_pagos" in st.session_state:
+        st.success(st.session_state.pop("msg_pagos"))
+
+    pago = db_get_pago_config()
+
+    with st.form("form_admin_pagos"):
+        titular = st.text_input("Titular", value=pago.get("titular", ""))
+        alias = st.text_input("Alias", value=pago.get("alias", ""))
+        cvu = st.text_input("CVU", value=pago.get("cvu", ""))
+        instrucciones = st.text_area(
+            "Texto adicional",
+            value=pago.get("instrucciones", ""),
+            placeholder="Ej: Transferí, subí el comprobante y aguardá aprobación."
+        )
+
+        guardar = st.form_submit_button("Guardar cambios", type="primary", use_container_width=True)
+
+    if guardar:
+        if not titular.strip():
+            st.error("Completá el titular.")
+            return
+        if not alias.strip():
+            st.error("Completá el alias.")
+            return
+        if not cvu.strip():
+            st.error("Completá el CVU.")
+            return
+
+        db_set_pago_config(titular, alias, cvu, instrucciones)
+        st.session_state["msg_pagos"] = "✅ Datos de pago actualizados."
+        st.rerun()
+
+    st.divider()
+    st.markdown("Vista previa")
+    st.markdown(f"""
+    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
+                border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+                    color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
+            <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
+            <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias}</span>
+        </div>
+
+        <input type="text" value="{cvu}" readonly
+            style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
+                   color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
+                   padding:8px 12px; box-sizing:border-box;" />
+
+        {f"<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>{instrucciones}</div>" if instrucciones else ""}
+    </div>
+    """, unsafe_allow_html=True)
 
 
 def _tab_especiales():
@@ -603,67 +729,6 @@ def _tab_especiales():
                 st.session_state["msg_esp_adm"] = "🗑️ Resultados especiales eliminados y puntajes recalculados."
             st.rerun()
 
-
-def _tab_pagos():
-    st.subheader("Datos de pago del registro")
-
-    if "msg_pagos" in st.session_state:
-        st.success(st.session_state.pop("msg_pagos"))
-
-    pago = db_get_pago_config()
-    titular_default = pago.get("titular", "")
-    alias_default = pago.get("alias", "")
-    cvu_default = pago.get("cvu", "")
-    instrucciones_default = pago.get("instrucciones", "")
-
-    with st.form("form_admin_pagos"):
-        titular = st.text_input("Titular", value=titular_default)
-        alias = st.text_input("Alias", value=alias_default)
-        cvu = st.text_input("CVU", value=cvu_default)
-        instrucciones = st.text_area(
-            "Texto adicional",
-            value=instrucciones_default,
-            placeholder="Ej: Transferí, subí el comprobante y aguardá aprobación."
-        )
-        guardar = st.form_submit_button("Guardar cambios", type="primary", use_container_width=True)
-
-    if guardar:
-        if not titular.strip():
-            st.error("Completá el titular.")
-            return
-        if not alias.strip():
-            st.error("Completá el alias.")
-            return
-        if not cvu.strip():
-            st.error("Completá el CVU.")
-            return
-
-        db_set_pago_config(titular, alias, cvu, instrucciones)
-        st.session_state["msg_pagos"] = "✅ Datos de pago actualizados."
-        st.rerun()
-
-    st.divider()
-    st.markdown("Vista previa")
-    st.markdown(f"""
-    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
-                border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
-                    color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
-            <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular_default}</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
-            <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias_default}</span>
-        </div>
-        <input type="text" value="{cvu_default}" readonly
-            style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
-                   color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
-                   padding:8px 12px; box-sizing:border-box;" />
-        {f"<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>{instrucciones_default}</div>" if instrucciones_default else ""}
-    </div>
-    """, unsafe_allow_html=True)
 
 def _tab_usuarios():
     st.subheader("👤 Gestión de usuarios")

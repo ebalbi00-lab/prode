@@ -203,6 +203,7 @@ def db_set_config(clave, valor):
         )
     try:
         db_get_config.clear()
+        db_get_pago_config.clear()
     except Exception:
         pass
 
@@ -213,7 +214,7 @@ def db_get_pago_config():
         "titular": db_get_config("pago_titular", "Il Baigo"),
         "alias": db_get_config("pago_alias", "prode.mundial.2026"),
         "cvu": db_get_config("pago_cvu", "0000003100000000000000"),
-        "instrucciones": db_get_config("pago_instrucciones", "Transferí y subí el comprobante de pago."),
+        "instrucciones": db_get_config("pago_instrucciones", ""),
     }
 
 
@@ -331,14 +332,39 @@ def db_guardar_partido(fase, idx, local, visita, fecha="", hora=""):
         pass
 
 
+
+
+def db_renombrar_equipo_global(nombre_actual, nuevo_nombre):
+    nombre_actual = (nombre_actual or "").strip()
+    nuevo_nombre = (nuevo_nombre or "").strip()
+    if not nombre_actual or not nuevo_nombre or nombre_actual == nuevo_nombre:
+        return
+
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("UPDATE partidos SET local=%s WHERE local=%s", (nuevo_nombre, nombre_actual))
+        cur.execute("UPDATE partidos SET visita=%s WHERE visita=%s", (nuevo_nombre, nombre_actual))
+        cur.execute("UPDATE especiales SET eleccion=%s WHERE eleccion=%s", (nuevo_nombre, nombre_actual))
+        cur.execute("UPDATE especiales_resultados SET resultado=%s WHERE resultado=%s", (nuevo_nombre, nombre_actual))
+
+    # El renombre debe verse en toda la app inmediatamente.
+    # Limpiamos todo el cache de datos para evitar cualquier valor viejo.
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
 @st.cache_data(ttl=300)
 def db_get_equipos_grupos():
-    import re
     partidos = db_get_partidos("Grupos")
-    equipos = sorted(set(
-        e for p in partidos for e in [p["local"], p["visita"]]
-        if e and not re.match(r'^rep\d*$', e.lower())
-    ))
+    equipos = sorted(
+        set(
+            str(e).strip()
+            for p in partidos
+            for e in [p.get("local"), p.get("visita")]
+            if e and str(e).strip()
+        ),
+        key=lambda x: x.lower()
+    )
     return equipos
 
 

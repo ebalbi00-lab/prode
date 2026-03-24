@@ -129,4 +129,4 @@ GRUPOS_DEFAULT = {
 
 
 def bandera(nombre):
-    return BANDERAS.get(nombre, "🏳️")
+    return BANDERAS.get(nombre, "")
