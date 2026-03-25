@@ -163,6 +163,10 @@ def init_tablas():
             texto TEXT NOT NULL,
             created_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
+        CREATE TABLE IF NOT EXISTS actividad_usuarios (
+            username TEXT PRIMARY KEY,
+            last_seen TIMESTAMP NOT NULL DEFAULT NOW()
+        );
         """)
         for i, f in enumerate(FASES):
             cur.execute(
@@ -276,17 +280,13 @@ def db_reset_clave(username, nueva_clave):
 def db_borrar_usuario(username):
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("DELETE FROM especiales WHERE username=%s", (username,))
-        cur.execute("DELETE FROM consumo_log WHERE username=%s", (username,))
-        cur.execute("DELETE FROM prodes WHERE username=%s", (username,))
         cur.execute("DELETE FROM usuarios WHERE username=%s", (username,))
+        cur.execute("DELETE FROM prodes WHERE username=%s", (username,))
     try:
         db_get_usuario.clear(username)
         db_get_todos_usuarios.clear()
-        db_get_consumo_log.clear()
     except Exception:
         pass
-    db_feed_event(f"🗑️ Se eliminó al usuario {username}", "admin")
 
 
 def db_resetear_todos_puntajes():
@@ -298,6 +298,9 @@ def db_resetear_todos_puntajes():
         cur.execute("DELETE FROM consumo_log")
         cur.execute("DELETE FROM especiales")
         cur.execute("DELETE FROM especiales_resultados")
+        cur.execute("DELETE FROM actividad_feed")
+        cur.execute("DELETE FROM actividad_usuarios")
+        cur.execute("DELETE FROM config WHERE clave LIKE 'wizard_pos_%'")
     st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
 
 
@@ -319,6 +322,7 @@ def db_toggle_fase(nombre, valor):
         db_get_fases.clear()
     except Exception:
         st.cache_data.clear()
+    db_feed_event(f"{'🟢' if valor else '🔒'} La fase {nombre} fue {'abierta' if valor else 'cerrada'}", "fase")
 
 
 # ─── Partidos ─────────────────────────────────────────────────────────────────
@@ -472,6 +476,7 @@ def db_confirmar_prode(username, fase):
         """, (username, fase))
     _invalidar_prode(username, fase)
     _invalidar_usuarios()
+    db_feed_event(f"📝 {username} confirmó sus pronósticos de {fase}", "prode")
 
 
 @st.cache_data(ttl=60)
@@ -570,8 +575,6 @@ def db_rechazar_pendiente(pid):
     if username_rechazado:
         db_feed_event(f"❌ Se rechazó la solicitud de {username_rechazado}", "usuario")
 
-
-# ─── Consumo
 
 # ─── Consumo ──────────────────────────────────────────────────────────────────
 
@@ -962,11 +965,18 @@ def db_get_estadisticas_usuarios():
         "top_finales":    enrich(top_finales,     "puntos_finales"),
     }
 
-# ─── Actividad en vivo ───────────────────────────────────────────────────────
+# ─── Feed y usuarios en línea ────────────────────────────────────────────────
 
 def _invalidar_feed():
     try:
         db_get_feed.clear()
+    except Exception:
+        pass
+
+
+def _invalidar_online():
+    try:
+        db_get_cantidad_usuarios_en_linea.clear()
     except Exception:
         pass
 
@@ -981,7 +991,9 @@ def db_feed_event(texto, tipo="info"):
             "INSERT INTO actividad_feed (tipo, texto, created_at) VALUES (%s, %s, NOW())",
             (tipo, texto)
         )
-        cur.execute("DELETE FROM actividad_feed WHERE id NOT IN (SELECT id FROM actividad_feed ORDER BY created_at DESC, id DESC LIMIT 200)")
+        cur.execute(
+            "DELETE FROM actividad_feed WHERE id NOT IN (SELECT id FROM actividad_feed ORDER BY created_at DESC, id DESC LIMIT 200)"
+        )
     _invalidar_feed()
 
 
@@ -995,3 +1007,41 @@ def db_get_feed(limit=5):
             (limit,)
         )
         return [dict(r) for r in cur.fetchall()]
+
+
+def db_touch_usuario(username):
+    username = str(username or "").strip().lower()
+    if not username:
+        return
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO actividad_usuarios (username, last_seen)
+            VALUES (%s, NOW())
+            ON CONFLICT (username) DO UPDATE SET last_seen=EXCLUDED.last_seen
+        """, (username,))
+    _invalidar_online()
+
+
+def db_logout_usuario(username):
+    username = str(username or "").strip().lower()
+    if not username:
+        return
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM actividad_usuarios WHERE username=%s", (username,))
+    _invalidar_online()
+
+
+@st.cache_data(ttl=10)
+def db_get_cantidad_usuarios_en_linea(minutos=2):
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM actividad_usuarios
+            WHERE last_seen >= NOW() - (%s || ' minutes')::interval
+        """, (int(minutos),))
+        row = cur.fetchone()
+        return int(row["total"] if row else 0)
+

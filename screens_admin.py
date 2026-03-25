@@ -24,12 +24,23 @@ from db import (
     db_get_especial, db_get_resultado_especial, db_guardar_resultado_especial,
     db_get_todos_especiales, db_fusionar_variantes_especial,
     db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, get_db,
+    db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo
 
 
 def cambiar_pantalla(step):
     st.session_state.step = step
+
+
+def cerrar_sesion_admin():
+    db_logout_usuario(st.session_state.get("usuario"))
+    claves_a_limpiar = [k for k in list(st.session_state.keys()) if k not in ("db_initialized",)]
+    for k in claves_a_limpiar:
+        del st.session_state[k]
+    st.session_state.step = 0
+    st.session_state.usuario = None
+    st.session_state.registro_temp = {}
 
 
 def _fmt_equipo(nombre: str) -> str:
@@ -43,8 +54,11 @@ def _fmt_equipo(nombre: str) -> str:
 
 
 def pantalla_admin():
+    db_touch_usuario(st.session_state.get("usuario"))
+    usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
     _pend_count = len(db_get_pendientes())
     pend_html = f'<div style="background:var(--red);color:#fff;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</div>' if _pend_count > 0 else '<div style="color:var(--green);font-size:0.78rem;font-weight:600;">✅ Sin pendientes</div>'
+    online_html = f'<div style="background:var(--blue-dim);color:var(--blue);font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid var(--blue-border);">🟢 {usuarios_en_linea} en línea</div>'
     st.markdown(f"""
     <div style="display:flex;align-items:center;justify-content:space-between;
                 padding:0.4rem 0 1rem 0;border-bottom:1px solid var(--border);margin-bottom:1rem;">
@@ -57,7 +71,10 @@ def pantalla_admin():
                 <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">Prode Il Baigo · Mundial 2026</div>
             </div>
         </div>
-        {pend_html}
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+            {online_html}
+            {pend_html}
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -96,7 +113,7 @@ def pantalla_admin():
         st.divider()
         c1, c2 = st.columns(2)
         c1.button("🏆 Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="admin_rank")
-        c2.button("🚪 Cerrar sesión", on_click=cambiar_pantalla, args=(0,), use_container_width=True, key="admin_logout")
+        c2.button("🚪 Cerrar sesión", on_click=cerrar_sesion_admin, use_container_width=True, key="admin_logout")
         return
 
     # Botón volver

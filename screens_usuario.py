@@ -11,7 +11,6 @@ Orden de la pantalla (cuando grupos ya fue completado):
 """
 import streamlit as st
 import unicodedata
-from datetime import datetime
 
 from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, bandera
 from db import (
@@ -22,7 +21,8 @@ from db import (
     db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
     db_get_equipos_grupos, get_db, hash_clave,
     db_set_config, db_get_config, db_calcular_puntos,
-    db_get_prodes_fase_todos, db_get_feed
+    db_get_prodes_fase_todos, db_touch_usuario,
+    db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed
 )
 
 
@@ -32,6 +32,7 @@ def cambiar_pantalla(step):
 
 def cerrar_sesion():
     """Limpia todo el session_state y vuelve al login."""
+    db_logout_usuario(st.session_state.get("usuario"))
     claves_a_limpiar = [k for k in list(st.session_state.keys())
                         if k not in ("db_initialized",)]
     for k in claves_a_limpiar:
@@ -51,41 +52,10 @@ def nombre_equipo_display(nombre: str) -> str:
     return f"{b} {nombre}" if b else str(nombre)
 
 
-def _feed_icono(tipo: str) -> str:
-    return {
-        "prode": "✅",
-        "especial": "⭐",
-        "resultado": "📋",
-        "consumo": "🍻",
-        "fase": "🟢",
-        "usuario": "👤",
-        "admin": "🛠️",
-    }.get(str(tipo or "info"), "⚡")
-
-
-def _tiempo_relativo(dt):
-    if not dt:
-        return "recién"
-    try:
-        ahora = datetime.now(dt.tzinfo) if getattr(dt, "tzinfo", None) else datetime.now()
-        seg = max(0, int((ahora - dt).total_seconds()))
-    except Exception:
-        return "recién"
-    if seg < 60:
-        return "hace unos segundos"
-    if seg < 3600:
-        m = seg // 60
-        return f"hace {m} min"
-    if seg < 86400:
-        h = seg // 3600
-        return f"hace {h} h"
-    d = seg // 86400
-    return f"hace {d} d"
-
-
 def pantalla_usuario():
     username = st.session_state.usuario
-
+    db_touch_usuario(username)
+    usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
     u = db_get_usuario(username)
     nombre_display = u.get('nombre', username)
 
@@ -128,7 +98,11 @@ def pantalla_usuario():
             </div>
         </div>
         <div style="text-align:right;">
-            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px;">Prode Il Baigo</div>
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Prode Il Baigo</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-dim);border:1px solid var(--blue-border);
+                        color:var(--blue);padding:3px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;">
+                <span>🟢</span><span>{usuarios_en_linea} en línea</span>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -193,31 +167,6 @@ def pantalla_usuario():
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("""
-            <div style="font-family:Bebas Neue,sans-serif;font-size:1.35rem;letter-spacing:2px;
-                        margin:0.1rem 0 0.55rem 0;color:var(--blue);">⚡ Actividad en vivo</div>
-            """, unsafe_allow_html=True)
-
-            feed = db_get_feed(limit=5)
-            if feed:
-                for ev in feed[:5]:
-                    icono = _feed_icono(ev.get("tipo"))
-                    hace = _tiempo_relativo(ev.get("created_at"))
-                    st.markdown(f"""
-                    <div style="background:var(--bg3);border:1px solid var(--border);
-                                border-radius:12px;padding:10px 12px;margin-bottom:7px;">
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-                            <div style="display:flex;align-items:flex-start;gap:10px;min-width:0;">
-                                <div style="font-size:1rem;line-height:1.1;">{icono}</div>
-                                <div style="font-size:0.85rem;color:var(--text);line-height:1.25;">{ev.get('texto','')}</div>
-                            </div>
-                            <div style="font-size:0.68rem;color:var(--text3);white-space:nowrap;">{hace}</div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.caption("Sin actividad reciente")
-
             # Aviso pendientes
             pendientes_info = []
             for f_check in fases_habilitadas:
@@ -247,6 +196,36 @@ def pantalla_usuario():
                     st.session_state["sub_pantalla"] = "puntos"; st.rerun()
                 if st.button("🏅  Destacados", use_container_width=True, key="menu_dest"):
                     cambiar_pantalla(12); st.rerun()
+
+            st.markdown("""
+            <div style="
+            font-family:Bebas Neue,sans-serif;
+            font-size:1.3rem;
+            letter-spacing:2px;
+            margin:18px 0 8px 0;
+            color:var(--blue);
+            ">
+            ⚡ Actividad en vivo
+            </div>
+            """, unsafe_allow_html=True)
+
+            feed = db_get_feed(limit=5)
+            if feed:
+                for ev in feed:
+                    st.markdown(f"""
+                    <div style="
+                    background:var(--bg3);
+                    border:1px solid var(--border);
+                    border-radius:10px;
+                    padding:8px 12px;
+                    margin-bottom:6px;
+                    font-size:0.85rem;
+                    ">
+                    {ev["texto"]}
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.caption("Sin actividad reciente")
 
             st.divider()
             if st.session_state.get("confirmar_logout_main"):
