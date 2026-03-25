@@ -83,6 +83,7 @@ def _invalidar_prode(username, fase):
         db_fase_confirmada.clear(username, fase)
     except Exception:
         pass
+    _invalidar_confirmaciones_usuario(username)
 
 def _invalidar_resultados(fase):
     try:
@@ -96,10 +97,16 @@ def _invalidar_usuarios():
         db_get_puntos_especiales_usuarios.clear()
     except Exception:
         pass
+    _invalidar_ranking()
+    _invalidar_ranking()
 
 def _invalidar_especial(username, categoria):
     try:
         db_get_especial.clear(username, categoria)
+    except Exception:
+        pass
+    try:
+        db_get_especiales_usuario.clear(username)
     except Exception:
         pass
 
@@ -167,6 +174,15 @@ def init_tablas():
             username TEXT PRIMARY KEY,
             last_seen TIMESTAMP NOT NULL DEFAULT NOW()
         );
+        CREATE INDEX IF NOT EXISTS idx_usuarios_es_admin ON usuarios (es_admin);
+        CREATE INDEX IF NOT EXISTS idx_partidos_fase_idx ON partidos (fase, idx);
+        CREATE INDEX IF NOT EXISTS idx_resultados_fase_idx ON resultados (fase, partido_idx);
+        CREATE INDEX IF NOT EXISTS idx_prodes_user_fase ON prodes (username, fase);
+        CREATE INDEX IF NOT EXISTS idx_prodes_fase_confirmado_idx ON prodes (fase, confirmado, partido_idx);
+        CREATE INDEX IF NOT EXISTS idx_pendientes_username ON pendientes (username);
+        CREATE INDEX IF NOT EXISTS idx_especiales_categoria_confirmado_eleccion ON especiales (categoria, confirmado, eleccion);
+        CREATE INDEX IF NOT EXISTS idx_actividad_feed_created_at ON actividad_feed (created_at DESC, id DESC);
+        CREATE INDEX IF NOT EXISTS idx_actividad_usuarios_last_seen ON actividad_usuarios (last_seen DESC);
         """)
         for i, f in enumerate(FASES):
             cur.execute(
@@ -454,14 +470,32 @@ def db_get_prode(username, fase):
 
 def db_guardar_pred(username, fase, idx, gl, gv):
     """Guarda un pronóstico. NO invalida cache global — solo el prode de este usuario/fase."""
+    db_guardar_preds_lote(username, fase, [(idx, gl, gv)])
+
+
+def db_guardar_preds_lote(username, fase, cambios):
+    """Guarda varios pronósticos en una sola transacción para reducir lag en navegación."""
+    cambios_limpios = []
+    for item in cambios or []:
+        if not item or len(item) < 3:
+            continue
+        idx, gl, gv = item[0], item[1], item[2]
+        cambios_limpios.append((int(idx), int(gl), int(gv)))
+    if not cambios_limpios:
+        return
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("""
+        psycopg2.extras.execute_values(
+            cur,
+            """
             INSERT INTO prodes (username, fase, partido_idx, goles_local, goles_visita, confirmado)
-            VALUES (%s, %s, %s, %s, %s, 0)
+            VALUES %s
             ON CONFLICT (username, fase, partido_idx) DO UPDATE SET
             goles_local=EXCLUDED.goles_local, goles_visita=EXCLUDED.goles_visita
-        """, (username, fase, idx, gl, gv))
+            """,
+            [(username, fase, idx, gl, gv, 0) for idx, gl, gv in cambios_limpios],
+            template="(%s, %s, %s, %s, %s, %s)",
+        )
     _invalidar_prode(username, fase)
 
 
@@ -510,6 +544,7 @@ def db_resetear_prodes_fase(fase):
         db_get_todos_usuarios.clear()
     except Exception:
         pass
+    _invalidar_ranking()
 
 
 # ─── Pendientes ───────────────────────────────────────────────────────────────
@@ -679,7 +714,9 @@ def db_calcular_puntos():
         db_get_puntos_especiales_usuarios.clear()
         db_get_estadisticas_usuarios.clear()
         db_get_estadisticas_generales.clear()
+        db_get_ranking_snapshot.clear()
         db_get_estadisticas_partidos.clear()
+        db_get_ranking_snapshot.clear()
     except Exception:
         pass
 
@@ -693,6 +730,17 @@ def db_get_especial(username, categoria):
         cur.execute("SELECT * FROM especiales WHERE username=%s AND categoria=%s", (username, categoria))
         row = cur.fetchone()
         return dict(row) if row else None
+
+
+@st.cache_data(ttl=30)
+def db_get_especiales_usuario(username):
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT categoria, eleccion, confirmado FROM especiales WHERE username=%s",
+            (username,)
+        )
+        return {r["categoria"]: dict(r) for r in cur.fetchall()}
 
 
 def db_guardar_especial(username, categoria, eleccion):
@@ -716,11 +764,16 @@ def db_confirmar_especial(username, categoria):
 
 @st.cache_data(ttl=30)
 def db_get_resultado_especial(categoria):
+    resultados = db_get_resultados_especiales()
+    return resultados.get(categoria)
+
+
+@st.cache_data(ttl=30)
+def db_get_resultados_especiales():
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT resultado FROM especiales_resultados WHERE categoria=%s", (categoria,))
-        row = cur.fetchone()
-        return row["resultado"] if row else None
+        cur.execute("SELECT categoria, resultado FROM especiales_resultados")
+        return {r["categoria"]: r["resultado"] for r in cur.fetchall()}
 
 
 def db_guardar_resultado_especial(categoria, resultado):
@@ -745,6 +798,7 @@ def db_calcular_puntos_especiales():
         db_get_puntos_especiales_usuarios.clear()
         db_get_estadisticas_usuarios.clear()
         db_get_estadisticas_generales.clear()
+        db_get_ranking_snapshot.clear()
     except Exception:
         pass
 
@@ -781,20 +835,25 @@ def db_limpiar_especiales(username):
 
 @st.cache_data(ttl=10)
 def db_get_puntos_especiales_usuarios():
+    puntos_por_categoria = {cat: int(info.get("puntos", 0) or 0) for cat, info in CATEGORIAS_ESPECIALES.items()}
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT e.username, e.categoria
+            FROM especiales e
+            JOIN especiales_resultados r
+              ON r.categoria = e.categoria
+             AND r.resultado = e.eleccion
+            WHERE e.confirmado = 1
+            """
+        )
+        rows = cur.fetchall()
     result = {}
-    for cat, info in CATEGORIAS_ESPECIALES.items():
-        resultado_real = db_get_resultado_especial(cat)
-        if not resultado_real:
-            continue
-        with get_db() as conn:
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT username FROM especiales WHERE categoria=%s AND eleccion=%s AND confirmado=1",
-                (cat, resultado_real)
-            )
-            for row in cur.fetchall():
-                u = row["username"]
-                result[u] = result.get(u, 0) + info["puntos"]
+    for row in rows:
+        username = row["username"]
+        categoria = row["categoria"]
+        result[username] = result.get(username, 0) + puntos_por_categoria.get(categoria, 0)
     return result
 
 
@@ -965,6 +1024,114 @@ def db_get_estadisticas_usuarios():
         "top_finales":    enrich(top_finales,     "puntos_finales"),
     }
 
+@st.cache_data(ttl=15)
+def db_get_ranking_snapshot():
+    usuarios = db_get_todos_usuarios()
+    pts_esp = db_get_puntos_especiales_usuarios()
+    ranking = sorted(
+        usuarios,
+        key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + pts_esp.get(x["username"], 0),
+        reverse=True,
+    )
+    rows = []
+    pos_map = {}
+    for i, u in enumerate(ranking, start=1):
+        esp = pts_esp.get(u["username"], 0)
+        total = u["puntos"] + u["goles"] + u["consumo"] + esp
+        row = {
+            "username": u["username"],
+            "nombre": u.get("nombre") or u["username"],
+            "puntos": u["puntos"],
+            "goles": u["goles"],
+            "consumo": u["consumo"],
+            "especiales": esp,
+            "total": total,
+            "pos": i,
+        }
+        rows.append(row)
+        pos_map[u["username"]] = row
+    return {"rows": rows, "by_username": pos_map}
+
+
+@st.cache_data(ttl=30)
+def db_get_fases_confirmadas_usuario(username):
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT fase, BOOL_OR(confirmado = 1) AS confirmado
+            FROM prodes
+            WHERE username=%s
+            GROUP BY fase
+            """,
+            (username,)
+        )
+        return {r["fase"]: bool(r["confirmado"]) for r in cur.fetchall()}
+
+
+@st.cache_data(ttl=20)
+def db_get_resumen_fases_usuario(username):
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            WITH fases_base AS (
+                SELECT nombre AS fase
+                FROM fases
+            ),
+            partidos_por_fase AS (
+                SELECT fase, COUNT(*)::int AS partidos_total
+                FROM partidos
+                GROUP BY fase
+            ),
+            prodes_por_fase AS (
+                SELECT
+                    fase,
+                    COUNT(*) FILTER (WHERE partido_idx >= 0)::int AS cargados,
+                    BOOL_OR(confirmado = 1) AS confirmado
+                FROM prodes
+                WHERE username=%s
+                GROUP BY fase
+            )
+            SELECT
+                f.fase,
+                COALESCE(pa.partidos_total, 0) AS partidos_total,
+                COALESCE(pr.cargados, 0) AS cargados,
+                COALESCE(pr.confirmado, FALSE) AS confirmado
+            FROM fases_base f
+            LEFT JOIN partidos_por_fase pa ON pa.fase = f.fase
+            LEFT JOIN prodes_por_fase pr ON pr.fase = f.fase
+            """,
+            (username,)
+        )
+        return {
+            r["fase"]: {
+                "partidos_total": int(r["partidos_total"] or 0),
+                "cargados": int(r["cargados"] or 0),
+                "confirmado": bool(r["confirmado"]),
+            }
+            for r in cur.fetchall()
+        }
+
+
+def _invalidar_ranking():
+    try:
+        db_get_ranking_snapshot.clear()
+    except Exception:
+        pass
+
+
+def _invalidar_confirmaciones_usuario(username):
+    try:
+        db_get_fases_confirmadas_usuario.clear(username)
+    except Exception:
+        pass
+    try:
+        db_get_resumen_fases_usuario.clear(username)
+    except Exception:
+        pass
+
+
 # ─── Feed y usuarios en línea ────────────────────────────────────────────────
 
 def _invalidar_feed():
@@ -1009,9 +1176,18 @@ def db_get_feed(limit=5):
         return [dict(r) for r in cur.fetchall()]
 
 
-def db_touch_usuario(username):
+def db_touch_usuario(username, throttle_seconds=45):
     username = str(username or "").strip().lower()
     if not username:
+        return
+    try:
+        throttle_seconds = max(5, int(throttle_seconds or 45))
+    except Exception:
+        throttle_seconds = 45
+    session_key = f"_last_touch_usuario_{username}"
+    ahora = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    ultimo = float(st.session_state.get(session_key, 0) or 0)
+    if ahora - ultimo < throttle_seconds:
         return
     with get_db() as conn:
         cur = conn.cursor()
@@ -1020,6 +1196,7 @@ def db_touch_usuario(username):
             VALUES (%s, NOW())
             ON CONFLICT (username) DO UPDATE SET last_seen=EXCLUDED.last_seen
         """, (username,))
+    st.session_state[session_key] = ahora
     _invalidar_online()
 
 

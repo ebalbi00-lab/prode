@@ -10,9 +10,8 @@ except Exception:
     st_autorefresh = None
 
 from db import (
-    db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
     db_get_estadisticas_usuarios, db_get_estadisticas_partidos,
-    db_get_partidos,
+    db_get_partidos, db_get_ranking_snapshot,
 )
 
 
@@ -76,7 +75,7 @@ def render_destacados_usuarios():
 
 def pantalla_ranking():
     if st_autorefresh:
-        st_autorefresh(interval=30 * 1000, key="ranking_refresh")
+        st_autorefresh(interval=60 * 1000, key="ranking_refresh")
 
     st.markdown("""
     <div style="text-align:center; padding:1.2rem 0 1rem 0;">
@@ -90,31 +89,24 @@ def pantalla_ranking():
     """, unsafe_allow_html=True)
 
     username_actual = st.session_state.get("usuario", "")
-    todos = db_get_todos_usuarios()
+    ranking_snapshot = db_get_ranking_snapshot()
+    ranking = ranking_snapshot["rows"]
 
-    if not todos:
+    if not ranking:
         st.info("Todavía no hay usuarios para mostrar.")
     else:
-        _pts_esp_r = db_get_puntos_especiales_usuarios()
-        ranking = sorted(
-            todos,
-            key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_r.get(x["username"], 0),
-            reverse=True,
-        )
         medallas = {1: "🥇", 2: "🥈", 3: "🥉"}
         rows = []
-        for i, u in enumerate(ranking):
-            pos = i + 1
-            esp = _pts_esp_r.get(u["username"], 0)
-            total = u["puntos"] + u["goles"] + u["consumo"] + esp
+        for u in ranking:
+            pos = u["pos"]
             rows.append({
                 "Pos": medallas.get(pos, str(pos)),
-                "Nombre": u.get("nombre") or u["username"],
+                "Nombre": u["nombre"],
                 "R": u["puntos"],
                 "G": u["goles"],
                 "C": u["consumo"],
-                "E": esp,
-                "Total": total,
+                "E": u["especiales"],
+                "Total": u["total"],
                 "_username": u["username"],
                 "_pos": pos,
             })

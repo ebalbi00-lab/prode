@@ -1,3 +1,87 @@
+
+# --- V10 SPA NAV ---
+def _v10_nav():
+    import streamlit as st
+    if "_v10_step" not in st.session_state:
+        st.session_state["_v10_step"]=0
+    c1,c2,c3 = st.columns([1,2,1])
+    with c1:
+        if st.button("◀ Paso"):
+            st.session_state["_v10_step"]=max(0,st.session_state["_v10_step"]-1)
+            st.rerun()
+    with c3:
+        if st.button("Paso ▶"):
+            st.session_state["_v10_step"]=st.session_state["_v10_step"]+1
+            st.rerun()
+    return st.session_state["_v10_step"]
+# --- END V10 ---
+
+
+# --- V9 FORM MODE ---
+def _v9_form_block(key):
+    import streamlit as st
+    return st.form(key, clear_on_submit=False)
+# --- END V9 ---
+
+
+# --- V7 PERF HELPERS ---
+import math
+def _v7_paginate(items, page_key, page_size=4):
+    import streamlit as st
+    total = len(items)
+    pages = max(1, math.ceil(total / page_size))
+    p = st.session_state.get(page_key, 0)
+    c1,c2,c3 = st.columns([1,2,1])
+    with c1:
+        if st.button("◀", key=page_key+"_prev") and p>0:
+            st.session_state[page_key]=p-1
+            st.rerun()
+    with c3:
+        if st.button("▶", key=page_key+"_next") and p<pages-1:
+            st.session_state[page_key]=p+1
+            st.rerun()
+    start = p*page_size
+    return items[start:start+page_size]
+
+def _v7_buffer():
+    import streamlit as st
+    if "_v7_buffer" not in st.session_state:
+        st.session_state["_v7_buffer"] = {}
+    return st.session_state["_v7_buffer"]
+
+
+def _get_pred_buffer(username, fase):
+    buf = _v7_buffer()
+    key = f"pred::{username}::{fase}"
+    if key not in buf:
+        buf[key] = {}
+    return buf[key]
+
+
+def _get_special_buffer(username):
+    buf = _v7_buffer()
+    key = f"esp::{username}"
+    if key not in buf:
+        buf[key] = {}
+    return buf[key]
+
+
+def _merge_predicciones(base_pred, pred_buffer):
+    merged = dict(base_pred or {})
+    merged.update(pred_buffer or {})
+    return merged
+
+
+def _flush_pred_buffer(username, fase):
+    pred_buffer = _get_pred_buffer(username, fase)
+    if not pred_buffer:
+        return 0
+    payload = [(idx, gl, gv) for idx, (gl, gv) in sorted(pred_buffer.items())]
+    db_guardar_preds_lote(username, fase, payload)
+    pred_buffer.clear()
+    return len(payload)
+# --- END V7 ---
+
 """
 screens_usuario.py — Pantalla principal del usuario: pronósticos, puntos, especiales.
 
@@ -18,11 +102,13 @@ from db import (
     db_get_resultado_completo, db_guardar_pred, db_confirmar_prode,
     db_fase_confirmada, db_get_especial, db_guardar_especial,
     db_confirmar_especial, db_get_resultado_especial,
-    db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
     db_get_equipos_grupos, get_db, hash_clave,
     db_set_config, db_get_config, db_calcular_puntos,
     db_get_prodes_fase_todos, db_touch_usuario,
-    db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed
+    db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
+    db_get_ranking_snapshot, db_get_fases_confirmadas_usuario,
+    db_get_especiales_usuario, db_get_resumen_fases_usuario,
+    db_get_resultados_especiales, db_guardar_preds_lote
 )
 
 
@@ -52,36 +138,77 @@ def nombre_equipo_display(nombre: str) -> str:
     return f"{b} {nombre}" if b else str(nombre)
 
 
-def pantalla_usuario():
-    username = st.session_state.usuario
-    db_touch_usuario(username)
-    usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
-    u = db_get_usuario(username)
-    nombre_display = u.get('nombre', username)
+def _get_resumen_usuario(username, u):
+    ranking_snapshot = db_get_ranking_snapshot()
+    user_rank = ranking_snapshot["by_username"].get(username, {})
+    puntos_usuario = user_rank.get("puntos", u.get("puntos", 0))
+    goles_usuario = user_rank.get("goles", u.get("goles", 0))
+    consumo_usuario = user_rank.get("consumo", u.get("consumo", 0))
+    pts_esp_user = user_rank.get("especiales", 0)
+    total_pts = user_rank.get("total", puntos_usuario + goles_usuario + consumo_usuario + pts_esp_user)
+    posicion = user_rank.get("pos", "—")
+    total_ranking = len(ranking_snapshot["rows"])
+    emoji_pos = {1: "🥇", 2: "🥈", 3: "🥉"}.get(posicion, "🏅") if isinstance(posicion, int) else "🏅"
+    return {
+        "puntos": puntos_usuario,
+        "goles": goles_usuario,
+        "consumo": consumo_usuario,
+        "especiales": pts_esp_user,
+        "total": total_pts,
+        "posicion": posicion,
+        "total_ranking": total_ranking,
+        "emoji_pos": emoji_pos,
+    }
 
-    # Scroll al tope: itera todos los elementos scrolleables del parent
+
+def _get_pendientes_fases(fases_habilitadas, fases_resumen):
+    pendientes_info = []
+    pendientes_info_html = []
+    for f_check in fases_habilitadas:
+        data = fases_resumen.get(f_check, {})
+        if data.get("confirmado"):
+            continue
+        total = int(data.get("partidos_total", 0) or 0)
+        cargados = int(data.get("cargados", 0) or 0)
+        sin_cargar = max(0, total - cargados)
+        if sin_cargar > 0:
+            pendientes_info.append(f"{f_check} ({sin_cargar})")
+            pendientes_info_html.append(f"<b>{f_check}</b>: {sin_cargar} partido{'s' if sin_cargar > 1 else ''}")
+    return pendientes_info, pendientes_info_html
+
+
+def _get_partidos_por_grupo(partidos):
+    grupos = {chr(ord('A') + i): [] for i in range(12)}
+    for p in partidos:
+        idx = int(p.get("idx", -1) or -1)
+        if 0 <= idx < 72:
+            letra = chr(ord('A') + (idx // 6))
+            grupos.setdefault(letra, []).append(p)
+    grupos_con_partidos = [letra for letra, items in grupos.items() if items]
+    return grupos, grupos_con_partidos
+
+
+def _render_scroll_top():
     st.components.v1.html("""
     <script>
     (function() {
-        function scrollAll() {
-            var doc = window.parent.document;
-            // Scrollear el documento raíz
-            doc.documentElement.scrollTop = 0;
-            doc.body.scrollTop = 0;
-            // Scrollear todos los divs que tienen scroll
-            var els = doc.querySelectorAll('*');
-            for (var i = 0; i < els.length; i++) {
-                if (els[i].scrollTop > 0) els[i].scrollTop = 0;
-            }
+        var w = window.parent || window;
+        function resetScroll() {
+            try { w.scrollTo(0, 0); } catch (e) {}
+            try {
+                if (w.document && w.document.documentElement) w.document.documentElement.scrollTop = 0;
+                if (w.document && w.document.body) w.document.body.scrollTop = 0;
+            } catch (e) {}
         }
-        scrollAll();
-        setTimeout(scrollAll, 50);
-        setTimeout(scrollAll, 200);
+        resetScroll();
+        requestAnimationFrame(resetScroll);
     })();
     </script>
     """, height=0)
 
-    # ── 0) Header ─────────────────────────────────────────────────────────────
+
+def _render_header(nombre_display, usuarios_en_linea):
+    inicial = (str(nombre_display or "?").strip()[:1] or "?").upper()
     st.markdown(f"""
     <div style="display:flex; align-items:center; justify-content:space-between;
                 padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
@@ -90,7 +217,7 @@ def pantalla_usuario():
                         background:linear-gradient(135deg,#00c860,#009944);
                         display:flex; align-items:center; justify-content:center;
                         font-size:1.1rem; font-weight:800; color:#fff; flex-shrink:0;">
-                {nombre_display[0].upper()}
+                {inicial}
             </div>
             <div>
                 <div style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text); line-height:1.1;">{nombre_display}</div>
@@ -107,6 +234,17 @@ def pantalla_usuario():
     </div>
     """, unsafe_allow_html=True)
 
+
+def pantalla_usuario():
+    username = st.session_state.usuario
+    db_touch_usuario(username)
+    usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
+    u = db_get_usuario(username)
+    nombre_display = u.get('nombre', username)
+
+    _render_scroll_top()
+    _render_header(nombre_display, usuarios_en_linea)
+
     fases = db_get_fases()
 
     # ── Estado de grupos: siempre desde DB, sin confiar en session_state ────────
@@ -115,7 +253,8 @@ def pantalla_usuario():
 
     if grupos_completados:
         fases_habilitadas = [f for f in FASES if fases.get(f, False)]
-        fases_confirmadas = {f: db_fase_confirmada(username, f) for f in fases_habilitadas}
+        fases_confirmadas_all = db_get_fases_confirmadas_usuario(username)
+        fases_confirmadas = {f: fases_confirmadas_all.get(f, False) for f in fases_habilitadas}
 
         if not fases_habilitadas:
             st.warning("No hay fases habilitadas aún.")
@@ -139,17 +278,15 @@ def pantalla_usuario():
 
     # ── 1) Panel principal con sub-pantallas ─────────────────────────────────
     if grupos_completados:
-        u_fresh      = db_get_usuario(username)
-        _pts_esp_all = db_get_puntos_especiales_usuarios()
-        pts_esp_user = _pts_esp_all.get(username, 0)
-        total_pts    = u_fresh["puntos"] + u_fresh["goles"] + u_fresh["consumo"] + pts_esp_user
-        _todos_rank  = db_get_todos_usuarios()
-        ranking      = sorted(_todos_rank, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_all.get(x["username"], 0), reverse=True)
-        posicion     = next((i + 1 for i, x in enumerate(ranking) if x["username"] == username), "—")
-        emoji_pos    = {1:"🥇",2:"🥈",3:"🥉"}.get(posicion, "🏅") if isinstance(posicion, int) else "🏅"
-
-        # Sub-pantalla activa
         sub = st.session_state.get("sub_pantalla", "inicio")
+        resumen_usuario = None
+        pendientes_info = []
+        pendientes_info_html = []
+
+        if sub in ("inicio", "puntos"):
+            resumen_usuario = _get_resumen_usuario(username, u)
+            fases_resumen = db_get_resumen_fases_usuario(username)
+            pendientes_info, pendientes_info_html = _get_pendientes_fases(fases_habilitadas, fases_resumen)
 
         # ── Menú de inicio ──
         if sub == "inicio":
@@ -158,29 +295,21 @@ def pantalla_usuario():
             <div style="background:var(--gold-dim);border:1.5px solid var(--gold-border);
                         border-radius:16px;padding:20px 24px;margin-bottom:1.2rem;
                         display:flex;align-items:center;gap:16px;">
-                <span style="font-size:2.5rem;">{emoji_pos}</span>
+                <span style="font-size:2.5rem;">{resumen_usuario["emoji_pos"]}</span>
                 <div>
                     <div style="font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;">Tu posición</div>
-                    <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--gold);letter-spacing:2px;line-height:1;">{posicion}° de {len(ranking)}</div>
-                    <div style="font-size:0.82rem;color:var(--text2);margin-top:2px;">{total_pts} puntos totales</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--gold);letter-spacing:2px;line-height:1;">{resumen_usuario["posicion"]}° de {resumen_usuario["total_ranking"]}</div>
+                    <div style="font-size:0.82rem;color:var(--text2);margin-top:2px;">{resumen_usuario["total"]} puntos totales</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
             # Aviso pendientes
-            pendientes_info = []
-            for f_check in fases_habilitadas:
-                if not fases_confirmadas.get(f_check):
-                    pts_f  = db_get_partidos(f_check)
-                    pred_f = db_get_prode(username, f_check)["pred"]
-                    sin_cargar = len([p for p in pts_f if p["idx"] not in pred_f])
-                    if sin_cargar > 0:
-                        pendientes_info.append(f"{f_check} ({sin_cargar})")
             if pendientes_info:
                 st.markdown(
                     '<div style="background:var(--gold-dim);border:1px solid var(--gold-border);'
                     'border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:0.85rem;color:var(--gold);">'
-                    '⚠️ Pronósticos pendientes: ' + " · ".join(pendientes_info) + '</div>',
+                    '⚠️ Pronósticos pendientes: ' + " · ".join(pendientes_info_html) + '</div>',
                     unsafe_allow_html=True
                 )
 
@@ -251,25 +380,25 @@ def pantalla_usuario():
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
                     <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Resultados acertados</div>
-                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--blue);">{u_fresh["puntos"]}</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--blue);">{resumen_usuario["puntos"]}</div>
                 </div>
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
                     <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Marcadores exactos</div>
-                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--green);">{u_fresh["goles"]}</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--green);">{resumen_usuario["goles"]}</div>
                 </div>
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
                     <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Puntos de consumo</div>
-                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--orange);">{u_fresh["consumo"]}</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--orange);">{resumen_usuario["consumo"]}</div>
                 </div>
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
                     <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Pronósticos especiales</div>
-                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--gold);">{pts_esp_user}</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--gold);">{resumen_usuario["especiales"]}</div>
                 </div>
             </div>
             <div style="background:var(--green-dim);border:1.5px solid var(--green-glow);border-radius:12px;padding:16px;text-align:center;margin-bottom:1rem;">
                 <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Total</div>
-                <div style="font-family:Bebas Neue,sans-serif;font-size:3rem;color:var(--green);letter-spacing:2px;">{total_pts}</div>
-                <div style="font-size:0.8rem;color:var(--text3);">Posición {posicion} de {len(ranking)}</div>
+                <div style="font-family:Bebas Neue,sans-serif;font-size:3rem;color:var(--green);letter-spacing:2px;">{resumen_usuario["total"]}</div>
+                <div style="font-size:0.8rem;color:var(--text3);">Posición {resumen_usuario["posicion"]} de {resumen_usuario["total_ranking"]}</div>
             </div>
             """, unsafe_allow_html=True)
             return
@@ -295,7 +424,8 @@ def pantalla_usuario():
                 st.info("Nadie confirmó pronósticos para esta fase todavía.")
                 return
 
-            for p in partidos_ver:
+            partidos_ver_pagina = _v7_paginate(partidos_ver, f"otros_page_{fase_ver}", page_size=4)
+            for p in partidos_ver_pagina:
                 idx_p = p["idx"]
                 nom_l = nombre_equipo_display(p['local'])
                 nom_v = nombre_equipo_display(p['visita'])
@@ -340,15 +470,7 @@ def pantalla_usuario():
         </div>""", unsafe_allow_html=True)
 
         # Partidos pendientes
-        pendientes_info = []
-        for f_check in fases_habilitadas:
-            if not fases_confirmadas.get(f_check):
-                pts_f  = db_get_partidos(f_check)
-                pred_f = db_get_prode(username, f_check)["pred"]
-                sin_cargar = len([p for p in pts_f if p["idx"] not in pred_f])
-                if sin_cargar > 0:
-                    pendientes_info.append(f"<b>{f_check}</b>: {sin_cargar} partido{'s' if sin_cargar > 1 else ''}")
-        if pendientes_info:
+        if pendientes_info_html:
             st.markdown(
                 '<div style="background:var(--gold-dim);border:1px solid var(--gold-border);'
                 'border-radius:10px;padding:10px 14px;margin-bottom:0.5rem;font-size:0.85rem;color:var(--gold);">'
@@ -412,12 +534,16 @@ def pantalla_usuario():
             Pronósticos — {titulo_fase}</span>{estado_badge}
     </div>""", unsafe_allow_html=True)
 
-    resultados_fase = db_get_resultado_completo(fase)
-    cambios = {}
+    resultados_fase = db_get_resultado_completo(fase) if confirmado else {}
+    pred_buffer = _get_pred_buffer(username, fase)
+    pred_ui = _merge_predicciones(pred, pred_buffer)
+
+    def _persistir_cambios():
+        _flush_pred_buffer(username, fase)
 
     def render_partido(p):
         idx = p["idx"]
-        gl_prev, gv_prev = pred.get(idx, (0, 0))
+        gl_prev, gv_prev = pred_ui.get(idx, pred.get(idx, (0, 0)))
         res_real    = resultados_fase.get(idx)
         iconos      = ""
         color_card  = "var(--surface)"
@@ -479,13 +605,14 @@ def pantalla_usuario():
             checked = st.checkbox("✔ Confirmo el pronóstico de este partido", value=actual, key=f"chk_{fase}_{idx}")
             if checked != actual:
                 st.session_state["partidos_ok"][ok_key] = checked
-            cambios[idx] = (gl, gv)
+            if gl != pred.get(idx, (0, 0))[0] or gv != pred.get(idx, (0, 0))[1]:
+                pred_buffer[idx] = (gl, gv)
+            else:
+                pred_buffer.pop(idx, None)
 
     # ── Fase Grupos con wizard ────────────────────────────────────────────────
     if fase == "Grupos":
-        grupos = [chr(ord('A') + i) for i in range(12)]
-        grupos_con_partidos = [l for l in grupos if any(
-            True for p in partidos if "ABCDEFGHIJKL".index(l) * 6 <= p["idx"] < "ABCDEFGHIJKL".index(l) * 6 + 6)]
+        partidos_por_grupo, grupos_con_partidos = _get_partidos_por_grupo(partidos)
 
         if confirmado:
             st.session_state["wizard_grupos_completo"] = True
@@ -505,8 +632,7 @@ def pantalla_usuario():
             </div>
             """, unsafe_allow_html=True)
 
-            inicio    = "ABCDEFGHIJKL".index(letra_sel) * 6
-            partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
+            partidos_grupo = partidos_por_grupo.get(letra_sel, [])
             for p in partidos_grupo:
                 render_partido(p)
 
@@ -543,8 +669,7 @@ def pantalla_usuario():
                 <div style='text-align:center; color:var(--text3); font-size:0.75rem; margin-bottom:0.8rem; letter-spacing:1px;'>{gi+1} DE {total}</div>
                 """, unsafe_allow_html=True)
 
-                inicio = "ABCDEFGHIJKL".index(letra) * 6
-                partidos_grupo = [p for p in partidos if inicio <= p["idx"] < inicio + 6]
+                partidos_grupo = partidos_por_grupo.get(letra, [])
                 for p in partidos_grupo:
                     render_partido(p)
 
@@ -553,21 +678,18 @@ def pantalla_usuario():
                 if gi > 0:
                     if nav1.button("← Anterior", key="grupo_prev", use_container_width=True):
                         with st.spinner("Guardando..."):
-                            for idx, (gl, gv) in cambios.items():
-                                db_guardar_pred(username, fase, idx, gl, gv)
+                            _persistir_cambios()
                         st.session_state.grupo_wizard = gi - 1; db_set_config(f'wizard_pos_{username}', str(gi - 1)); st.rerun()
 
                 if gi < total - 1:
                     if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
                         with st.spinner("Guardando..."):
-                            for idx, (gl, gv) in cambios.items():
-                                db_guardar_pred(username, fase, idx, gl, gv)
+                            _persistir_cambios()
                         st.session_state.grupo_wizard = gi + 1; db_set_config(f'wizard_pos_{username}', str(gi + 1)); st.rerun()
                 else:
                     if nav3.button("Siguiente → Especiales ⭐", key="grupo_to_especiales", type="primary", use_container_width=True):
                         with st.spinner("Guardando..."):
-                            for idx, (gl, gv) in cambios.items():
-                                db_guardar_pred(username, fase, idx, gl, gv)
+                            _persistir_cambios()
                         st.session_state.grupo_wizard = 12; db_set_config(f'wizard_pos_{username}', '12'); st.rerun()
 
                 # ── Slider de navegación ──
@@ -583,8 +705,7 @@ def pantalla_usuario():
                 )
                 if dest_slider != gi:
                     with st.spinner("Guardando..."):
-                        for idx2, (gl2, gv2) in cambios.items():
-                            db_guardar_pred(username, fase, idx2, gl2, gv2)
+                            _persistir_cambios()
                     st.session_state.grupo_wizard = dest_slider
                     db_set_config(f'wizard_pos_{username}', str(dest_slider)); st.rerun()
 
@@ -602,7 +723,8 @@ def pantalla_usuario():
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
-        for p in partidos:
+        partidos_pagina = _v7_paginate(partidos, f"fase_page_{fase}", page_size=4) if not confirmado else partidos
+        for p in partidos_pagina:
             render_partido(p)
 
         if not confirmado:
@@ -625,9 +747,7 @@ def pantalla_usuario():
                     st.error("Contraseña incorrecta")
                 else:
                     with st.spinner("Confirmando..."):
-                        # Primero guardar todos los pronósticos
-                        for idx_c, (gl_c, gv_c) in cambios.items():
-                            db_guardar_pred(username, fase, idx_c, gl_c, gv_c)
+                        _flush_pred_buffer(username, fase)
                         db_confirmar_prode(username, fase)
                         db_calcular_puntos()
                     st.session_state["wizard_grupos_completo"] = True
@@ -644,11 +764,8 @@ def pantalla_usuario():
         return
 
     # ── 4) Resumen de especiales ──────────────────────────────────────────────
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM especiales WHERE username=%s", (username,))
-        _rows = cur.fetchall()
-    esp_data = {r["categoria"]: dict(r) for r in _rows}
+    esp_data = db_get_especiales_usuario(username)
+    resultados_especiales = db_get_resultados_especiales()
     for _cat in CATEGORIAS_ESPECIALES:
         if _cat not in esp_data:
             esp_data[_cat] = None
@@ -658,7 +775,7 @@ def pantalla_usuario():
         for cat, info in CATEGORIAS_ESPECIALES.items():
             esp  = esp_data[cat]
             elec = esp["eleccion"] if esp else None
-            resultado_real = db_get_resultado_especial(cat)
+            resultado_real = resultados_especiales.get(cat)
 
             if not elec:
                 bg_c = "var(--surface)"; border_c = "var(--surface)"
@@ -704,11 +821,14 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
 
     eq_wiz = db_get_equipos_grupos() or sorted(BANDERAS.keys())
     selecciones_esp = {}
+    especiales_usuario = db_get_especiales_usuario(username)
+    esp_buffer = _get_special_buffer(username)
+    resultados_especiales = db_get_resultados_especiales()
 
     for cat, info in CATEGORIAS_ESPECIALES.items():
-        esp_w      = db_get_especial(username, cat)
-        elec_w     = esp_w["eleccion"] if esp_w else None
-        res_real_w = db_get_resultado_especial(cat)
+        esp_w = especiales_usuario.get(cat)
+        elec_w = esp_buffer.get(cat, esp_w["eleccion"] if esp_w else None)
+        res_real_w = resultados_especiales.get(cat)
 
         col_tw, col_pw = st.columns([4, 1])
         col_tw.markdown(f"**{info['label']}**")
@@ -732,12 +852,14 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                     idx_w = 0
                 sel_w = st.selectbox("Seleccioná el equipo", ops_w, index=idx_w, key=f"esp_sel_{cat}")
                 selecciones_esp[cat] = d2n_w.get(sel_w, None) if sel_w != "— Elegí un equipo —" else None
+                if selecciones_esp[cat]:
+                    esp_buffer[cat] = selecciones_esp[cat]
             else:
                 lista_w = ARQUEROS_MUNDIALISTAS if cat == "arquero" else JUGADORES_MUNDIALISTAS
                 label_w = "arquero" if cat == "arquero" else "jugador"
 
-                # Mostrar selección actual — solo del session_state, nunca pre-cargado
-                sel_actual = st.session_state.get(f"esp_elegido_{cat}")
+                # Mostrar selección actual desde buffer/session/db
+                sel_actual = st.session_state.get(f"esp_elegido_{cat}", elec_w)
                 if sel_actual:
                     st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
                 selecciones_esp[cat] = sel_actual
@@ -755,6 +877,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                                     st.session_state[f"esp_elegido_{cat}"] = jug
                                     st.session_state[f"esp_cambiar_{cat}"] = False
                                     selecciones_esp[cat] = jug
+                                    esp_buffer[cat] = jug
                                     st.rerun()
                 else:
                     if st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}"):
@@ -776,9 +899,12 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
             partidos_indices = [p["idx"] for p in partidos if p["idx"] >= 0]
             sin_confirmar = [idx for idx in partidos_indices if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
             
-            esp_confirmados = {cat: db_get_especial(username, cat) for cat in CATEGORIAS_ESPECIALES}
-            sin_elegir = [info["label"] for cat, info in CATEGORIAS_ESPECIALES.items()
-                          if selecciones_esp.get(cat) is None and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"])]
+            esp_confirmados = especiales_usuario
+            sin_elegir = [
+                info["label"]
+                for cat, info in CATEGORIAS_ESPECIALES.items()
+                if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
+            ]
             
             if sin_elegir:
                 st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
@@ -818,28 +944,37 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 st.session_state["mostrar_dialogo_confirm_esp"] = True
                 st.rerun()
             else:
-                esp_confirmados = {cat: db_get_especial(username, cat) for cat in CATEGORIAS_ESPECIALES}
-                sin_elegir = [info["label"] for cat, info in CATEGORIAS_ESPECIALES.items()
-                              if selecciones_esp.get(cat) is None and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"])]
+                esp_confirmados = especiales_usuario
+                sin_elegir = [
+                    info["label"]
+                    for cat, info in CATEGORIAS_ESPECIALES.items()
+                    if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
+                ]
                 if sin_elegir:
                     st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
                 else:
                     with st.spinner("Confirmando pronósticos..."):
+                        _flush_pred_buffer(username, fase)
                         db_confirmar_prode(username, fase)
                         for cat, elec in selecciones_esp.items():
                             if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
                                 db_guardar_especial(username, cat, elec)
                                 db_confirmar_especial(username, cat)
+                        _get_special_buffer(username).clear()
                         db_calcular_puntos()
                     st.session_state["wizard_grupos_completo"] = True
                     st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
                     db_set_config(f"wizard_pos_{username}", "0")
                     st.rerun()
 
+    esp_buffer = _get_special_buffer(username)
     for cat, elec in selecciones_esp.items():
-        esp_actual = db_get_especial(username, cat)
-        if elec and not (esp_actual and esp_actual["confirmado"]):
-            db_guardar_especial(username, cat, elec)
+        esp_actual = especiales_usuario.get(cat)
+        confirmado_actual = bool(esp_actual and esp_actual["confirmado"])
+        if elec and not confirmado_actual:
+            esp_buffer[cat] = elec
+        elif not elec and cat in esp_buffer and not confirmado_actual:
+            esp_buffer.pop(cat, None)
 
     st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
     nav1_e, _, _ = st.columns([1, 2, 1])
