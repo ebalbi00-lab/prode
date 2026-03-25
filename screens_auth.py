@@ -6,8 +6,7 @@ import re
 import streamlit as st
 
 from db import (
-    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave,
-    db_get_pendientes, db_get_pago_config, db_touch_usuario
+    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, db_get_pendientes, db_get_pago_config
 )
 from constants import FASES
 
@@ -34,7 +33,6 @@ def login(usuario, clave):
     else:
         st.session_state["login_intentos"] = 0
         st.session_state.usuario = usuario.strip().lower()
-        db_touch_usuario(usuario.strip().lower())
         st.session_state.step = 9 if u["es_admin"] else 5
         st.rerun()
 
@@ -58,15 +56,15 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 
 def pantalla_login():
     st.markdown("""
-    <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
-        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
+    <div style="text-align:center; padding: 2.35rem 0 1.35rem 0;">
+        <div style="font-size:3.05rem; margin-bottom:0.55rem; filter:drop-shadow(0 4px 14px rgba(47,124,255,0.16));">⚽</div>
         <div style="font-family:Bebas Neue,sans-serif; font-size:3.8rem; letter-spacing:5px;
-                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
+                    background:linear-gradient(135deg,#2468da 0%,#2f7cff 56%,#6aa8ff 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
-        <div style="display:inline-block; background:linear-gradient(135deg,rgba(255,210,76,0.18),rgba(255,190,32,0.12)); border:1px solid rgba(228,175,33,0.35);
-                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#d49a00;
-                    font-weight:800; letter-spacing:3px; text-transform:uppercase; box-shadow:0 4px 14px rgba(212,154,0,0.10);">⚽ MUNDIAL 2026</div>
+                    background-clip:text; line-height:1.0; margin-bottom:0.28rem;">PRODE IL BAIGO</div>
+        <div style="display:inline-block; background:linear-gradient(135deg,rgba(200,154,43,0.16),rgba(200,154,43,0.09)); border:1px solid rgba(200,154,43,0.24);
+                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#b78719;
+                    font-weight:800; letter-spacing:3px; text-transform:uppercase; box-shadow:0 4px 12px rgba(200,154,43,0.08);">⚽ MUNDIAL 2026</div>
     </div>
     """, unsafe_allow_html=True)
 

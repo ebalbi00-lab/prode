@@ -4,7 +4,6 @@ Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 """
 import datetime
 import hashlib
-import json
 import os
 
 import psycopg2
@@ -59,6 +58,11 @@ def get_db():
             if intento == 2:
                 raise
     try:
+        try:
+            cur = conn.cursor()
+            cur.execute("SET TIME ZONE 'America/Argentina/Buenos_Aires'")
+        except Exception:
+            pass
         yield conn
         conn.commit()
     except Exception as e:
@@ -153,20 +157,10 @@ def init_tablas():
         CREATE TABLE IF NOT EXISTS especiales_resultados (
             categoria TEXT PRIMARY KEY, resultado TEXT
         );
-        CREATE TABLE IF NOT EXISTS actividad_usuarios (
-            username TEXT PRIMARY KEY,
-            last_seen TIMESTAMP NOT NULL DEFAULT NOW()
-        );
         CREATE TABLE IF NOT EXISTS actividad_feed (
             id SERIAL PRIMARY KEY,
-            tipo TEXT DEFAULT 'general',
-            username TEXT,
+            tipo TEXT,
             texto TEXT NOT NULL,
-            created_at TIMESTAMP NOT NULL DEFAULT NOW()
-        );
-        CREATE TABLE IF NOT EXISTS ranking_snapshots (
-            id SERIAL PRIMARY KEY,
-            posiciones_json TEXT NOT NULL,
             created_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
         """)
@@ -198,161 +192,6 @@ def init_db():
 
 def hash_clave(clave: str) -> str:
     return hashlib.sha256(clave.encode()).hexdigest()
-
-
-# ─── Presencia / usuarios en línea ───────────────────────────────────────────
-
-def _invalidar_actividad():
-    try:
-        db_get_usuarios_en_linea.clear()
-        db_get_cantidad_usuarios_en_linea.clear()
-    except Exception:
-        pass
-
-
-def _invalidar_feed():
-    try:
-        db_get_feed.clear()
-    except Exception:
-        pass
-
-
-def _invalidar_ranking_movimientos():
-    try:
-        db_get_ranking_movimientos.clear()
-    except Exception:
-        pass
-
-
-def _nombre_usuario(username):
-    usuario = db_get_usuario(username)
-    if not usuario:
-        return username
-    return usuario.get("nombre") or usuario.get("username") or username
-
-
-def _snapshot_ranking_actual(conn):
-    cur = conn.cursor()
-    cur.execute("SELECT username, puntos, goles, consumo FROM usuarios WHERE es_admin=0 ORDER BY username")
-    usuarios = cur.fetchall()
-    cur.execute("SELECT categoria, resultado FROM especiales_resultados")
-    resultados_esp = {r["categoria"]: r["resultado"] for r in cur.fetchall() if r.get("resultado")}
-
-    puntos_especiales = {}
-    if resultados_esp:
-        for cat, info in CATEGORIAS_ESPECIALES.items():
-            resultado = resultados_esp.get(cat)
-            if not resultado:
-                continue
-            cur.execute("SELECT username FROM especiales WHERE categoria=%s AND confirmado=1 AND eleccion=%s", (cat, resultado))
-            for row in cur.fetchall():
-                puntos_especiales[row["username"]] = puntos_especiales.get(row["username"], 0) + int(info.get("puntos", 0))
-
-    ranking = sorted(
-        usuarios,
-        key=lambda u: int(u["puntos"] or 0) + int(u["goles"] or 0) + int(u["consumo"] or 0) + puntos_especiales.get(u["username"], 0),
-        reverse=True,
-    )
-    return {u["username"]: idx + 1 for idx, u in enumerate(ranking)}
-
-
-def _guardar_snapshot_ranking():
-    with get_db() as conn:
-        snapshot = _snapshot_ranking_actual(conn)
-        cur = conn.cursor()
-        cur.execute("INSERT INTO ranking_snapshots (posiciones_json) VALUES (%s)", (json.dumps(snapshot),))
-    _invalidar_ranking_movimientos()
-
-
-def db_feed_evento(texto, tipo="general", username=None):
-    texto = (texto or "").strip()
-    if not texto:
-        return
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("INSERT INTO actividad_feed (tipo, username, texto) VALUES (%s, %s, %s)", (tipo, username, texto))
-    _invalidar_feed()
-
-
-@st.cache_data(ttl=10)
-def db_get_feed(limit=12):
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT id, tipo, username, texto, created_at
-            FROM actividad_feed
-            ORDER BY created_at DESC, id DESC
-            LIMIT %s
-        """, (limit,))
-        return [dict(r) for r in cur.fetchall()]
-
-
-@st.cache_data(ttl=15)
-def db_get_ranking_movimientos():
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT posiciones_json FROM ranking_snapshots ORDER BY created_at DESC, id DESC LIMIT 1")
-        row = cur.fetchone()
-        prev = json.loads(row["posiciones_json"]) if row and row.get("posiciones_json") else {}
-        actual = _snapshot_ranking_actual(conn)
-
-    movimientos = {}
-    for username, pos_actual in actual.items():
-        pos_prev = prev.get(username)
-        movimientos[username] = 0 if pos_prev is None else int(pos_prev) - int(pos_actual)
-    return movimientos
-
-
-def db_touch_usuario(username):
-    username = (username or "").strip().lower()
-    if not username:
-        return
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO actividad_usuarios (username, last_seen)
-            VALUES (%s, NOW())
-            ON CONFLICT (username)
-            DO UPDATE SET last_seen = EXCLUDED.last_seen
-        """, (username,))
-    _invalidar_actividad()
-
-
-def db_logout_usuario(username):
-    username = (username or "").strip().lower()
-    if not username:
-        return
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM actividad_usuarios WHERE username=%s", (username,))
-    _invalidar_actividad()
-
-
-@st.cache_data(ttl=10)
-def db_get_usuarios_en_linea(minutos=2):
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT u.username, u.nombre, u.es_admin, a.last_seen
-            FROM actividad_usuarios a
-            JOIN usuarios u ON u.username = a.username
-            WHERE a.last_seen >= NOW() - (%s * INTERVAL '1 minute')
-            ORDER BY a.last_seen DESC
-        """, (minutos,))
-        return [dict(r) for r in cur.fetchall()]
-
-
-@st.cache_data(ttl=10)
-def db_get_cantidad_usuarios_en_linea(minutos=2):
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT COUNT(*) AS total
-            FROM actividad_usuarios
-            WHERE last_seen >= NOW() - (%s * INTERVAL '1 minute')
-        """, (minutos,))
-        row = cur.fetchone()
-        return int(row["total"] if row else 0)
 
 
 # ─── Config ───────────────────────────────────────────────────────────────────
@@ -416,7 +255,7 @@ def db_get_usuario(username):
         return dict(row) if row else None
 
 
-@st.cache_data(ttl=120)
+@st.cache_data(ttl=5)
 def db_get_todos_usuarios():
     with get_db() as conn:
         cur = conn.cursor()
@@ -437,13 +276,17 @@ def db_reset_clave(username, nueva_clave):
 def db_borrar_usuario(username):
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("DELETE FROM usuarios WHERE username=%s", (username,))
+        cur.execute("DELETE FROM especiales WHERE username=%s", (username,))
+        cur.execute("DELETE FROM consumo_log WHERE username=%s", (username,))
         cur.execute("DELETE FROM prodes WHERE username=%s", (username,))
+        cur.execute("DELETE FROM usuarios WHERE username=%s", (username,))
     try:
         db_get_usuario.clear(username)
         db_get_todos_usuarios.clear()
+        db_get_consumo_log.clear()
     except Exception:
         pass
+    db_feed_event(f"🗑️ Se eliminó al usuario {username}", "admin")
 
 
 def db_resetear_todos_puntajes():
@@ -472,7 +315,6 @@ def db_toggle_fase(nombre, valor):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE fases SET habilitada=%s WHERE nombre=%s", (1 if valor else 0, nombre))
-    db_feed_evento(f"Se {'abrió' if valor else 'cerró'} la fase {nombre}", tipo="fase")
     try:
         db_get_fases.clear()
     except Exception:
@@ -561,7 +403,6 @@ def db_guardar_resultado(fase, idx, gl, gv):
             ON CONFLICT (fase, partido_idx) DO UPDATE SET
             goles_local=EXCLUDED.goles_local, goles_visita=EXCLUDED.goles_visita
         """, (fase, idx, gl, gv))
-    db_feed_evento(f"Se cargó un resultado en {fase}: partido #{idx + 1} terminó {gl}-{gv}", tipo="resultado")
     _invalidar_resultados(fase)
 
 
@@ -629,7 +470,6 @@ def db_confirmar_prode(username, fase):
             VALUES (%s, %s, -1, 0, 0, 1)
             ON CONFLICT (username, fase, partido_idx) DO NOTHING
         """, (username, fase))
-    db_feed_evento(f"{_nombre_usuario(username)} confirmó sus pronósticos de {fase}", tipo="prode", username=username)
     _invalidar_prode(username, fase)
     _invalidar_usuarios()
 
@@ -692,7 +532,6 @@ def db_agregar_pendiente(data):
 
 def db_aprobar_pendiente(pid):
     username_aprobado = None
-    nombre_aprobado = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM pendientes WHERE id=%s", (pid,))
@@ -700,39 +539,43 @@ def db_aprobar_pendiente(pid):
         if not row:
             return
         username_aprobado = row["username"]
-        nombre_aprobado = row.get("nombre") or row["username"]
         cur.execute("""
             INSERT INTO usuarios (username, clave, nombre, nacimiento, localidad, celular, mail)
             VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT (username) DO NOTHING
         """, (row["username"], row["clave"], row["nombre"], row["nacimiento"],
               row["localidad"], row["celular"], row["mail"]))
         cur.execute("DELETE FROM pendientes WHERE id=%s", (pid,))
-    db_feed_evento(f"Se aprobó el ingreso de {nombre_aprobado}", tipo="usuario", username=username_aprobado)
     try:
         db_get_pendientes.clear()
         db_get_todos_usuarios.clear()
     except Exception:
         pass
+    if username_aprobado:
+        db_feed_event(f"🎉 {username_aprobado} fue aprobado y ya puede jugar", "usuario")
 
 
 def db_rechazar_pendiente(pid):
+    username_rechazado = None
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT username, nombre FROM pendientes WHERE id=%s", (pid,))
+        cur.execute("SELECT username FROM pendientes WHERE id=%s", (pid,))
         row = cur.fetchone()
+        if row:
+            username_rechazado = row["username"]
         cur.execute("DELETE FROM pendientes WHERE id=%s", (pid,))
-    if row:
-        db_feed_evento(f"Se rechazó la solicitud de {row.get('nombre') or row['username']}", tipo="usuario", username=row["username"])
     try:
         db_get_pendientes.clear()
     except Exception:
         pass
+    if username_rechazado:
+        db_feed_event(f"❌ Se rechazó la solicitud de {username_rechazado}", "usuario")
 
+
+# ─── Consumo
 
 # ─── Consumo ──────────────────────────────────────────────────────────────────
 
 def db_sumar_consumo(username, puntos, descripcion=""):
-    _guardar_snapshot_ranking()
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE usuarios SET consumo=consumo+%s WHERE username=%s", (puntos, username))
@@ -741,7 +584,6 @@ def db_sumar_consumo(username, puntos, descripcion=""):
             "INSERT INTO consumo_log (username, puntos, descripcion, fecha) VALUES (%s, %s, %s, %s)",
             (username, puntos, descripcion, fecha)
         )
-    db_feed_evento(f"{_nombre_usuario(username)} sumó {puntos} punto{'s' if int(puntos) != 1 else ''} de consumo", tipo="consumo", username=username)
     try:
         db_get_usuario.clear(username)
         db_get_todos_usuarios.clear()
@@ -749,6 +591,7 @@ def db_sumar_consumo(username, puntos, descripcion=""):
         db_get_consumo_log.clear(username)
     except Exception:
         pass
+    db_feed_event(f"🍻 {username} sumó {puntos} puntos de consumo", "consumo")
 
 
 def db_eliminar_consumo_log(log_id):
@@ -784,7 +627,6 @@ def db_get_consumo_log(username=None):
 
 def db_calcular_puntos():
     """Recalcula solo puntos de partidos y exactos. Los especiales se calculan aparte."""
-    _guardar_snapshot_ranking()
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -865,8 +707,8 @@ def db_confirmar_especial(username, categoria):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE especiales SET confirmado=1 WHERE username=%s AND categoria=%s", (username, categoria))
-    db_feed_evento(f"{_nombre_usuario(username)} confirmó un pronóstico especial", tipo="especial", username=username)
     _invalidar_especial(username, categoria)
+    db_feed_event(f"⭐ {username} confirmó su especial de {categoria}", "especial")
 
 
 @st.cache_data(ttl=30)
@@ -885,8 +727,8 @@ def db_guardar_resultado_especial(categoria, resultado):
             INSERT INTO especiales_resultados (categoria, resultado) VALUES (%s, %s)
             ON CONFLICT (categoria) DO UPDATE SET resultado=EXCLUDED.resultado
         """, (categoria, resultado))
-    db_feed_evento(f"Se publicó el resultado especial de {categoria}", tipo="especial")
     _invalidar_resultado_especial(categoria)
+    db_feed_event(f"🏅 Se publicó el resultado especial de {categoria}", "especial")
 
 
 def db_calcular_puntos_especiales():
@@ -895,7 +737,6 @@ def db_calcular_puntos_especiales():
     Solo invalida caches porque los especiales se leen dinámicamente
     desde db_get_puntos_especiales_usuarios().
     """
-    _guardar_snapshot_ranking()
     try:
         db_get_todos_usuarios.clear()
         db_get_puntos_especiales_usuarios.clear()
@@ -935,7 +776,7 @@ def db_limpiar_especiales(username):
         _invalidar_especial(username, cat)
 
 
-@st.cache_data(ttl=120)
+@st.cache_data(ttl=10)
 def db_get_puntos_especiales_usuarios():
     result = {}
     for cat, info in CATEGORIAS_ESPECIALES.items():
@@ -1120,3 +961,37 @@ def db_get_estadisticas_usuarios():
         "top_grupos":     enrich(top_grupos,      "puntos_grupos"),
         "top_finales":    enrich(top_finales,     "puntos_finales"),
     }
+
+# ─── Actividad en vivo ───────────────────────────────────────────────────────
+
+def _invalidar_feed():
+    try:
+        db_get_feed.clear()
+    except Exception:
+        pass
+
+
+def db_feed_event(texto, tipo="info"):
+    texto = str(texto or "").strip()
+    if not texto:
+        return
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO actividad_feed (tipo, texto, created_at) VALUES (%s, %s, NOW())",
+            (tipo, texto)
+        )
+        cur.execute("DELETE FROM actividad_feed WHERE id NOT IN (SELECT id FROM actividad_feed ORDER BY created_at DESC, id DESC LIMIT 200)")
+    _invalidar_feed()
+
+
+@st.cache_data(ttl=10)
+def db_get_feed(limit=5):
+    limit = max(1, min(int(limit or 5), 50))
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, COALESCE(tipo, 'info') AS tipo, texto, created_at FROM actividad_feed ORDER BY created_at DESC, id DESC LIMIT %s",
+            (limit,)
+        )
+        return [dict(r) for r in cur.fetchall()]

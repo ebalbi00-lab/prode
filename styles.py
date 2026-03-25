@@ -1,5 +1,5 @@
 """
-styles.py — Tema único claro premium en azules y blancos.
+styles.py — Tema claro original con ajustes finos de jerarquía y contraste.
 """
 import streamlit as st
 
@@ -12,16 +12,16 @@ LIGHT_THEME = dict(
     text3="#6683ac",
     border="rgba(57,110,201,0.14)",
     border2="rgba(57,110,201,0.26)",
-    hover_border="rgba(47,124,255,0.40)",
-    shadow="rgba(34,84,170,0.10)",
-    surface2="rgba(47,124,255,0.05)",
+    hover_border="rgba(47,124,255,0.32)",
+    shadow="rgba(34,84,170,0.08)",
+    surface2="rgba(47,124,255,0.045)",
     input_bg="#ffffff",
     input_text="#10243f",
-    gold="#2f7cff",
-    gold2="#7bb4ff",
-    gold_dim="rgba(47,124,255,0.10)",
-    gold_glow="rgba(47,124,255,0.22)",
-    gold_border="rgba(47,124,255,0.22)",
+    gold="#c89a2b",
+    gold2="#e2c16a",
+    gold_dim="rgba(200,154,43,0.10)",
+    gold_glow="rgba(200,154,43,0.18)",
+    gold_border="rgba(200,154,43,0.24)",
     blue="#2f7cff",
     blue2="#7bb4ff",
     blue_dim="rgba(47,124,255,0.10)",
@@ -41,8 +41,8 @@ LIGHT_THEME = dict(
     green_border="rgba(44,174,130,0.22)",
     green_glow="rgba(44,174,130,0.18)",
     table_bg="#ffffff",
-    table_head="rgba(47,124,255,0.07)",
-    table_row="rgba(47,124,255,0.025)",
+    table_head="rgba(47,124,255,0.055)",
+    table_row="rgba(47,124,255,0.020)",
     scheme="light",
     bg_html="#eef5ff",
 )
@@ -119,14 +119,14 @@ def inject_css():
     }}
 
     body {{
-        background: linear-gradient(180deg, #f8fbff 0%, #eff5ff 48%, #e9f2ff 100%) !important;
+        background: linear-gradient(180deg, #f9fbff 0%, #eff5ff 52%, #eaf2ff 100%) !important;
     }}
 
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
         background:
-            radial-gradient(circle at top left, rgba(106,168,255,0.16), transparent 26%),
-            radial-gradient(circle at top right, rgba(47,124,255,0.08), transparent 28%),
-            linear-gradient(180deg, #f8fbff 0%, #eff5ff 48%, #e9f2ff 100%) !important;
+            radial-gradient(circle at top left, rgba(106,168,255,0.14), transparent 25%),
+            radial-gradient(circle at top right, rgba(47,124,255,0.06), transparent 26%),
+            linear-gradient(180deg, #f9fbff 0%, #eff5ff 52%, #eaf2ff 100%) !important;
         color: var(--text) !important;
     }}
 
@@ -176,7 +176,7 @@ def inject_css():
         color: var(--input-text) !important;
         border: 1.5px solid var(--border2) !important;
         border-radius: 14px !important;
-        box-shadow: 0 6px 20px {v['shadow']} !important;
+        box-shadow: 0 4px 16px {v['shadow']} !important;
     }}
 
     .stTextInput > div > div > input,
@@ -207,7 +207,7 @@ def inject_css():
     [data-baseweb="select"] > div:focus-within,
     [data-baseweb="base-input"] > div:focus-within {{
         border-color: var(--blue) !important;
-        box-shadow: 0 0 0 3px rgba(47,124,255,0.14), 0 10px 24px rgba(47,124,255,0.12) !important;
+        box-shadow: 0 0 0 3px rgba(47,124,255,0.12), 0 8px 20px rgba(47,124,255,0.10) !important;
     }}
 
     .stTextInput label,
@@ -234,7 +234,7 @@ def inject_css():
         background: #ffffff !important;
         color: var(--text) !important;
         border: 1px solid rgba(47,124,255,0.12) !important;
-        box-shadow: 0 18px 34px rgba(47,124,255,0.14) !important;
+        box-shadow: 0 14px 28px rgba(47,124,255,0.12) !important;
         border-radius: 14px !important;
     }}
 
@@ -327,7 +327,7 @@ def inject_css():
     [data-testid="stExpander"] {{
         background: rgba(255,255,255,0.74) !important;
         border: 1px solid rgba(47,124,255,0.10) !important;
-        border-radius: 18px !important;
+        border-radius: 16px !important;
         box-shadow: 0 14px 30px rgba(47,124,255,0.07) !important;
         overflow: hidden !important;
     }}
@@ -375,10 +375,10 @@ def inject_css():
 
     /* Dataframes / tables */
     .stDataFrame, .stTable {{
-        border-radius: 18px !important;
+        border-radius: 16px !important;
         overflow: hidden !important;
         border: 1px solid rgba(47,124,255,0.10) !important;
-        box-shadow: 0 14px 30px rgba(47,124,255,0.08) !important;
+        box-shadow: 0 10px 24px rgba(47,124,255,0.07) !important;
         background: #fff !important;
     }}
     [data-testid="stDataFrameResizable"] *,
@@ -388,7 +388,7 @@ def inject_css():
     [data-testid="stFileUploaderDropzone"] {{
         background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(237,245,255,0.96)) !important;
         border: 2px dashed rgba(47,124,255,0.26) !important;
-        border-radius: 18px !important;
+        border-radius: 16px !important;
         padding: 1rem !important;
     }}
     [data-testid="stFileUploaderDropzone"] small,
@@ -421,13 +421,13 @@ def inject_css():
     [data-testid="stVerticalBlock"] [style*="background:var(--gold-dim)"],
     [data-testid="stVerticalBlock"] [style*="background:var(--blue-dim)"],
     [data-testid="stVerticalBlock"] [style*="background:var(--green-dim)"] {{
-        box-shadow: 0 14px 32px rgba(47,124,255,0.08) !important;
+        box-shadow: 0 10px 24px rgba(47,124,255,0.07) !important;
     }}
 
     /* Scrollbar */
     ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
-    ::-webkit-scrollbar-track {{ background: rgba(47,124,255,0.05); border-radius: 99px; }}
-    ::-webkit-scrollbar-thumb {{ background: rgba(47,124,255,0.28); border-radius: 99px; }}
+    ::-webkit-scrollbar-track {{ background: rgba(47,124,255,0.04); border-radius: 99px; }}
+    ::-webkit-scrollbar-thumb {{ background: rgba(47,124,255,0.22); border-radius: 99px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(47,124,255,0.40); }}
     </style>
     """, unsafe_allow_html=True)

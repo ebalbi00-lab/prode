@@ -11,6 +11,7 @@ Orden de la pantalla (cuando grupos ya fue completado):
 """
 import streamlit as st
 import unicodedata
+from datetime import datetime
 
 from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, bandera
 from db import (
@@ -21,9 +22,7 @@ from db import (
     db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
     db_get_equipos_grupos, get_db, hash_clave,
     db_set_config, db_get_config, db_calcular_puntos,
-    db_get_prodes_fase_todos, db_touch_usuario,
-    db_get_cantidad_usuarios_en_linea, db_logout_usuario,
-    db_get_feed, db_get_ranking_movimientos
+    db_get_prodes_fase_todos, db_get_feed
 )
 
 
@@ -33,9 +32,6 @@ def cambiar_pantalla(step):
 
 def cerrar_sesion():
     """Limpia todo el session_state y vuelve al login."""
-    username = st.session_state.get("usuario")
-    db_logout_usuario(username)
-
     claves_a_limpiar = [k for k in list(st.session_state.keys())
                         if k not in ("db_initialized",)]
     for k in claves_a_limpiar:
@@ -55,10 +51,41 @@ def nombre_equipo_display(nombre: str) -> str:
     return f"{b} {nombre}" if b else str(nombre)
 
 
+def _feed_icono(tipo: str) -> str:
+    return {
+        "prode": "✅",
+        "especial": "⭐",
+        "resultado": "📋",
+        "consumo": "🍻",
+        "fase": "🟢",
+        "usuario": "👤",
+        "admin": "🛠️",
+    }.get(str(tipo or "info"), "⚡")
+
+
+def _tiempo_relativo(dt):
+    if not dt:
+        return "recién"
+    try:
+        ahora = datetime.now(dt.tzinfo) if getattr(dt, "tzinfo", None) else datetime.now()
+        seg = max(0, int((ahora - dt).total_seconds()))
+    except Exception:
+        return "recién"
+    if seg < 60:
+        return "hace unos segundos"
+    if seg < 3600:
+        m = seg // 60
+        return f"hace {m} min"
+    if seg < 86400:
+        h = seg // 3600
+        return f"hace {h} h"
+    d = seg // 86400
+    return f"hace {d} d"
+
+
 def pantalla_usuario():
     username = st.session_state.usuario
-    db_touch_usuario(username)
-    usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
+
     u = db_get_usuario(username)
     nombre_display = u.get('nombre', username)
 
@@ -146,14 +173,6 @@ def pantalla_usuario():
         ranking      = sorted(_todos_rank, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_all.get(x["username"], 0), reverse=True)
         posicion     = next((i + 1 for i, x in enumerate(ranking) if x["username"] == username), "—")
         emoji_pos    = {1:"🥇",2:"🥈",3:"🥉"}.get(posicion, "🏅") if isinstance(posicion, int) else "🏅"
-        ranking_movs = db_get_ranking_movimientos()
-        movimiento_rank = ranking_movs.get(username, 0)
-        if movimiento_rank > 0:
-            movimiento_html = f'<span style="background:rgba(0,200,96,0.14);color:var(--green);border:1px solid var(--green-glow);padding:4px 10px;border-radius:999px;font-size:0.72rem;font-weight:800;letter-spacing:0.8px;">▲ {movimiento_rank}</span>'
-        elif movimiento_rank < 0:
-            movimiento_html = f'<span style="background:rgba(255,77,109,0.12);color:var(--red);border:1px solid var(--red-border);padding:4px 10px;border-radius:999px;font-size:0.72rem;font-weight:800;letter-spacing:0.8px;">▼ {abs(movimiento_rank)}</span>'
-        else:
-            movimiento_html = '<span style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);padding:4px 10px;border-radius:999px;font-size:0.72rem;font-weight:800;letter-spacing:0.8px;">• 0</span>'
 
         # Sub-pantalla activa
         sub = st.session_state.get("sub_pantalla", "inicio")
@@ -164,32 +183,40 @@ def pantalla_usuario():
             st.markdown(f"""
             <div style="background:var(--gold-dim);border:1.5px solid var(--gold-border);
                         border-radius:16px;padding:20px 24px;margin-bottom:1.2rem;
-                        display:flex;align-items:center;justify-content:space-between;gap:16px;">
-                <div style="display:flex;align-items:center;gap:16px;">
+                        display:flex;align-items:center;gap:16px;">
                 <span style="font-size:2.5rem;">{emoji_pos}</span>
                 <div>
                     <div style="font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;">Tu posición</div>
                     <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--gold);letter-spacing:2px;line-height:1;">{posicion}° de {len(ranking)}</div>
                     <div style="font-size:0.82rem;color:var(--text2);margin-top:2px;">{total_pts} puntos totales</div>
                 </div>
-                </div>
-                <div>{movimiento_html}</div>
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div style="background:var(--blue-dim);border:1.5px solid var(--blue-border);
-                        border-radius:14px;padding:14px 18px;margin-bottom:1rem;
-                        display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                    <div style="font-size:0.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.4px;">Usuarios en línea</div>
-                    <div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;color:var(--blue);letter-spacing:2px;line-height:1;">{usuarios_en_linea}</div>
-                </div>
-                <div style="font-size:1.8rem;">🟢</div>
-            </div>
+            st.markdown("""
+            <div style="font-family:Bebas Neue,sans-serif;font-size:1.35rem;letter-spacing:2px;
+                        margin:0.1rem 0 0.55rem 0;color:var(--blue);">⚡ Actividad en vivo</div>
             """, unsafe_allow_html=True)
 
-            feed = db_get_feed(8)
+            feed = db_get_feed(limit=5)
+            if feed:
+                for ev in feed[:5]:
+                    icono = _feed_icono(ev.get("tipo"))
+                    hace = _tiempo_relativo(ev.get("created_at"))
+                    st.markdown(f"""
+                    <div style="background:var(--bg3);border:1px solid var(--border);
+                                border-radius:12px;padding:10px 12px;margin-bottom:7px;">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                            <div style="display:flex;align-items:flex-start;gap:10px;min-width:0;">
+                                <div style="font-size:1rem;line-height:1.1;">{icono}</div>
+                                <div style="font-size:0.85rem;color:var(--text);line-height:1.25;">{ev.get('texto','')}</div>
+                            </div>
+                            <div style="font-size:0.68rem;color:var(--text3);white-space:nowrap;">{hace}</div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.caption("Sin actividad reciente")
 
             # Aviso pendientes
             pendientes_info = []
@@ -207,17 +234,6 @@ def pantalla_usuario():
                     '⚠️ Pronósticos pendientes: ' + " · ".join(pendientes_info) + '</div>',
                     unsafe_allow_html=True
                 )
-
-            st.markdown("<div style='font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin:1rem 0 0.55rem 0;'>Actividad en vivo</div>", unsafe_allow_html=True)
-            if feed:
-                feed_html = ""
-                for i, item in enumerate(feed):
-                    borde = "border-top:1px solid var(--border);" if i else ""
-                    fecha = item["created_at"].strftime("%d/%m %H:%M") if item.get("created_at") else ""
-                    feed_html += f"<div style=\"display:flex;align-items:flex-start;gap:10px;padding:10px 0;{borde}\"><div style=\"width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(0,200,96,0.08);margin-top:6px;flex-shrink:0;\"></div><div style=\"min-width:0;\"><div style=\"color:var(--text);font-size:0.88rem;font-weight:600;line-height:1.45;\">{item['texto']}</div><div style=\"color:var(--text3);font-size:0.72rem;margin-top:2px;\">{fecha}</div></div></div>"
-                st.markdown(f"<div style=\"background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:6px 16px 4px 16px;margin-bottom:1rem;\">{feed_html}</div>", unsafe_allow_html=True)
-            else:
-                st.info("Todavía no hay actividad para mostrar.")
 
             # Menú principal — grilla 2x3
             c1, c2 = st.columns(2)
