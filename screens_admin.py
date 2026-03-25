@@ -24,11 +24,23 @@ from db import (
     db_get_especial, db_get_resultado_especial, db_guardar_resultado_especial,
     db_get_todos_especiales, db_fusionar_variantes_especial,
     db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, get_db,
+    db_get_cantidad_usuarios_en_linea, db_touch_usuario, db_logout_usuario,
+    db_get_feed, db_get_ranking_movimientos,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo
 
 
 def cambiar_pantalla(step):
+    if step == 0:
+        db_logout_usuario(st.session_state.get("usuario"))
+        claves_a_limpiar = [k for k in list(st.session_state.keys())
+                            if k not in ("db_initialized",)]
+        for k in claves_a_limpiar:
+            del st.session_state[k]
+        st.session_state.step = 0
+        st.session_state.usuario = None
+        st.session_state.registro_temp = {}
+        return
     st.session_state.step = step
 
 
@@ -43,6 +55,8 @@ def _fmt_equipo(nombre: str) -> str:
 
 
 def pantalla_admin():
+    db_touch_usuario(st.session_state.get("usuario"))
+    usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
     _pend_count = len(db_get_pendientes())
     pend_html = f'<div style="background:var(--red);color:#fff;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</div>' if _pend_count > 0 else '<div style="color:var(--green);font-size:0.78rem;font-weight:600;">✅ Sin pendientes</div>'
     st.markdown(f"""
@@ -57,7 +71,12 @@ def pantalla_admin():
                 <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">Prode Il Baigo · Mundial 2026</div>
             </div>
         </div>
-        {pend_html}
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="background:var(--blue-dim);color:var(--blue);font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid var(--blue-border);">
+                🟢 {usuarios_en_linea} en línea
+            </div>
+            {pend_html}
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -92,6 +111,15 @@ def pantalla_admin():
                 </div>""", unsafe_allow_html=True)
                 if st.button("Abrir", key=f"menu_{key}", use_container_width=True):
                     st.session_state["admin_sec"] = key; st.rerun()
+
+        feed = db_get_feed(6)
+        if feed:
+            feed_html = ""
+            for i, item in enumerate(feed):
+                borde = "border-top:1px solid var(--border);" if i else ""
+                fecha = item["created_at"].strftime("%d/%m %H:%M") if item.get("created_at") else ""
+                feed_html += f"<div style=\"display:flex;align-items:flex-start;gap:10px;padding:10px 0;{borde}\"><div style=\"width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(0,200,96,0.08);margin-top:6px;flex-shrink:0;\"></div><div style=\"min-width:0;\"><div style=\"color:var(--text);font-size:0.88rem;font-weight:600;line-height:1.45;\">{item['texto']}</div><div style=\"color:var(--text3);font-size:0.72rem;margin-top:2px;\">{fecha}</div></div></div>"
+            st.markdown(f"<div style=\"margin-top:0.8rem;margin-bottom:1rem;\"><div style=\"font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--text3);margin-bottom:0.5rem;\">Actividad en vivo</div><div style=\"background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:6px 16px 4px 16px;\">{feed_html}</div></div>", unsafe_allow_html=True)
 
         st.divider()
         c1, c2 = st.columns(2)
@@ -130,6 +158,7 @@ def _tab_resumen():
     fases      = db_get_fases()
     fases_hab  = sum(1 for v in fases.values() if v)
     total_cons = sum(u["consumo"] for u in todos)
+    movimientos = db_get_ranking_movimientos()
 
     # Cards de resumen
     st.markdown(f"""
@@ -152,6 +181,17 @@ def _tab_resumen():
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    movers = [u for u in todos if movimientos.get(u["username"], 0) != 0]
+    movers = sorted(movers, key=lambda x: movimientos.get(x["username"], 0), reverse=True)[:5]
+    if movers:
+        filas_mv = ""
+        for i, u in enumerate(movers):
+            delta = movimientos.get(u["username"], 0)
+            badge = f"<span style=\"background:rgba(0,200,96,0.14);color:var(--green);border:1px solid var(--green-glow);padding:2px 8px;border-radius:999px;font-size:0.68rem;font-weight:800;\">▲ {delta}</span>" if delta > 0 else f"<span style=\"background:rgba(255,77,109,0.12);color:var(--red);border:1px solid var(--red-border);padding:2px 8px;border-radius:999px;font-size:0.68rem;font-weight:800;\">▼ {abs(delta)}</span>"
+            borde = "border-top:1px solid var(--border);" if i else ""
+            filas_mv += f"<div style=\"display:flex;justify-content:space-between;align-items:center;padding:8px 0;{borde}\"><span style=\"color:var(--text);font-weight:600;font-size:0.88rem;\">{u.get('nombre') or u['username']}</span>{badge}</div>"
+        st.markdown(f"<div style=\"background:var(--blue-dim);border:1.5px solid var(--blue-border);border-radius:14px;padding:14px 16px;margin-bottom:1rem;\"><div style=\"font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;color:var(--blue);margin-bottom:8px;\">Movimiento de ranking</div>{filas_mv}</div>", unsafe_allow_html=True)
 
     # Confirmaciones por fase como barras de progreso
     with get_db() as _conn:

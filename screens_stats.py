@@ -7,7 +7,7 @@ from constants import bandera
 from db import (
     db_get_todos_usuarios, db_get_puntos_especiales_usuarios,
     db_get_estadisticas_usuarios, db_get_estadisticas_partidos,
-    db_get_partidos,
+    db_get_partidos, db_get_ranking_movimientos,
 )
 
 
@@ -69,6 +69,15 @@ def render_destacados_usuarios():
             st.markdown("</div>", unsafe_allow_html=True)
 
 
+
+def _movimiento_badge(delta):
+    if delta > 0:
+        return f'<span style="background:rgba(0,200,96,0.14);color:var(--green);border:1px solid var(--green-glow);padding:2px 8px;border-radius:999px;font-size:0.68rem;font-weight:800;letter-spacing:0.6px;display:inline-flex;align-items:center;gap:4px;">▲ {delta}</span>'
+    if delta < 0:
+        return f'<span style="background:rgba(255,77,109,0.12);color:var(--red);border:1px solid var(--red-border);padding:2px 8px;border-radius:999px;font-size:0.68rem;font-weight:800;letter-spacing:0.6px;display:inline-flex;align-items:center;gap:4px;">▼ {abs(delta)}</span>'
+    return '<span style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);padding:2px 8px;border-radius:999px;font-size:0.68rem;font-weight:800;letter-spacing:0.6px;display:inline-flex;align-items:center;gap:4px;">• 0</span>'
+
+
 def pantalla_ranking():
     st.markdown("""
     <div style="text-align:center; padding:1.2rem 0 1rem 0;">
@@ -88,6 +97,7 @@ def pantalla_ranking():
         st.info("Todavía no hay usuarios para mostrar.")
     else:
         _pts_esp_r = db_get_puntos_especiales_usuarios()
+        movimientos = db_get_ranking_movimientos()
         ranking    = sorted(todos, key=lambda x: x["puntos"] + x["goles"] + x["consumo"] + _pts_esp_r.get(x["username"], 0), reverse=True)
         medallas   = {1: "🥇", 2: "🥈", 3: "🥉"}
         rows = []
@@ -97,7 +107,8 @@ def pantalla_ranking():
             total = u["puntos"] + u["goles"] + u["consumo"] + esp
             rows.append({"Pos": medallas.get(pos, str(pos)), "Nombre": u.get("nombre") or u["username"],
                          "R": u["puntos"], "G": u["goles"], "C": u["consumo"],
-                         "E": esp, "Total": total, "_username": u["username"], "_pos": pos})
+                         "E": esp, "Total": total, "_username": u["username"], "_pos": pos,
+                         "_delta": movimientos.get(u["username"], 0)})
 
         # Paginación
         POR_PAGINA = 20
@@ -123,6 +134,7 @@ def pantalla_ranking():
             else:
                 pos_color = "#525268"; bg = "transparent"; bl = "3px solid transparent"
 
+            move_badge = _movimiento_badge(r["_delta"])
             you_badge = ('<span style="background:var(--green-dim);color:var(--green);font-size:0.6rem;font-weight:700;'
                          'letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:10px;margin-left:6px;'
                          'border:1px solid var(--green-glow);">vos</span>') if es_yo else ""
@@ -130,6 +142,7 @@ def pantalla_ranking():
                 f'<tr style="background:{bg};border-left:{bl};transition:background 0.15s;">'
                 f'<td style="padding:10px 10px;font-weight:800;font-size:1.05rem;color:{pos_color};min-width:42px;text-align:center;">{r["Pos"]}</td>'
                 f'<td style="padding:10px 8px;color:var(--text);font-weight:600;font-size:0.92rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{r["Nombre"]}{you_badge}</td>'
+                f'<td style="padding:10px 8px;text-align:center;">{move_badge}</td>'
                 f'<td style="padding:10px 8px;color:var(--text2);text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["R"]}</td>'
                 f'<td style="padding:10px 8px;color:var(--text2);text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["G"]}</td>'
                 f'<td style="padding:10px 8px;color:var(--text2);text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["C"]}</td>'
@@ -144,6 +157,7 @@ def pantalla_ranking():
             '<thead><tr style="background:var(--table-head);border-bottom:1px solid var(--border);">'
             '<th style="padding:10px 10px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;min-width:42px;">#</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:left;">Jugador</th>'
+            '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">Mov</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Resultados">R</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Goles exactos">G</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Consumo">C</th>'
@@ -179,16 +193,19 @@ def pantalla_ranking():
                 emoji_pos = {1: "🥇", 2: "🥈", 3: "🥉"}.get(pos_actual, "📍")
                 st.markdown(f"""
                 <div style="background:{bg_pos}; border:1.5px solid {border_pos};
-                            border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:1.6rem;">{emoji_pos}</span>
-                    <div>
-                        <div style="color:var(--text3); font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Tu posición</div>
-                        <div style="color:var(--text); font-weight:700; font-size:1rem;">
-                            {fila['Nombre']} &nbsp;·&nbsp;
-                            <span style="color:var(--green);">{pos_actual}° lugar</span> &nbsp;·&nbsp;
-                            <span style="color:var(--gold);">{fila['Total']} pts</span>
+                            border-radius:10px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:1.6rem;">{emoji_pos}</span>
+                        <div>
+                            <div style="color:var(--text3); font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Tu posición</div>
+                            <div style="color:var(--text); font-weight:700; font-size:1rem;">
+                                {fila['Nombre']} &nbsp;·&nbsp;
+                                <span style="color:var(--green);">{pos_actual}° lugar</span> &nbsp;·&nbsp;
+                                <span style="color:var(--gold);">{fila['Total']} pts</span>
+                            </div>
                         </div>
                     </div>
+                    <div>{_movimiento_badge(fila['_delta'])}</div>
                 </div>""", unsafe_allow_html=True)
 
     st.divider()
