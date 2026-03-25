@@ -910,11 +910,14 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
             else:
                 with st.spinner("Confirmando pronósticos..."):
+                    _flush_pred_buffer(username, fase)
                     db_confirmar_prode(username, fase)
                     for cat, elec in selecciones_esp.items():
-                        if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
+                        esp_cat = esp_confirmados.get(cat)
+                        if elec and not (esp_cat and esp_cat.get("confirmado")):
                             db_guardar_especial(username, cat, elec)
                             db_confirmar_especial(username, cat)
+                    _get_special_buffer(username).clear()
                     db_calcular_puntos()
                 st.session_state["wizard_grupos_completo"] = True
                 st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
@@ -957,7 +960,8 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                         _flush_pred_buffer(username, fase)
                         db_confirmar_prode(username, fase)
                         for cat, elec in selecciones_esp.items():
-                            if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
+                            esp_cat = esp_confirmados.get(cat)
+                            if elec and not (esp_cat and esp_cat.get("confirmado")):
                                 db_guardar_especial(username, cat, elec)
                                 db_confirmar_especial(username, cat)
                         _get_special_buffer(username).clear()
