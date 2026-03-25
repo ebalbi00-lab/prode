@@ -95,6 +95,7 @@ Orden de la pantalla (cuando grupos ya fue completado):
 """
 import streamlit as st
 import unicodedata
+import re
 
 from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, bandera
 from db import (
@@ -129,13 +130,55 @@ def cerrar_sesion():
 
 
 def normalizar(s: str) -> str:
-    """Quita acentos y pasa a minúsculas para búsqueda flexible."""
-    return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii').lower()
+    """Normaliza texto para búsqueda flexible, ignorando acentos, símbolos y mayúsculas."""
+    s = str(s or "").strip().lower()
+    s = unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii')
+    s = re.sub(r"[^a-z0-9\s]", "", s)
+    return " ".join(s.split())
 
 
 def nombre_equipo_display(nombre: str) -> str:
     b = bandera(nombre)
     return f"{b} {nombre}" if b else str(nombre)
+
+
+def _activar_busqueda_jugador(trigger_key: str):
+    st.session_state[trigger_key] = True
+
+
+def _render_buscador_jugador(key_prefix: str, label: str, jugadores, normalizer, empty_text: str, no_results_text: str):
+    query_key = f"{key_prefix}_query"
+    trigger_key = f"{key_prefix}_trigger"
+
+    if trigger_key not in st.session_state:
+        st.session_state[trigger_key] = False
+
+    c1, c2 = st.columns([6, 1])
+    with c1:
+        query = st.text_input(
+            label,
+            key=query_key,
+            placeholder="Escribí el nombre...",
+            on_change=_activar_busqueda_jugador,
+            args=(trigger_key,),
+        )
+    with c2:
+        st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
+        if st.button("🔍", key=f"{key_prefix}_btn", use_container_width=True):
+            st.session_state[trigger_key] = True
+            query = st.session_state.get(query_key, query)
+
+    query = (query or "").strip()
+    should_search = st.session_state.get(trigger_key, False) and bool(query)
+
+    if should_search:
+        filtrados = [j for j in jugadores if normalizer(query) in normalizer(j)][:8]
+        if not filtrados:
+            st.caption(no_results_text)
+        return query, filtrados
+
+    st.caption(empty_text)
+    return query, []
 
 
 def _get_resumen_usuario(username, u):
@@ -866,19 +909,22 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
 
                 # Buscador — solo muestra si no hay selección o si el usuario quiere cambiar
                 if st.session_state.get(f"esp_cambiar_{cat}", not bool(sel_actual)):
-                    busq_w = st.text_input(f"Buscar {label_w}", value="", key=f"esp_busq_{cat}", placeholder="Escribí el nombre (con o sin acento)...")
-                    if busq_w:
-                        filtrados_w = [j for j in lista_w if normalizar(busq_w) in normalizar(j)][:8]
-                        if not filtrados_w:
-                            st.caption("No se encontró ningún jugador.")
-                        else:
-                            for jug in filtrados_w:
-                                if st.button(jug, key=f"jug_{cat}_{jug}", use_container_width=True):
-                                    st.session_state[f"esp_elegido_{cat}"] = jug
-                                    st.session_state[f"esp_cambiar_{cat}"] = False
-                                    selecciones_esp[cat] = jug
-                                    esp_buffer[cat] = jug
-                                    st.rerun()
+                    _, filtrados_w = _render_buscador_jugador(
+                        key_prefix=f"esp_busq_{cat}",
+                        label=f"Buscar {label_w}",
+                        jugadores=lista_w,
+                        normalizer=normalizar,
+                        empty_text=(f"Buscá y tocá la lupa para elegir un {label_w}." if not sel_actual else f"Buscá y tocá la lupa para cambiar el {label_w}."),
+                        no_results_text=f"No se encontró ningún {label_w}.",
+                    )
+                    for jug in filtrados_w:
+                        if st.button(jug, key=f"jug_{cat}_{jug}", use_container_width=True):
+                            st.session_state[f"esp_elegido_{cat}"] = jug
+                            st.session_state[f"esp_cambiar_{cat}"] = False
+                            st.session_state[f"esp_busq_{cat}_trigger"] = False
+                            selecciones_esp[cat] = jug
+                            esp_buffer[cat] = jug
+                            st.rerun()
                 else:
                     if st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}"):
                         st.session_state[f"esp_cambiar_{cat}"] = True

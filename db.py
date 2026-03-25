@@ -115,6 +115,19 @@ def _invalidar_resultado_especial(categoria):
         db_get_resultado_especial.clear(categoria)
     except Exception:
         pass
+    try:
+        db_get_resultados_especiales.clear()
+    except Exception:
+        pass
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_puntos_especiales_usuarios.clear()
+        db_get_estadisticas_usuarios.clear()
+        db_get_estadisticas_generales.clear()
+        db_get_ranking_snapshot.clear()
+        db_get_usuario.clear()
+    except Exception:
+        pass
 
 
 # ─── Inicialización ───────────────────────────────────────────────────────────
@@ -716,7 +729,8 @@ def db_calcular_puntos():
         db_get_estadisticas_generales.clear()
         db_get_ranking_snapshot.clear()
         db_get_estadisticas_partidos.clear()
-        db_get_ranking_snapshot.clear()
+        db_get_prodes_fase_todos.clear()
+        db_get_usuario.clear()
     except Exception:
         pass
 
@@ -799,6 +813,7 @@ def db_calcular_puntos_especiales():
         db_get_estadisticas_usuarios.clear()
         db_get_estadisticas_generales.clear()
         db_get_ranking_snapshot.clear()
+        db_get_usuario.clear()
     except Exception:
         pass
 
