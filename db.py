@@ -12,7 +12,7 @@ import psycopg2.pool
 import streamlit as st
 from contextlib import contextmanager
 
-from constants import FASES, CATEGORIAS_ESPECIALES
+from constants import FASES, CATEGORIAS_ESPECIALES, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS
 
 
 # ─── Conexión ────────────────────────────────────────────────────────────────
@@ -115,19 +115,6 @@ def _invalidar_resultado_especial(categoria):
         db_get_resultado_especial.clear(categoria)
     except Exception:
         pass
-    try:
-        db_get_resultados_especiales.clear()
-    except Exception:
-        pass
-    try:
-        db_get_todos_usuarios.clear()
-        db_get_puntos_especiales_usuarios.clear()
-        db_get_estadisticas_usuarios.clear()
-        db_get_estadisticas_generales.clear()
-        db_get_ranking_snapshot.clear()
-        db_get_usuario.clear()
-    except Exception:
-        pass
 
 
 # ─── Inicialización ───────────────────────────────────────────────────────────
@@ -207,8 +194,13 @@ def init_tablas():
 def init_db():
     init_tablas()
     admin_pass = os.environ.get("ADMIN_PASSWORD", "admin123")
+    consumo_pass = os.environ.get("CONSUMO_PASSWORD", "consumo123")
     try:
         admin_pass = st.secrets["ADMIN_PASSWORD"]
+    except Exception:
+        pass
+    try:
+        consumo_pass = st.secrets["CONSUMO_PASSWORD"]
     except Exception:
         pass
     with get_db() as conn:
@@ -216,6 +208,10 @@ def init_db():
         cur.execute(
             "INSERT INTO usuarios (username, clave, nombre, es_admin) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING",
             ("admin", hash_clave(admin_pass), "Admin", 1)
+        )
+        cur.execute(
+            "INSERT INTO usuarios (username, clave, nombre, es_admin) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING",
+            ("consumo", hash_clave(consumo_pass), "Panel Consumo", 2)
         )
         cur.execute(
             "INSERT INTO usuarios (username, clave, nombre, es_admin) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING",
@@ -286,6 +282,18 @@ def db_get_usuario(username):
         cur.execute("SELECT * FROM usuarios WHERE username=%s", (username,))
         row = cur.fetchone()
         return dict(row) if row else None
+
+
+
+
+def db_get_tipo_usuario(username):
+    u = db_get_usuario(username)
+    nivel = int((u or {}).get("es_admin", 0) or 0)
+    if nivel == 1:
+        return "admin"
+    if nivel == 2:
+        return "consumo"
+    return "usuario"
 
 
 @st.cache_data(ttl=5)
@@ -729,8 +737,7 @@ def db_calcular_puntos():
         db_get_estadisticas_generales.clear()
         db_get_ranking_snapshot.clear()
         db_get_estadisticas_partidos.clear()
-        db_get_prodes_fase_todos.clear()
-        db_get_usuario.clear()
+        db_get_ranking_snapshot.clear()
     except Exception:
         pass
 
@@ -813,7 +820,6 @@ def db_calcular_puntos_especiales():
         db_get_estadisticas_usuarios.clear()
         db_get_estadisticas_generales.clear()
         db_get_ranking_snapshot.clear()
-        db_get_usuario.clear()
     except Exception:
         pass
 
@@ -1237,3 +1243,80 @@ def db_get_cantidad_usuarios_en_linea(minutos=2):
         row = cur.fetchone()
         return int(row["total"] if row else 0)
 
+
+
+# ─── Listas dinámicas para especiales ───────────────────────────────────────
+
+def _parse_lista_especiales_texto(raw_text):
+    texto = str(raw_text or '').replace('\r', '\n')
+    partes = []
+    for bloque in texto.split('\n'):
+        bloque = bloque.strip()
+        if not bloque:
+            continue
+        subpartes = re.split(r'[;,]+', bloque)
+        for item in subpartes:
+            item = ' '.join(str(item or '').strip().split())
+            if item:
+                partes.append(item)
+    vistos = set()
+    salida = []
+    for item in partes:
+        k = item.casefold()
+        if k not in vistos:
+            vistos.add(k)
+            salida.append(item)
+    return salida
+
+
+def _base_lista_especiales(tipo):
+    tipo = str(tipo or '').strip().lower()
+    if tipo == 'arqueros':
+        return list(ARQUEROS_MUNDIALISTAS)
+    return list(JUGADORES_MUNDIALISTAS)
+
+
+@st.cache_data(ttl=60)
+def db_get_lista_especiales(tipo):
+    tipo = str(tipo or '').strip().lower()
+    clave = f'lista_especiales::{tipo}'
+    raw = db_get_config(clave, None)
+    if raw:
+        try:
+            import json
+            data = json.loads(raw)
+            if isinstance(data, list):
+                parsed = _parse_lista_especiales_texto('\n'.join(map(str, data)))
+                if parsed:
+                    return parsed
+        except Exception:
+            parsed = _parse_lista_especiales_texto(raw)
+            if parsed:
+                return parsed
+    return _base_lista_especiales(tipo)
+
+
+def db_set_lista_especiales_desde_texto(tipo, raw_text):
+    tipo = str(tipo or '').strip().lower()
+    lista = _parse_lista_especiales_texto(raw_text)
+    if not lista:
+        raise ValueError('La lista no puede quedar vacía.')
+    import json
+    db_set_config(f'lista_especiales::{tipo}', json.dumps(lista, ensure_ascii=False))
+    try:
+        db_get_lista_especiales.clear(tipo)
+    except Exception:
+        pass
+    return lista
+
+
+def db_reset_lista_especiales(tipo):
+    tipo = str(tipo or '').strip().lower()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute('DELETE FROM config WHERE clave=%s', (f'lista_especiales::{tipo}',))
+    try:
+        db_get_lista_especiales.clear(tipo)
+    except Exception:
+        pass
+    return _base_lista_especiales(tipo)

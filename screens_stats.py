@@ -11,12 +11,17 @@ except Exception:
 
 from db import (
     db_get_estadisticas_usuarios, db_get_estadisticas_partidos,
-    db_get_partidos, db_get_ranking_snapshot,
+    db_get_partidos, db_get_ranking_snapshot, db_get_tipo_usuario,
 )
 
 
 def cambiar_pantalla(step):
     st.session_state.step = step
+
+
+def _destino_panel():
+    usuario = st.session_state.get("usuario")
+    return 9 if db_get_tipo_usuario(usuario) in ("admin", "consumo") else 5
 
 
 def render_destacados_usuarios():
@@ -209,14 +214,14 @@ def pantalla_ranking():
                 </div>""", unsafe_allow_html=True)
 
     st.divider()
-    destino = 9 if st.session_state.get("usuario") == "admin" else 5
+    destino = _destino_panel()
     st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)
 
 
 def pantalla_estadisticas():
     render_destacados_usuarios()
     st.divider()
-    destino = 9 if st.session_state.get("usuario") == "admin" else 5
+    destino = _destino_panel()
     st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)
 
 
@@ -270,5 +275,5 @@ def pantalla_estadisticas_torneo():
                 )
 
     st.divider()
-    destino = 9 if st.session_state.get("usuario") == "admin" else 5
+    destino = _destino_panel()
     st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True, key="back_stats_torneo")

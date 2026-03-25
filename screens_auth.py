@@ -7,7 +7,7 @@ import streamlit as st
 
 from db import (
     db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, db_get_pendientes, db_get_pago_config,
-    db_touch_usuario
+    db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
 
@@ -35,7 +35,7 @@ def login(usuario, clave):
         st.session_state["login_intentos"] = 0
         st.session_state.usuario = usuario.strip().lower()
         db_touch_usuario(st.session_state.usuario)
-        st.session_state.step = 9 if u["es_admin"] else 5
+        st.session_state.step = 9 if db_get_tipo_usuario(st.session_state.usuario) in ("admin", "consumo") else 5
         st.rerun()
 
 

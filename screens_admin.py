@@ -8,51 +8,17 @@ import pandas as pd
 import streamlit as st
 
 def _norm(s: str) -> str:
-    s = str(s or "").strip().lower()
-    s = unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii')
-    s = re.sub(r"[^a-z0-9\s]", "", s)
-    return " ".join(s.split())
+    return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii').lower()
 
-
-def _activar_busqueda_admin(trigger_key: str):
-    st.session_state[trigger_key] = True
-
-
-def _render_buscador_jugador_admin(key_prefix: str, label: str, jugadores, normalizer, empty_text: str, no_results_text: str):
-    query_key = f"{key_prefix}_query"
-    trigger_key = f"{key_prefix}_trigger"
-
-    if trigger_key not in st.session_state:
-        st.session_state[trigger_key] = False
-
-    c1, c2 = st.columns([6, 1])
-    with c1:
-        query = st.text_input(
-            label,
-            key=query_key,
-            placeholder="Escribí el nombre...",
-            on_change=_activar_busqueda_admin,
-            args=(trigger_key,),
-        )
-    with c2:
-        st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
-        if st.button("🔍", key=f"{key_prefix}_btn", use_container_width=True):
-            st.session_state[trigger_key] = True
-            query = st.session_state.get(query_key, query)
-
-    query = (query or "").strip()
-    should_search = st.session_state.get(trigger_key, False) and bool(query)
-
-    if should_search:
-        filtrados = [j for j in jugadores if normalizer(query) in normalizer(j)][:8]
-        if not filtrados:
-            st.caption(no_results_text)
-        return query, filtrados
-
-    st.caption(empty_text)
-    return query, []
-
-from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, ARQUEROS_MUNDIALISTAS, JUGADORES_MUNDIALISTAS, GRUPOS_DEFAULT, bandera
+from constants import (
+    FASES,
+    CATEGORIAS_ESPECIALES,
+    BANDERAS,
+    GRUPOS_DEFAULT,
+    bandera,
+    JUGADORES_MUNDIALISTAS,
+    ARQUEROS_MUNDIALISTAS,
+)
 from db import (
     db_get_usuario, db_get_todos_usuarios, db_get_pendientes,
     db_get_fases, db_toggle_fase, db_get_partidos, db_guardar_partido,
@@ -66,7 +32,8 @@ from db import (
     db_get_especial, db_get_resultado_especial, db_guardar_resultado_especial,
     db_get_todos_especiales, db_fusionar_variantes_especial,
     db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, get_db,
-    db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario,
+    db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
+    db_get_lista_especiales, db_set_lista_especiales_desde_texto, db_reset_lista_especiales,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo
 
@@ -95,11 +62,54 @@ def _fmt_equipo(nombre: str) -> str:
     return f"{icono} {nombre}"
 
 
+
+
+def _get_panel_context():
+    username = st.session_state.get("usuario")
+    u = db_get_usuario(username) or {}
+    nivel = int(u.get("es_admin", 0) or 0)
+    es_admin_total = nivel == 1
+    es_panel_consumo = nivel == 2
+    return {
+        "username": username,
+        "user": u,
+        "nivel": nivel,
+        "es_admin_total": es_admin_total,
+        "es_panel_consumo": es_panel_consumo,
+        "titulo": "Panel Admin" if es_admin_total else "Panel Consumo",
+        "subtitulo": "Prode Il Baigo · Mundial 2026",
+        "icono": "⚙️" if es_admin_total else "🍻",
+    }
+
+
+def _render_panel_feed(limit=6):
+    st.markdown("""
+    <div style="font-family:Bebas Neue,sans-serif;font-size:1.3rem;letter-spacing:2px;margin:0.4rem 0 0.7rem 0;color:var(--blue);">
+    ⚡ Actividad en vivo
+    </div>
+    """, unsafe_allow_html=True)
+    feed = db_get_feed(limit=limit)
+    if not feed:
+        st.caption("Sin actividad reciente")
+        return
+    for ev in feed:
+        st.markdown(f"""
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:0.85rem;">
+        {ev['texto']}
+        </div>
+        """, unsafe_allow_html=True)
+
 def pantalla_admin():
-    db_touch_usuario(st.session_state.get("usuario"))
+    ctx = _get_panel_context()
+    if ctx["nivel"] not in (1, 2):
+        st.error("No tenés permisos para entrar a este panel.")
+        st.button("← Volver", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
+        return
+
+    db_touch_usuario(ctx["username"])
     usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
-    _pend_count = len(db_get_pendientes())
-    pend_html = f'<div style="background:var(--red);color:#fff;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</div>' if _pend_count > 0 else '<div style="color:var(--green);font-size:0.78rem;font-weight:600;">✅ Sin pendientes</div>'
+    _pend_count = len(db_get_pendientes()) if ctx["es_admin_total"] else 0
+    pend_html = f'<div style="background:var(--red);color:#fff;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</div>' if ctx["es_admin_total"] and _pend_count > 0 else ''
     online_html = f'<div style="background:var(--blue-dim);color:var(--blue);font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid var(--blue-border);">🟢 {usuarios_en_linea} en línea</div>'
     st.markdown(f"""
     <div style="display:flex;align-items:center;justify-content:space-between;
@@ -107,10 +117,10 @@ def pantalla_admin():
         <div style="display:flex;align-items:center;gap:12px;">
             <div style="width:40px;height:40px;border-radius:10px;background:var(--gold-dim);
                         border:1.5px solid var(--gold-border);display:flex;align-items:center;
-                        justify-content:center;font-size:1.2rem;">⚙️</div>
+                        justify-content:center;font-size:1.2rem;">{ctx['icono']}</div>
             <div>
-                <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);line-height:1.05;">Panel Admin</div>
-                <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">Prode Il Baigo · Mundial 2026</div>
+                <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);line-height:1.05;">{ctx['titulo']}</div>
+                <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">{ctx['subtitulo']}</div>
             </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
@@ -120,27 +130,37 @@ def pantalla_admin():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Menú de secciones ──
     sec = st.session_state.get("admin_sec", "inicio")
+    if ctx["es_admin_total"]:
+        secciones = [
+            ("resumen", "📋", "Resumen", "Estado general y confirmaciones"),
+            ("pendientes", "👥", "Pendientes", "Aprobar o rechazar solicitudes"),
+            ("fases", "🔀", "Fases", "Habilitar fases del torneo"),
+            ("partidos", "⚽", "Partidos", "Cargar equipos de cada partido"),
+            ("resultados", "📊", "Resultados", "Ingresar marcadores reales"),
+            ("consumo", "💰", "Consumo", "Sumar puntos de consumo"),
+            ("pagos", "💳", "Pagos", "Editar datos de pago del registro"),
+            ("especiales", "⭐", "Especiales", "Resultados especiales"),
+            ("usuarios", "👤", "Usuarios", "Gestionar usuarios"),
+            ("destacados", "🏅", "Destacados", "Estadísticas por jugador"),
+            ("reset", "⚠️", "Reset", "Resetear fases o todo"),
+            ("exportar", "📥", "Exportar", "Descargar base de datos"),
+        ]
+    else:
+        secciones = [
+            ("resumen", "📋", "Resumen", "Usuarios en línea y actividad"),
+            ("consumo", "💰", "Consumo", "Sumar y ajustar puntos de consumo"),
+            ("destacados", "🏅", "Destacados", "Estadísticas por jugador"),
+        ]
 
-    SECCIONES = [
-        ("resumen",     "📋", "Resumen",     "Estado general y confirmaciones"),
-        ("pendientes",  "👥", "Pendientes",  "Aprobar o rechazar solicitudes"),
-        ("fases",       "🔀", "Fases",       "Habilitar fases del torneo"),
-        ("partidos",    "⚽", "Partidos",    "Cargar equipos de cada partido"),
-        ("resultados",  "📊", "Resultados",  "Ingresar marcadores reales"),
-        ("consumo",     "💰", "Consumo",     "Sumar puntos de consumo"),
-        ("pagos",       "💳", "Pagos",       "Editar datos de pago del registro"),
-        ("especiales",  "⭐", "Especiales",  "Resultados especiales"),
-        ("usuarios",    "👤", "Usuarios",    "Gestionar usuarios"),
-        ("destacados",  "🏅", "Destacados",  "Estadísticas por jugador"),
-        ("reset",       "⚠️", "Reset",       "Resetear fases o todo"),
-        ("exportar",    "📥", "Exportar",    "Descargar base de datos"),
-    ]
+    allowed_keys = {k for k, *_ in secciones}
+    if sec not in allowed_keys and sec != "inicio":
+        sec = "inicio"
+        st.session_state["admin_sec"] = "inicio"
 
     if sec == "inicio":
         cols_menu = st.columns(2)
-        for i, (key, icono, titulo, desc) in enumerate(SECCIONES):
+        for i, (key, icono, titulo, desc) in enumerate(secciones):
             badge = f' <span style="background:var(--red);color:#fff;font-size:0.65rem;padding:1px 7px;border-radius:10px;font-family:Outfit,sans-serif;">{_pend_count}</span>' if key == "pendientes" and _pend_count > 0 else ""
             with cols_menu[i % 2]:
                 st.markdown(f"""<div style="background:var(--bg3);border:1px solid var(--border);
@@ -150,37 +170,52 @@ def pantalla_admin():
                     <div style="color:var(--text3);font-size:0.72rem;margin-top:1px;">{desc}</div>
                 </div>""", unsafe_allow_html=True)
                 if st.button("Abrir", key=f"menu_{key}", use_container_width=True):
-                    st.session_state["admin_sec"] = key; st.rerun()
+                    st.session_state["admin_sec"] = key
+                    st.rerun()
 
         st.divider()
-        c1, c2 = st.columns(2)
+        _render_panel_feed(limit=6)
+        st.divider()
+        c1, c2, c3 = st.columns(3)
         c1.button("🏆 Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="admin_rank")
-        c2.button("🚪 Cerrar sesión", on_click=cerrar_sesion_admin, use_container_width=True, key="admin_logout")
+        c2.button("🏅 Destacados", on_click=cambiar_pantalla, args=(12,), use_container_width=True, key="admin_dest")
+        c3.button("🚪 Cerrar sesión", on_click=cerrar_sesion_admin, use_container_width=True, key="admin_logout")
         return
 
-    # Botón volver
     if st.button("← Volver al menú", key="admin_back"):
-        st.session_state["admin_sec"] = "inicio"; st.rerun()
+        st.session_state["admin_sec"] = "inicio"
+        st.rerun()
 
-    if sec == "resumen":      _tab_resumen()
-    elif sec == "pendientes": _tab_pendientes()
-    elif sec == "fases":      _tab_fases()
-    elif sec == "partidos":   _tab_partidos()
-    elif sec == "resultados": _tab_resultados()
-    elif sec == "consumo":    _tab_consumo()
-    elif sec == "pagos":      _tab_pagos()
-    elif sec == "especiales": _tab_especiales()
-    elif sec == "usuarios":   _tab_usuarios()
+    if sec == "resumen":
+        _tab_resumen(panel_consumo=ctx["es_panel_consumo"])
+    elif sec == "pendientes" and ctx["es_admin_total"]:
+        _tab_pendientes()
+    elif sec == "fases" and ctx["es_admin_total"]:
+        _tab_fases()
+    elif sec == "partidos" and ctx["es_admin_total"]:
+        _tab_partidos()
+    elif sec == "resultados" and ctx["es_admin_total"]:
+        _tab_resultados()
+    elif sec == "consumo":
+        _tab_consumo()
+    elif sec == "pagos" and ctx["es_admin_total"]:
+        _tab_pagos()
+    elif sec == "especiales" and ctx["es_admin_total"]:
+        _tab_especiales()
+    elif sec == "usuarios" and ctx["es_admin_total"]:
+        _tab_usuarios()
     elif sec == "destacados":
         st.subheader("🏅 Destacados")
         render_destacados_usuarios()
-    elif sec == "reset":      _tab_reset()
-    elif sec == "exportar":   _tab_exportar()
+    elif sec == "reset" and ctx["es_admin_total"]:
+        _tab_reset()
+    elif sec == "exportar" and ctx["es_admin_total"]:
+        _tab_exportar()
 
 
 # ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-def _tab_resumen():
+def _tab_resumen(panel_consumo=False):
     if "msg_resumen" in st.session_state:
         st.success(st.session_state.pop("msg_resumen"))
 
@@ -211,6 +246,16 @@ def _tab_resumen():
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    st.divider()
+    _render_panel_feed(limit=8)
+
+    if panel_consumo:
+        st.divider()
+        c1, c2 = st.columns(2)
+        c1.button("🏆 Ver ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="consumo_rank")
+        c2.button("🏅 Ver destacados", on_click=cambiar_pantalla, args=(12,), use_container_width=True, key="consumo_dest")
+        return
 
     # Confirmaciones por fase como barras de progreso
     with get_db() as _conn:
@@ -701,152 +746,159 @@ def _tab_pagos():
     """, unsafe_allow_html=True)
 
 
+
+def _parse_uploaded_special_list(uploaded_file):
+    if not uploaded_file:
+        return ''
+    data = uploaded_file.read()
+    for enc in ('utf-8', 'utf-8-sig', 'latin-1'):
+        try:
+            return data.decode(enc)
+        except Exception:
+            continue
+    return data.decode('utf-8', errors='ignore')
+
+
+def _render_admin_lista_especiales(tipo: str, titulo: str, ayuda: str):
+    st.markdown(f"### {titulo}")
+    lista_actual = db_get_lista_especiales(tipo)
+    st.caption(f"{len(lista_actual)} nombres activos. {ayuda}")
+
+    uploaded = st.file_uploader(
+        f"Subir archivo para {titulo.lower()}",
+        type=['txt', 'csv'],
+        key=f"upload_lista_{tipo}",
+        help='Acepta .txt o .csv con un nombre por línea, o separados por coma o punto y coma.',
+    )
+    default_text = st.session_state.get(f"raw_lista_{tipo}", '')
+    if uploaded is not None:
+        default_text = _parse_uploaded_special_list(uploaded)
+        st.session_state[f"raw_lista_{tipo}"] = default_text
+
+    raw_text = st.text_area(
+        'Pegá la lista completa',
+        value=default_text,
+        key=f"raw_lista_{tipo}",
+        height=180,
+        placeholder='Un nombre por línea\nEjemplo:\nLionel Messi\nJulián Álvarez\nKylian Mbappé',
+    )
+
+    c1, c2 = st.columns(2)
+    if c1.button('💾 Reemplazar lista completa', key=f"save_lista_{tipo}", use_container_width=True, type='primary'):
+        try:
+            nueva = db_set_lista_especiales_desde_texto(tipo, raw_text)
+            st.session_state['msg_esp_adm'] = f"✅ Lista de {titulo.lower()} actualizada. Ahora hay {len(nueva)} nombres."
+        except Exception as e:
+            st.session_state['msg_esp_adm'] = f"❌ {e}"
+        st.rerun()
+    if c2.button('↺ Volver a la lista base', key=f"reset_lista_{tipo}", use_container_width=True):
+        base = db_reset_lista_especiales(tipo)
+        st.session_state[f"raw_lista_{tipo}"] = '\n'.join(base)
+        st.session_state['msg_esp_adm'] = f"✅ Lista de {titulo.lower()} restablecida a la versión base."
+        st.rerun()
+
+    if lista_actual:
+        preview = lista_actual[:12]
+        st.markdown(
+            "<div style='background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin:8px 0 14px 0;'>"
+            f"<div style='font-size:0.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;'>Vista previa</div>"
+            f"<div style='color:var(--text2);font-size:0.85rem;line-height:1.7;'>" + ' · '.join(preview) + (' · ...' if len(lista_actual) > 12 else '') + '</div></div>',
+            unsafe_allow_html=True,
+        )
+
 def _tab_especiales():
     st.subheader("⭐ Pronósticos especiales — Resultados")
     if "msg_esp_adm" in st.session_state:
-        msg = st.session_state.pop("msg_esp_adm")
-        if str(msg).startswith("❌"):
-            st.error(msg)
-        elif str(msg).startswith("⚠️"):
-            st.warning(msg)
-        else:
-            st.success(msg)
+        st.success(st.session_state.pop("msg_esp_adm"))
 
-    equipos_adm = db_get_equipos_grupos() or sorted(BANDERAS.keys())
+    with st.expander("🗂️ Listas de jugadores y arqueros para especiales", expanded=True):
+        st.markdown("Cuando guardás una lista nueva, reemplaza completa la anterior y se refleja tanto en admin como en usuario.")
+        _render_admin_lista_especiales("jugadores", "Jugadores", "Sirve para goleador y mejor jugador.")
+        _render_admin_lista_especiales("arqueros", "Arqueros", "Sirve para mejor arquero.")
 
-    for cat, info in CATEGORIAS_ESPECIALES.items():
-        resultado_actual = db_get_resultado_especial(cat)
-        resultado_borrador = st.session_state.get(f"adm_result_{cat}", resultado_actual)
-        card_bg = "var(--surface-elevated)" if resultado_actual else "var(--surface)"
-        st.markdown(
-            f"""
-            <div style="background:{card_bg};border:1px solid var(--border);border-radius:18px;padding:16px 16px 12px 16px;margin:0 0 12px 0;box-shadow:0 12px 28px var(--shadow-clr);">
-            """,
-            unsafe_allow_html=True,
-        )
-        col_tit, col_pts = st.columns([4, 1])
-        col_tit.markdown(f"**{info['label']}**")
-        col_pts.markdown(
-            f"<div style='text-align:right; color:var(--accent-2); font-family:Bebas Neue,sans-serif; font-size:1.15rem;'>+{info['puntos']} pts</div>",
-            unsafe_allow_html=True,
-        )
-        if resultado_actual:
-            st.markdown(
-                f"<div style='color:var(--success); font-size:0.84rem; margin-bottom:8px;'>Actual: <b>{resultado_actual}</b></div>",
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                "<div style='color:var(--text3); font-size:0.82rem; margin-bottom:8px;'>Todavía no hay resultado cargado.</div>",
-                unsafe_allow_html=True,
-            )
 
-        if cat == "campeon":
-            ops_adm = [f"{bandera(e)} {e}" for e in equipos_adm]
-            d2n_adm = {f"{bandera(e)} {e}": e for e in equipos_adm}
-            valor_actual = resultado_borrador or resultado_actual
-            idx_adm = next((i for i, e in enumerate(equipos_adm) if e == valor_actual), 0)
-            sel_adm = st.selectbox(
-                "Nuevo campeón real",
-                ops_adm,
-                index=idx_adm,
-                key=f"adm_sel_{cat}",
-            )
-            st.session_state[f"adm_result_{cat}"] = d2n_adm.get(sel_adm, sel_adm)
-        else:
-            lista_adm = ARQUEROS_MUNDIALISTAS if cat == "arquero" else JUGADORES_MUNDIALISTAS
-            label_adm = "arquero" if cat == "arquero" else "jugador"
-            sel_actual = st.session_state.get(f"adm_elegido_{cat}", resultado_borrador or resultado_actual)
-            if sel_actual:
-                st.markdown(
-                    f"<div style='color:var(--success); font-size:0.88rem; margin:4px 0 8px 0;'>✅ Elegido: <b>{sel_actual}</b></div>",
-                    unsafe_allow_html=True,
-                )
-            st.session_state[f"adm_result_{cat}"] = sel_actual
+    equipos_adm  = db_get_equipos_grupos() or sorted(BANDERAS.keys())
+    todos_esp    = db_get_todos_especiales()
+    df_esp       = pd.DataFrame(todos_esp) if todos_esp else pd.DataFrame()
 
-            if st.session_state.get(f"adm_cambiar_{cat}", not bool(sel_actual)):
-                _, filtrados_adm = _render_buscador_jugador_admin(
-                    key_prefix=f"adm_busq_{cat}",
-                    label=f"Buscar {label_adm}",
-                    jugadores=lista_adm,
-                    normalizer=_norm,
-                    empty_text=(f"Buscá y tocá la lupa para elegir un {label_adm}." if not sel_actual else f"Buscá y tocá la lupa para cambiar el {label_adm}."),
-                    no_results_text=f"No se encontró ningún {label_adm}.",
-                )
-                for jug in filtrados_adm:
-                    if st.button(jug, key=f"adm_jug_{cat}_{jug}", use_container_width=True):
-                        st.session_state[f"adm_elegido_{cat}"] = jug
-                        st.session_state[f"adm_result_{cat}"] = jug
-                        st.session_state[f"adm_cambiar_{cat}"] = False
-                        st.session_state[f"adm_busq_{cat}_trigger"] = False
-                        st.rerun()
+    # Variantes manuales
+    variantes_por_cat = {}
+    for cat in CATEGORIAS_ESPECIALES:
+        if cat == "campeon": continue
+        lista_oficial = ARQUEROS_MUNDIALISTAS if cat == "arquero" else JUGADORES_MUNDIALISTAS
+        if not df_esp.empty and cat in df_esp["categoria"].values:
+            sub    = df_esp[df_esp["categoria"] == cat]
+            otros  = sub[~sub["eleccion"].isin(lista_oficial)]["eleccion"].unique().tolist()
+            if otros: variantes_por_cat[cat] = otros
+
+
+
+    with st.form("form_admin_esp_todos"):
+        selecciones_adm = {}
+        for cat, info in CATEGORIAS_ESPECIALES.items():
+            resultado_actual = db_get_resultado_especial(cat)
+            col_tit, col_pts = st.columns([4, 1])
+            col_tit.markdown(f"**{info['label']}**")
+            col_pts.markdown(f"<div style='text-align:right; color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.1rem;'>+{info['puntos']} pts</div>", unsafe_allow_html=True)
+            if resultado_actual:
+                st.markdown(f"<div style='color:var(--green); font-size:0.82rem; margin-bottom:2px;'>Guardado: <b>{resultado_actual}</b></div>", unsafe_allow_html=True)
+
+            if cat == "campeon":
+                ops_adm = [f"{bandera(e)} {e}" for e in equipos_adm]
+                d2n_adm = {f"{bandera(e)} {e}": e for e in equipos_adm}
+                idx_adm = next((i for i, e in enumerate(equipos_adm) if e == resultado_actual), 0)
+                sel_adm = st.selectbox("Nuevo campeón real", ops_adm, index=idx_adm, key=f"adm_sel_{cat}")
+                selecciones_adm[cat] = d2n_adm.get(sel_adm, sel_adm)
             else:
-                if st.button(f"✏️ Cambiar {label_adm}", key=f"adm_cambiar_btn_{cat}"):
-                    st.session_state[f"adm_cambiar_{cat}"] = True
-                    st.rerun()
+                lista_adm = db_get_lista_especiales('arqueros') if cat == 'arquero' else db_get_lista_especiales('jugadores')
+                label_adm = "arquero" if cat == "arquero" else "jugador"
+                busq_adm = st.text_input(f"Buscar {label_adm}", value="", key=f"adm_busq_{cat}", placeholder="Escribí el nombre...")
+                filtrados_adm = [j for j in lista_adm if _norm(busq_adm) in _norm(j)] if busq_adm else lista_adm
+                opciones_adm = ["— Seleccioná —"] + filtrados_adm
+                if resultado_actual and resultado_actual in filtrados_adm:
+                    idx_adm = filtrados_adm.index(resultado_actual) + 1
+                else:
+                    idx_adm = 0
+                sel_adm = st.selectbox(f"Nuevo {label_adm} real", opciones_adm, index=idx_adm, key=f"adm_sel_{cat}")
+                selecciones_adm[cat] = sel_adm if sel_adm != "— Seleccioná —" else None
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-    pw_esp_adm = st.text_input(
-        "🔒 Tu contraseña de admin para guardar resultados especiales",
-        type="password",
-        key="pw_guardar_esp",
-        help="Solo se valida al tocar el botón. Escribir o cambiar selecciones no dispara el guardado.",
-    )
-    guardar_todos_esp = st.button(
-        "💾 Guardar resultados especiales y aplicar puntos",
-        type="primary",
-        use_container_width=True,
-        key="btn_guardar_esp_admin",
-    )
+        st.divider()
+        pw_esp_adm     = st.text_input("🔒 Tu contraseña de admin", type="password", key="pw_guardar_esp")
+        guardar_todos_esp = st.form_submit_button("💾 Guardar todos y aplicar puntos", type="primary")
 
     if guardar_todos_esp:
         admin_esp = db_get_usuario(st.session_state.usuario)
-        if not pw_esp_adm.strip():
-            st.session_state["msg_esp_adm"] = "⚠️ Escribí tu contraseña de admin para guardar cambios."
-        elif admin_esp["clave"] != hash_clave(pw_esp_adm):
+        if admin_esp["clave"] != hash_clave(pw_esp_adm):
             st.session_state["msg_esp_adm"] = "❌ Contraseña incorrecta."
         else:
             guardados = 0
-            with st.spinner("Guardando resultados especiales..."):
-                for cat in CATEGORIAS_ESPECIALES:
-                    ganador = st.session_state.get(f"adm_result_{cat}")
+            with st.spinner("Guardando..."):
+                for cat, ganador in selecciones_adm.items():
                     if ganador:
-                        db_guardar_resultado_especial(cat, ganador)
-                        guardados += 1
+                        db_guardar_resultado_especial(cat, ganador); guardados += 1
                 if guardados:
                     db_calcular_puntos_especiales()
-            st.session_state["msg_esp_adm"] = (
-                f"✅ {guardados} resultado(s) guardado(s) y puntos aplicados."
-                if guardados else
-                "⚠️ No seleccionaste ningún ganador."
-            )
+            st.session_state["msg_esp_adm"] = f"✅ {guardados} resultado(s) guardado(s) y puntos aplicados." if guardados else "⚠️ No seleccionaste ningún ganador."
         st.rerun()
 
+    # Limpiar especiales
     st.divider()
     resultados_esp_actuales = {cat: db_get_resultado_especial(cat) for cat in CATEGORIAS_ESPECIALES}
     if any(v for v in resultados_esp_actuales.values()):
         with st.form("form_limpiar_especiales"):
             st.warning("⚠️ Esto borrará TODOS los resultados especiales y recalculará puntajes.")
-            pw_limp_esp = st.text_input("Tu contraseña de admin", type="password", key="pw_limpiar_esp")
-            limpiar_esp = st.form_submit_button("🗑️ Limpiar resultados especiales", type="primary")
+            pw_limp_esp   = st.text_input("Tu contraseña de admin", type="password", key="pw_limpiar_esp")
+            limpiar_esp   = st.form_submit_button("🗑️ Limpiar resultados especiales", type="primary")
         if limpiar_esp:
             admin_le = db_get_usuario(st.session_state.usuario)
-            if not pw_limp_esp.strip():
-                st.session_state["msg_esp_adm"] = "⚠️ Escribí tu contraseña de admin para limpiar resultados especiales."
-            elif admin_le["clave"] != hash_clave(pw_limp_esp):
+            if admin_le["clave"] != hash_clave(pw_limp_esp):
                 st.session_state["msg_esp_adm"] = "❌ Contraseña incorrecta."
             else:
-                db_limpiar_resultados_especiales()
-                db_calcular_puntos()
-                for cat in CATEGORIAS_ESPECIALES:
-                    st.session_state.pop(f"adm_result_{cat}", None)
-                    st.session_state.pop(f"adm_elegido_{cat}", None)
-                    st.session_state.pop(f"adm_cambiar_{cat}", None)
-                    st.session_state.pop(f"adm_busq_{cat}", None)
+                db_limpiar_resultados_especiales(); db_calcular_puntos()
                 st.session_state["msg_esp_adm"] = "🗑️ Resultados especiales eliminados y puntajes recalculados."
             st.rerun()
+
 
 def _tab_usuarios():
     st.subheader("👤 Gestión de usuarios")
