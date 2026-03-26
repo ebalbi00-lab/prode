@@ -181,10 +181,9 @@ def pantalla_admin():
         st.divider()
         _render_panel_feed(limit=6)
         st.divider()
-        c1, c2, c3 = st.columns(3)
+        c1, c2 = st.columns(2)
         c1.button("🏆 Ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="admin_rank")
-        c2.button("🏅 Destacados", on_click=cambiar_pantalla, args=(12,), use_container_width=True, key="admin_dest")
-        c3.button("🚪 Cerrar sesión", on_click=cerrar_sesion_admin, use_container_width=True, key="admin_logout")
+        c2.button("🚪 Cerrar sesión", on_click=cerrar_sesion_admin, use_container_width=True, key="admin_logout")
         return
 
     if st.button("← Volver al menú", key="admin_back"):
@@ -257,9 +256,7 @@ def _tab_resumen(panel_consumo=False):
 
     if panel_consumo:
         st.divider()
-        c1, c2 = st.columns(2)
-        c1.button("🏆 Ver ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="consumo_rank")
-        c2.button("🏅 Ver destacados", on_click=cambiar_pantalla, args=(12,), use_container_width=True, key="consumo_dest")
+        st.button("🏆 Ver ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="consumo_rank")
         return
 
     # Confirmaciones por fase como barras de progreso
@@ -368,8 +365,6 @@ def _tab_partidos():
         inicio = "ABCDEFGHIJKL".index(letra) * 6
         existentes_map = {p["idx"]: p for p in partidos_cargados}
         defaults = GRUPOS_DEFAULT.get(letra, [("", "")] * 6)
-        idxs_grupo = list(range(inicio, inicio + 6))
-        faltantes_idx = [idx for idx in idxs_grupo if idx not in existentes_map]
 
         equipos_existentes = db_get_equipos_grupos()
         equipos_base = sorted(
@@ -381,33 +376,6 @@ def _tab_partidos():
             key=lambda x: str(x).lower()
         )
 
-        st.markdown("### Estado del grupo")
-        if faltantes_idx:
-            nums = ", ".join(str((idx - inicio) + 1) for idx in faltantes_idx)
-            st.warning(
-                f"Hay {len(faltantes_idx)} partido(s) de Grupo {letra} que NO están guardados en la base: {nums}. "
-                "Admin puede mostrarlos con valores por defecto, pero en Pronósticos no aparecen hasta guardarlos de verdad."
-            )
-        else:
-            st.success(f"Los 6 partidos del Grupo {letra} están guardados en la base.")
-
-        if st.button(f"Completar faltantes de Grupo {letra} con defaults", key=f"hidratar_grupo_{letra}", use_container_width=True):
-            guardados = 0
-            with st.spinner(f"Completando faltantes de Grupo {letra}..."):
-                for j, idx_global in enumerate(idxs_grupo):
-                    if idx_global in existentes_map:
-                        continue
-                    loc, vis = defaults[j]
-                    if loc and vis:
-                        db_guardar_partido("Grupos", idx_global, loc, vis)
-                        guardados += 1
-            st.session_state["msg_grupos"] = (
-                f"✅ Se completaron {guardados} partido(s) faltante(s) del Grupo {letra}."
-                if guardados else f"ℹ️ El Grupo {letra} ya estaba completo."
-            )
-            st.rerun()
-
-        st.divider()
         st.markdown("### Editar nombres de equipos")
         st.caption("Esto reemplaza el nombre en partidos y selecciones especiales donde ya exista.")
         c_ren1, c_ren2 = st.columns([1.2, 1.2])
@@ -433,6 +401,8 @@ def _tab_partidos():
             else:
                 db_renombrar_equipo_global(equipo_actual, nombre_limpio)
 
+                # No tocar valores de widgets ya instanciados en este mismo render.
+                # Se limpian las keys y el rerun reconstruye todo con el nombre nuevo.
                 for k in [f"ren_equipo_{letra}", f"ren_equipo_nuevo_{letra}"]:
                     if k in st.session_state:
                         del st.session_state[k]
@@ -442,25 +412,13 @@ def _tab_partidos():
 
         st.divider()
 
-        seed_key = "admin_grupo_seed"
-        if st.session_state.get(seed_key) != letra:
-            for j in range(6):
-                idx_global = inicio + j
-                prev = existentes_map.get(idx_global, {})
-                local_actual = prev.get("local", defaults[j][0])
-                visita_actual = prev.get("visita", defaults[j][1])
-                st.session_state[f"gl_{letra}_{j}"] = local_actual
-                st.session_state[f"gv_{letra}_{j}"] = visita_actual
-            st.session_state[seed_key] = letra
-
         with st.form(f"form_grupo_{letra}"):
             nuevos = []
             for j in range(6):
                 idx_global = inicio + j
                 prev = existentes_map.get(idx_global, {})
-                persistido = idx_global in existentes_map
-                local_actual = st.session_state.get(f"gl_{letra}_{j}", prev.get("local", defaults[j][0]))
-                visita_actual = st.session_state.get(f"gv_{letra}_{j}", prev.get("visita", defaults[j][1]))
+                local_actual = prev.get("local", defaults[j][0])
+                visita_actual = prev.get("visita", defaults[j][1])
 
                 opciones_local = equipos_base[:]
                 if local_actual and local_actual not in opciones_local:
@@ -471,14 +429,6 @@ def _tab_partidos():
                 if visita_actual and visita_actual not in opciones_visita:
                     opciones_visita.append(visita_actual)
                 opciones_visita = sorted(set(opciones_visita), key=lambda x: str(x).lower())
-
-                badge = "✅ Guardado" if persistido else "⚠️ Solo visible por default"
-                color = "var(--green)" if persistido else "var(--orange)"
-                st.markdown(
-                    f"<div style='font-size:0.75rem; margin:0.8rem 0 0.35rem 0; color:{color}; font-weight:700;'>"
-                    f"Partido {j + 1} · idx {idx_global} · {badge}</div>",
-                    unsafe_allow_html=True,
-                )
 
                 c1, c2 = st.columns(2)
                 l = c1.selectbox(
@@ -503,14 +453,14 @@ def _tab_partidos():
 
         if guardar:
             errores = [f"Partido {((idx_global - inicio) + 1)}: mismo equipo de local y visitante" for idx_global, l, v in nuevos if l and v and l == v]
-            incompletos = [f"Partido {((idx_global - inicio) + 1)}: faltan equipos" for idx_global, l, v in nuevos if not l or not v]
-            if errores or incompletos:
-                st.error("⚠️ " + " · ".join(errores + incompletos))
+            if errores:
+                st.error("⚠️ " + " · ".join(errores))
             else:
                 with st.spinner(f"Guardando Grupo {letra}..."):
                     for idx_global, l, v in nuevos:
-                        db_guardar_partido("Grupos", idx_global, l, v)
-                st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado completo en base." 
+                        if l and v:
+                            db_guardar_partido("Grupos", idx_global, l, v)
+                st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado."
                 st.rerun()
 
         if guardar_todos:
@@ -886,73 +836,39 @@ def _tab_especiales():
 
 
 
-    selecciones_adm = {}
-    for cat, info in CATEGORIAS_ESPECIALES.items():
-        resultado_actual = db_get_resultado_especial(cat)
-        col_tit, col_pts = st.columns([4, 1])
-        col_tit.markdown(f"**{info['label']}**")
-        col_pts.markdown(f"<div style='text-align:right; color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.1rem;'>+{info['puntos']} pts</div>", unsafe_allow_html=True)
-        if resultado_actual:
-            st.markdown(f"<div style='color:var(--green); font-size:0.82rem; margin-bottom:2px;'>Guardado: <b>{resultado_actual}</b></div>", unsafe_allow_html=True)
+    with st.form("form_admin_esp_todos"):
+        selecciones_adm = {}
+        for cat, info in CATEGORIAS_ESPECIALES.items():
+            resultado_actual = db_get_resultado_especial(cat)
+            col_tit, col_pts = st.columns([4, 1])
+            col_tit.markdown(f"**{info['label']}**")
+            col_pts.markdown(f"<div style='text-align:right; color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.1rem;'>+{info['puntos']} pts</div>", unsafe_allow_html=True)
+            if resultado_actual:
+                st.markdown(f"<div style='color:var(--green); font-size:0.82rem; margin-bottom:2px;'>Guardado: <b>{resultado_actual}</b></div>", unsafe_allow_html=True)
 
-        if cat == "campeon":
-            ops_adm = [f"{bandera(e)} {e}" for e in equipos_adm]
-            d2n_adm = {f"{bandera(e)} {e}": e for e in equipos_adm}
-            idx_adm = next((i for i, e in enumerate(equipos_adm) if e == resultado_actual), 0)
-            sel_adm = st.selectbox("Nuevo campeón real", ops_adm, index=idx_adm, key=f"adm_sel_{cat}")
-            selecciones_adm[cat] = d2n_adm.get(sel_adm, sel_adm)
-        else:
-            lista_adm = db_get_lista_especiales('arqueros') if cat == 'arquero' else db_get_lista_especiales('jugadores')
-            label_adm = "arquero" if cat == "arquero" else "jugador"
-            sel_key = f"adm_elegido_{cat}"
-            cambiar_key = f"adm_cambiar_{cat}"
-            input_key = f"adm_busq_{cat}"
-            applied_key = f"adm_busq_aplicada_{cat}"
-
-            sel_actual = st.session_state.get(sel_key, resultado_actual)
-            if sel_actual:
-                st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0 8px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
-            selecciones_adm[cat] = sel_actual
-
-            if st.session_state.get(cambiar_key, not bool(sel_actual)):
-                col_busq, col_btn = st.columns([5, 1])
-                with col_busq:
-                    st.text_input(
-                        f"Buscar {label_adm}",
-                        value=st.session_state.get(input_key, ""),
-                        key=input_key,
-                        placeholder="Escribí el nombre (con o sin acento)...",
-                    )
-                with col_btn:
-                    st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
-                    if st.button("🔎", key=f"adm_lupa_{cat}", use_container_width=True):
-                        st.session_state[applied_key] = (st.session_state.get(input_key, "") or "").strip()
-
-                busqueda_aplicada = (st.session_state.get(applied_key, "") or "").strip()
-                if busqueda_aplicada:
-                    filtrados_adm = [j for j in lista_adm if _norm(busqueda_aplicada) in _norm(j)][:8]
-                    if not filtrados_adm:
-                        st.caption(f"No se encontró ningún {label_adm}.")
-                    else:
-                        for jug in filtrados_adm:
-                            if st.button(jug, key=f"adm_jug_{cat}_{jug}", use_container_width=True):
-                                st.session_state[sel_key] = jug
-                                st.session_state[cambiar_key] = False
-                                st.session_state[input_key] = ""
-                                st.session_state[applied_key] = ""
-                                selecciones_adm[cat] = jug
-                                st.rerun()
-                else:
-                    st.caption(f"Escribí el nombre y tocá la lupa para buscar {label_adm}.")
+            if cat == "campeon":
+                ops_adm = [f"{bandera(e)} {e}" for e in equipos_adm]
+                d2n_adm = {f"{bandera(e)} {e}": e for e in equipos_adm}
+                idx_adm = next((i for i, e in enumerate(equipos_adm) if e == resultado_actual), 0)
+                sel_adm = st.selectbox("Nuevo campeón real", ops_adm, index=idx_adm, key=f"adm_sel_{cat}")
+                selecciones_adm[cat] = d2n_adm.get(sel_adm, sel_adm)
             else:
-                if st.button(f"✏️ Cambiar {label_adm}", key=f"adm_cambiar_btn_{cat}"):
-                    st.session_state[cambiar_key] = True
-                    st.rerun()
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+                lista_adm = db_get_lista_especiales('arqueros') if cat == 'arquero' else db_get_lista_especiales('jugadores')
+                label_adm = "arquero" if cat == "arquero" else "jugador"
+                busq_adm = st.text_input(f"Buscar {label_adm}", value="", key=f"adm_busq_{cat}", placeholder="Escribí el nombre...")
+                filtrados_adm = [j for j in lista_adm if _norm(busq_adm) in _norm(j)] if busq_adm else lista_adm
+                opciones_adm = ["— Seleccioná —"] + filtrados_adm
+                if resultado_actual and resultado_actual in filtrados_adm:
+                    idx_adm = filtrados_adm.index(resultado_actual) + 1
+                else:
+                    idx_adm = 0
+                sel_adm = st.selectbox(f"Nuevo {label_adm} real", opciones_adm, index=idx_adm, key=f"adm_sel_{cat}")
+                selecciones_adm[cat] = sel_adm if sel_adm != "— Seleccioná —" else None
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-    st.divider()
-    pw_esp_adm = st.text_input("🔒 Tu contraseña de admin", type="password", key="pw_guardar_esp")
-    guardar_todos_esp = st.button("💾 Guardar todos y aplicar puntos", type="primary", use_container_width=True)
+        st.divider()
+        pw_esp_adm     = st.text_input("🔒 Tu contraseña de admin", type="password", key="pw_guardar_esp")
+        guardar_todos_esp = st.form_submit_button("💾 Guardar todos y aplicar puntos", type="primary")
 
     if guardar_todos_esp:
         admin_esp = db_get_usuario(st.session_state.usuario)
