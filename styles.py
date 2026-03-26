@@ -281,10 +281,30 @@ def inject_css():
     }}
 
     /* Dropdowns */
+    [data-baseweb="select"] > div,
+    [data-baseweb="select"] > div > div,
+    [data-baseweb="select"] [role="combobox"],
+    [data-baseweb="select"] [aria-haspopup="listbox"],
+    [data-baseweb="select"] [data-testid="stMarkdownContainer"],
+    [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
+        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
+
+    [data-baseweb="select"] svg,
+    [data-baseweb="popover"] svg,
+    [role="listbox"] svg {{
+        fill: var(--text2) !important;
+        color: var(--text2) !important;
+    }}
+
     [data-baseweb="popover"],
+    [data-baseweb="popover"] > div,
     [role="listbox"],
-    ul[role="listbox"] {{
-        background: rgba(10, 19, 35, 0.98) !important;
+    ul[role="listbox"],
+    div[role="listbox"] {{
+        background: rgba(10, 19, 35, 0.985) !important;
         color: var(--text) !important;
         border: 1px solid var(--border2) !important;
         box-shadow: 0 20px 44px rgba(0,0,0,0.36) !important;
@@ -292,21 +312,37 @@ def inject_css():
         backdrop-filter: blur(14px);
     }}
 
-    [role="option"] {{
+    [role="option"],
+    li[role="option"],
+    div[role="option"] {{
+        background: rgba(10, 19, 35, 0.985) !important;
         color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
+
+    [role="option"] *,
+    li[role="option"] *,
+    div[role="option"] * {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
         background: transparent !important;
     }}
 
     [role="option"][aria-selected="true"],
-    [role="option"]:hover {{
-        background: rgba(110,231,255,0.12) !important;
+    li[role="option"][aria-selected="true"],
+    [role="option"]:hover,
+    li[role="option"]:hover,
+    div[role="option"]:hover {{
+        background: rgba(110,231,255,0.14) !important;
         color: var(--text) !important;
     }}
 
     [data-baseweb="select"] input,
     [data-baseweb="select"] span,
-    [data-baseweb="select"] div {{
+    [data-baseweb="select"] div,
+    [data-baseweb="select"] p {{
         color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
     }}
 
     /* Buttons */
@@ -483,6 +519,23 @@ def inject_css():
 
     [data-testid="stSelectbox"] [data-baseweb="select"] * ,
     [data-testid="stMultiSelect"] [data-baseweb="select"] * {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
+
+    /* Extra mobile/browser fixes for select menus */
+    select, option, optgroup {{
+        background-color: #0a1323 !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
+
+    [role="listbox"] div,
+    [role="listbox"] span,
+    [role="listbox"] p,
+    [data-baseweb="popover"] div,
+    [data-baseweb="popover"] span,
+    [data-baseweb="popover"] p {{
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
