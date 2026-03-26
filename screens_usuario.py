@@ -96,7 +96,7 @@ Orden de la pantalla (cuando grupos ya fue completado):
 import streamlit as st
 import unicodedata
 
-from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, GRUPOS_DEFAULT, bandera
+from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, bandera
 from db import (
     db_get_usuario, db_get_fases, db_get_partidos, db_get_prode,
     db_get_resultado_completo, db_guardar_pred, db_confirmar_prode,
@@ -179,36 +179,11 @@ def _get_pendientes_fases(fases_habilitadas, fases_resumen):
 
 def _get_partidos_por_grupo(partidos):
     grupos = {chr(ord('A') + i): [] for i in range(12)}
-    existentes = {}
-
     for p in partidos:
         idx = int(p.get("idx", -1) or -1)
         if 0 <= idx < 72:
             letra = chr(ord('A') + (idx // 6))
-            partido = dict(p)
-            partido["idx"] = idx
-            grupos.setdefault(letra, []).append(partido)
-            existentes[idx] = partido
-
-    # Completa cualquier hueco de la fase de grupos con el fixture por defecto.
-    # Esto evita que un partido faltante en DB desaparezca del pronóstico del usuario.
-    for letra, defaults in GRUPOS_DEFAULT.items():
-        inicio = (ord(letra) - ord('A')) * 6
-        for j, (local, visita) in enumerate(defaults):
-            idx_global = inicio + j
-            if idx_global not in existentes and local and visita:
-                grupos.setdefault(letra, []).append({
-                    "idx": idx_global,
-                    "fase": "Grupos",
-                    "local": local,
-                    "visita": visita,
-                    "fecha": "",
-                    "hora": "",
-                })
-
-    for letra in grupos:
-        grupos[letra] = sorted(grupos[letra], key=lambda p: int(p.get("idx", -1) or -1))
-
+            grupos.setdefault(letra, []).append(p)
     grupos_con_partidos = [letra for letra, items in grupos.items() if items]
     return grupos, grupos_con_partidos
 
