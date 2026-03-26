@@ -1,7 +1,13 @@
-"""
-app.py — Punto de entrada principal.
-"""
 import streamlit as st
+
+# ─── META / ICONOS PWA ─────────────────────────────────────
+
+st.markdown("""
+<link rel="icon" href="static/favicon.png">
+<link rel="apple-touch-icon" href="static/favicon.png">
+<meta name="apple-mobile-web-app-title" content="Prode Il Baigo">
+<meta name="application-name" content="Prode Il Baigo">
+""", unsafe_allow_html=True)
 
 _original_markdown = st.markdown
 def _safe_markdown(body, *args, **kwargs):
@@ -11,7 +17,7 @@ def _safe_markdown(body, *args, **kwargs):
 st.markdown = _safe_markdown
 
 st.set_page_config(
-    page_title="Prode Il Baigo - Mundial 2026",
+    page_title="Prode Il Baigo",
     layout="wide",
     page_icon="⚽"
 )
@@ -26,7 +32,7 @@ from screens_usuario import pantalla_usuario
 from screens_stats import pantalla_ranking, pantalla_estadisticas, pantalla_estadisticas_torneo
 from screens_admin import pantalla_admin
 
-# ─── Inicialización ───────────────────────────────────────────────────────────
+# ─── Inicialización ───────────────────────────────────────────
 
 if "db_initialized" not in st.session_state:
     try:
@@ -56,11 +62,11 @@ if "usuario" not in st.session_state:
 if "registro_temp" not in st.session_state:
     st.session_state.registro_temp = {}
 
-# ─── CSS ─────────────────────────────────────────────────────────────────────
+# ─── CSS ─────────────────────────────────────────────────────
 
 inject_css()
 
-# ─── Router ───────────────────────────────────────────────────────────────────
+# ─── Router ───────────────────────────────────────────────────
 
 PANTALLAS = {
     0:  pantalla_login,

@@ -368,36 +368,31 @@ def db_toggle_fase(nombre, valor):
 def db_get_partidos(fase):
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM partidos WHERE fase=%s ORDER BY idx", (fase,))
-        rows = [dict(r) for r in cur.fetchall()]
 
-        if fase != "Grupos":
-            return rows
+        if fase == "Grupos":
+            cur.execute("SELECT idx, local, visita FROM partidos WHERE fase=%s", (fase,))
+            existentes = {int(r["idx"]): (r.get("local"), r.get("visita")) for r in cur.fetchall()}
 
-        existentes = {int(r.get("idx", -1)): r for r in rows}
-        faltantes = []
-        for letra, partidos_grupo in GRUPOS_DEFAULT.items():
-            inicio = (ord(letra) - ord("A")) * 6
-            for offset, (local, visita) in enumerate(partidos_grupo):
-                idx = inicio + offset
-                if idx not in existentes:
-                    faltantes.append((idx, local, visita))
+            faltantes = []
+            for letra, partidos_grupo in GRUPOS_DEFAULT.items():
+                inicio = "ABCDEFGHIJKL".index(letra) * 6
+                for j, (local, visita) in enumerate(partidos_grupo):
+                    idx_global = inicio + j
+                    if idx_global not in existentes and local and visita:
+                        faltantes.append((fase, idx_global, local, visita, "", ""))
 
-        if faltantes:
-            for idx, local, visita in faltantes:
-                cur.execute(
+            if faltantes:
+                cur.executemany(
                     """
                     INSERT INTO partidos (fase, idx, local, visita, fecha, hora)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     ON CONFLICT (fase, idx) DO NOTHING
                     """,
-                    ("Grupos", idx, local, visita, "", ""),
+                    faltantes,
                 )
-            conn.commit()
-            cur.execute("SELECT * FROM partidos WHERE fase=%s ORDER BY idx", (fase,))
-            rows = [dict(r) for r in cur.fetchall()]
 
-        return rows
+        cur.execute("SELECT * FROM partidos WHERE fase=%s ORDER BY idx", (fase,))
+        return [dict(r) for r in cur.fetchall()]
 
 
 def db_guardar_partido(fase, idx, local, visita, fecha="", hora=""):
