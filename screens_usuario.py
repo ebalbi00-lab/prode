@@ -466,7 +466,7 @@ def pantalla_usuario():
         if st.button("← Volver al inicio", key="back_prode"):
             st.session_state["sub_pantalla"] = "inicio"; st.rerun()
         st.markdown(f"""<div style="margin:0.5rem 0 1rem 0;">
-            <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text, unsafe_allow_html=True);">⚽ Mis pronósticos</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);">⚽ Mis pronósticos</div>
         </div>""", unsafe_allow_html=True)
 
         # Partidos pendientes
@@ -499,7 +499,7 @@ def pantalla_usuario():
 
     # ── Validaciones ────────────────────────────────────────────────────────────
     if not fases.get(fase, False):
-        st.markdown("""<div style="background:rgba(255,180,0,0.08); border:1.5px solid rgba(255,180,0,0.25, unsafe_allow_html=True);
+        st.markdown("""<div style="background:rgba(255,180,0,0.08); border:1.5px solid rgba(255,180,0,0.25);
                     border-radius:12px; padding:14px 18px; margin:1rem 0;">
             <div style="color:var(--gold); font-weight:700; margin-bottom:4px;">⏳ Fase no habilitada</div>
             <div style="color:var(--text2); font-size:0.88rem;">Esta fase todavía no fue abierta por el admin.</div>
@@ -510,7 +510,7 @@ def pantalla_usuario():
 
     partidos = db_get_partidos(fase)
     if not partidos:
-        st.markdown("""<div style="background:var(--blue-dim); border:1.5px solid var(--blue-border, unsafe_allow_html=True);
+        st.markdown("""<div style="background:var(--blue-dim); border:1.5px solid var(--blue-border);
                     border-radius:12px; padding:14px 18px; margin:1rem 0;">
             <div style="color:var(--blue); font-weight:700; margin-bottom:4px;">📋 Sin partidos cargados</div>
             <div style="color:var(--text2); font-size:0.88rem;">El admin aún no cargó los partidos de esta fase.</div>
@@ -530,7 +530,7 @@ def pantalla_usuario():
 
     titulo_fase = fase if grupos_completados else "Grupos"
     st.markdown(f"""<div style="margin:0.8rem 0 0.5rem 0;">
-        <span style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text, unsafe_allow_html=True);">
+        <span style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text);">
             Pronósticos — {titulo_fase}</span>{estado_badge}
     </div>""", unsafe_allow_html=True)
 
@@ -590,13 +590,14 @@ def pantalla_usuario():
             </div>
             """, unsafe_allow_html=True)
         else:
-            st.markdown(f'<div style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:10px 12px;margin:5px 0;"></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:10px 12px;margin:5px 0;">', unsafe_allow_html=True)
             col_local, col_gl, col_sep, col_gv, col_visita = st.columns([3, 1, 0.3, 1, 3])
             col_local.markdown(f"<div style='text-align:right;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_local}</div>", unsafe_allow_html=True)
             gl = col_gl.number_input("L", min_value=0, max_value=10, value=int(gl_prev), key=f"gl_{fase}_{idx}", label_visibility="collapsed")
             col_sep.markdown("<div style='text-align:center;padding-top:10px;color:var(--text3);font-size:0.8rem;'>:</div>", unsafe_allow_html=True)
             gv = col_gv.number_input("V", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
             col_visita.markdown(f"<div style='text-align:left;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_visita}</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
             if "partidos_ok" not in st.session_state:
                 st.session_state["partidos_ok"] = {}
             ok_key = f"ok_{fase}_{idx}"
@@ -796,7 +797,7 @@ def pantalla_usuario():
             st.markdown(f"""<div style="background:{bg_c}; border:1px solid {border_c};
                 border-radius:10px; padding:10px 16px; margin:4px 0;
                 display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:var(--text2, unsafe_allow_html=True); font-size:0.85rem;">{info['label']}</span>
+                <span style="color:var(--text2); font-size:0.85rem;">{info['label']}</span>
                 <span>{derecha}</span>
             </div>""", unsafe_allow_html=True)
 
@@ -909,11 +910,14 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
             else:
                 with st.spinner("Confirmando pronósticos..."):
+                    _flush_pred_buffer(username, fase)
                     db_confirmar_prode(username, fase)
                     for cat, elec in selecciones_esp.items():
-                        if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
+                        esp_cat = esp_confirmados.get(cat) or {}
+                        if elec and not esp_cat.get("confirmado"):
                             db_guardar_especial(username, cat, elec)
                             db_confirmar_especial(username, cat)
+                    _get_special_buffer(username).clear()
                     db_calcular_puntos()
                 st.session_state["wizard_grupos_completo"] = True
                 st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
@@ -926,9 +930,10 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
             st.rerun()
         return
 
-    # ── Confirmación final ──
-    clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
-    confirmar_esp = st.button("🔒 Confirmar todo", type="primary", use_container_width=True, key="btn_confirmar_especiales")
+    # ── Formulario de confirmación ──
+    with st.form("form_confirmar_especiales"):
+        clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
+        confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
 
     if confirmar_esp:
         if hash_clave(clave_esp_final) != u["clave"]:
@@ -955,7 +960,8 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                         _flush_pred_buffer(username, fase)
                         db_confirmar_prode(username, fase)
                         for cat, elec in selecciones_esp.items():
-                            if elec and not (esp_confirmados[cat] and esp_confirmados[cat]["confirmado"]):
+                            esp_cat = esp_confirmados.get(cat) or {}
+                            if elec and not esp_cat.get("confirmado"):
                                 db_guardar_especial(username, cat, elec)
                                 db_confirmar_especial(username, cat)
                         _get_special_buffer(username).clear()
