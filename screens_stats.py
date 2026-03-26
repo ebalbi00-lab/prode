@@ -48,15 +48,8 @@ def render_destacados_usuarios():
     for i, (key, titulo, unidad, color, bg_color, border_color) in enumerate(categorias):
         datos = stats.get(key, [])
         with cols[i]:
-            st.markdown(f"""
-            <div style="background:{bg_color}; border:1.5px solid {border_color};
-                        border-radius:14px; padding:14px 16px; margin-bottom:12px;">
-                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
-                            letter-spacing:1.5px; color:{color}; margin-bottom:10px;">{titulo}</div>
-            """, unsafe_allow_html=True)
-
             if not datos:
-                st.markdown('<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>', unsafe_allow_html=True)
+                contenido = '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>'
             else:
                 top3 = datos[:3]
                 filas = ""
@@ -74,8 +67,15 @@ def render_destacados_usuarios():
                         <span style="color:{color}; font-weight:800; font-size:0.95rem;
                                       font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px;">{d['valor']}</span>
                     </div>"""
-                st.markdown(filas, unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+                contenido = filas
+            st.markdown(f"""
+            <div style="background:{bg_color}; border:1.5px solid {border_color};
+                        border-radius:14px; padding:14px 16px; margin-bottom:12px;">
+                <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
+                            letter-spacing:1.5px; color:{color}; margin-bottom:10px;">{titulo}</div>
+                {contenido}
+            </div>
+            """, unsafe_allow_html=True)
 
 
 def pantalla_ranking():

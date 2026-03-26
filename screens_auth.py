@@ -296,7 +296,7 @@ def pantalla_acerca():
                       f'<td style="padding:10px 14px; color:var(--text); font-weight:600; font-size:0.92rem;">{fase}</td>'
                       f'<td style="padding:10px 14px; color:var(--blue); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{res_pts[i]}</td>'
                       f'<td style="padding:10px 14px; color:var(--green); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{exacto_pts[i]}</td></tr>')
-    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:0.8rem;">
+    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--border, unsafe_allow_html=True);margin-bottom:0.8rem;">
         <table style="width:100%; border-collapse:collapse; background:var(--table-bg);">
         <thead><tr style="background:var(--table-head); border-bottom:1px solid var(--border);">
             <th style="padding:10px 14px; color:var(--text3); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:left;">Fase</th>
@@ -308,12 +308,12 @@ def pantalla_acerca():
     st.divider()
     col_info1, col_info2 = st.columns(2)
     with col_info1:
-        st.markdown("""<div style="background:var(--orange-dim); border:1.5px solid var(--orange-border); border-radius:12px; padding:14px 16px;">
+        st.markdown("""<div style="background:var(--orange-dim); border:1.5px solid var(--orange-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:6px;">💰 Puntos de consumo</div>
             <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">El admin puede sumar puntos por consumo en el local o presencia en los partidos.</div>
         </div>""", unsafe_allow_html=True)
     with col_info2:
-        st.markdown("""<div style="background:var(--blue-dim); border:1.5px solid var(--blue-border); border-radius:12px; padding:14px 16px;">
+        st.markdown("""<div style="background:var(--blue-dim); border:1.5px solid var(--blue-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--blue); margin-bottom:6px;">📊 Ranking</div>
             <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">Se actualiza automáticamente. Total = resultados + goles + consumo + especiales.</div>
         </div>""", unsafe_allow_html=True)
