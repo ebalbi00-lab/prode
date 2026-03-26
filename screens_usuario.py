@@ -96,7 +96,7 @@ Orden de la pantalla (cuando grupos ya fue completado):
 import streamlit as st
 import unicodedata
 
-from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, GRUPOS_DEFAULT, bandera
+from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, bandera
 from db import (
     db_get_usuario, db_get_fases, db_get_partidos, db_get_prode,
     db_get_resultado_completo, db_guardar_pred, db_confirmar_prode,
@@ -179,36 +179,11 @@ def _get_pendientes_fases(fases_habilitadas, fases_resumen):
 
 def _get_partidos_por_grupo(partidos):
     grupos = {chr(ord('A') + i): [] for i in range(12)}
-    existentes = {}
-
     for p in partidos:
         idx = int(p.get("idx", -1) or -1)
         if 0 <= idx < 72:
             letra = chr(ord('A') + (idx // 6))
-            partido = dict(p)
-            partido["idx"] = idx
-            grupos.setdefault(letra, []).append(partido)
-            existentes[idx] = partido
-
-    # Completa cualquier hueco de la fase de grupos con el fixture por defecto.
-    # Esto evita que un partido faltante en DB desaparezca del pronóstico del usuario.
-    for letra, defaults in GRUPOS_DEFAULT.items():
-        inicio = (ord(letra) - ord('A')) * 6
-        for j, (local, visita) in enumerate(defaults):
-            idx_global = inicio + j
-            if idx_global not in existentes and local and visita:
-                grupos.setdefault(letra, []).append({
-                    "idx": idx_global,
-                    "fase": "Grupos",
-                    "local": local,
-                    "visita": visita,
-                    "fecha": "",
-                    "hora": "",
-                })
-
-    for letra in grupos:
-        grupos[letra] = sorted(grupos[letra], key=lambda p: int(p.get("idx", -1) or -1))
-
+            grupos.setdefault(letra, []).append(p)
     grupos_con_partidos = [letra for letra, items in grupos.items() if items]
     return grupos, grupos_con_partidos
 
@@ -886,26 +861,41 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 # Mostrar selección actual desde buffer/session/db
                 sel_actual = st.session_state.get(f"esp_elegido_{cat}", elec_w)
                 if sel_actual:
-                    st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0 8px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
                 selecciones_esp[cat] = sel_actual
 
-                # Buscador — solo muestra si no hay selección o si el usuario quiere cambiar
-                if st.session_state.get(f"esp_cambiar_{cat}", not bool(sel_actual)):
-                    busq_w = st.text_input(f"Buscar {label_w}", value="", key=f"esp_busq_{cat}", placeholder="Escribí el nombre (con o sin acento)...")
+                buscando = st.session_state.get(f"esp_cambiar_{cat}", not bool(sel_actual))
+
+                if buscando:
+                    busq_w = st.text_input(
+                        f"🔎 Buscar {label_w}",
+                        key=f"esp_busq_{cat}",
+                        placeholder="Escribí el nombre con o sin acento...",
+                    ).strip()
+
+                    if sel_actual:
+                        if st.button(f"✅ Mantener {label_w} elegido", key=f"esp_mantener_btn_{cat}", use_container_width=True):
+                            st.session_state[f"esp_cambiar_{cat}"] = False
+                            st.rerun()
+
                     if busq_w:
                         filtrados_w = [j for j in lista_w if normalizar(busq_w) in normalizar(j)][:8]
                         if not filtrados_w:
                             st.caption("No se encontró ningún jugador.")
                         else:
+                            st.markdown("<div style='color:var(--text3); font-size:0.78rem; margin:6px 0 4px 0;'>Resultados</div>", unsafe_allow_html=True)
                             for jug in filtrados_w:
-                                if st.button(jug, key=f"jug_{cat}_{jug}", use_container_width=True):
+                                if st.button(f"⚽ {jug}", key=f"jug_{cat}_{jug}", use_container_width=True):
                                     st.session_state[f"esp_elegido_{cat}"] = jug
                                     st.session_state[f"esp_cambiar_{cat}"] = False
+                                    st.session_state[f"esp_busq_{cat}"] = ""
                                     selecciones_esp[cat] = jug
                                     esp_buffer[cat] = jug
                                     st.rerun()
+                    else:
+                        st.caption(f"Escribí para buscar un {label_w}.")
                 else:
-                    if st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}"):
+                    if st.button(f"🔎 Buscar otro {label_w}", key=f"esp_cambiar_btn_{cat}", use_container_width=True):
                         st.session_state[f"esp_cambiar_{cat}"] = True
                         st.rerun()
 
