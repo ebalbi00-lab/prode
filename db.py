@@ -12,7 +12,7 @@ import psycopg2.pool
 import streamlit as st
 from contextlib import contextmanager
 
-from constants import FASES, CATEGORIAS_ESPECIALES, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS
+from constants import FASES, CATEGORIAS_ESPECIALES, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, GRUPOS_DEFAULT
 
 
 # ─── Conexión ────────────────────────────────────────────────────────────────
@@ -368,6 +368,29 @@ def db_toggle_fase(nombre, valor):
 def db_get_partidos(fase):
     with get_db() as conn:
         cur = conn.cursor()
+
+        if fase == "Grupos":
+            cur.execute("SELECT idx, local, visita FROM partidos WHERE fase=%s", (fase,))
+            existentes = {int(r["idx"]): (r.get("local"), r.get("visita")) for r in cur.fetchall()}
+
+            faltantes = []
+            for letra, partidos_grupo in GRUPOS_DEFAULT.items():
+                inicio = "ABCDEFGHIJKL".index(letra) * 6
+                for j, (local, visita) in enumerate(partidos_grupo):
+                    idx_global = inicio + j
+                    if idx_global not in existentes and local and visita:
+                        faltantes.append((fase, idx_global, local, visita, "", ""))
+
+            if faltantes:
+                cur.executemany(
+                    """
+                    INSERT INTO partidos (fase, idx, local, visita, fecha, hora)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (fase, idx) DO NOTHING
+                    """,
+                    faltantes,
+                )
+
         cur.execute("SELECT * FROM partidos WHERE fase=%s ORDER BY idx", (fase,))
         return [dict(r) for r in cur.fetchall()]
 
