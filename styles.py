@@ -12,6 +12,7 @@ PREMIUM_THEME = dict(
     surface="rgba(12, 22, 40, 0.78)",
     surface_elevated="rgba(16, 28, 50, 0.92)",
     surface_soft="rgba(120, 140, 180, 0.08)",
+    surface2="rgba(120, 140, 180, 0.12)",
     text="#f4f7fb",
     text2="#c6d3e6",
     text3="#8da2c0",
@@ -76,6 +77,7 @@ def inject_css():
         --surface: {v['surface']};
         --surface-elevated: {v['surface_elevated']};
         --surface-soft: {v['surface_soft']};
+        --surface2: {v['surface2']};
         --text: {v['text']};
         --text2: {v['text2']};
         --text3: {v['text3']};

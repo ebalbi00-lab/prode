@@ -3,6 +3,13 @@ app.py — Punto de entrada principal.
 """
 import streamlit as st
 
+_original_markdown = st.markdown
+def _safe_markdown(body, *args, **kwargs):
+    if isinstance(body, str) and "<div" in body and "unsafe_allow_html" not in kwargs:
+        kwargs["unsafe_allow_html"] = True
+    return _original_markdown(body, *args, **kwargs)
+st.markdown = _safe_markdown
+
 st.set_page_config(
     page_title="Prode Il Baigo - Mundial 2026",
     layout="wide",

@@ -1248,6 +1248,7 @@ def db_get_cantidad_usuarios_en_linea(minutos=2):
 # ─── Listas dinámicas para especiales ───────────────────────────────────────
 
 def _parse_lista_especiales_texto(raw_text):
+    import re
     texto = str(raw_text or '').replace('\r', '\n')
     partes = []
     for bloque in texto.split('\n'):

@@ -927,10 +927,9 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
             st.rerun()
         return
 
-    # ── Formulario de confirmación ──
-    with st.form("form_confirmar_especiales"):
-        clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
-        confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
+    # ── Confirmación final ──
+    clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
+    confirmar_esp = st.button("🔒 Confirmar todo", type="primary", use_container_width=True, key="btn_confirmar_especiales")
 
     if confirmar_esp:
         if hash_clave(clave_esp_final) != u["clave"]:
