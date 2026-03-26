@@ -883,30 +883,50 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 lista_w = db_get_lista_especiales("arqueros") if cat == "arquero" else db_get_lista_especiales("jugadores")
                 label_w = "arquero" if cat == "arquero" else "jugador"
 
-                # Mostrar selección actual desde buffer/session/db
-                sel_actual = st.session_state.get(f"esp_elegido_{cat}", elec_w)
+                sel_key = f"esp_elegido_{cat}"
+                cambiar_key = f"esp_cambiar_{cat}"
+                input_key = f"esp_busq_{cat}"
+                applied_key = f"esp_busq_aplicada_{cat}"
+
+                sel_actual = st.session_state.get(sel_key, elec_w)
                 if sel_actual:
-                    st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0 8px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
                 selecciones_esp[cat] = sel_actual
 
-                # Buscador — solo muestra si no hay selección o si el usuario quiere cambiar
-                if st.session_state.get(f"esp_cambiar_{cat}", not bool(sel_actual)):
-                    busq_w = st.text_input(f"Buscar {label_w}", value="", key=f"esp_busq_{cat}", placeholder="Escribí el nombre (con o sin acento)...")
-                    if busq_w:
-                        filtrados_w = [j for j in lista_w if normalizar(busq_w) in normalizar(j)][:8]
+                if st.session_state.get(cambiar_key, not bool(sel_actual)):
+                    col_busq, col_btn = st.columns([5, 1])
+                    with col_busq:
+                        st.text_input(
+                            f"Buscar {label_w}",
+                            value=st.session_state.get(input_key, ""),
+                            key=input_key,
+                            placeholder="Escribí el nombre (con o sin acento)...",
+                        )
+                    with col_btn:
+                        st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
+                        if st.button("🔎", key=f"esp_lupa_{cat}", use_container_width=True):
+                            st.session_state[applied_key] = (st.session_state.get(input_key, "") or "").strip()
+
+                    busqueda_aplicada = (st.session_state.get(applied_key, "") or "").strip()
+                    if busqueda_aplicada:
+                        filtrados_w = [j for j in lista_w if normalizar(busqueda_aplicada) in normalizar(j)][:8]
                         if not filtrados_w:
-                            st.caption("No se encontró ningún jugador.")
+                            st.caption(f"No se encontró ningún {label_w}.")
                         else:
                             for jug in filtrados_w:
                                 if st.button(jug, key=f"jug_{cat}_{jug}", use_container_width=True):
-                                    st.session_state[f"esp_elegido_{cat}"] = jug
-                                    st.session_state[f"esp_cambiar_{cat}"] = False
+                                    st.session_state[sel_key] = jug
+                                    st.session_state[cambiar_key] = False
+                                    st.session_state[input_key] = ""
+                                    st.session_state[applied_key] = ""
                                     selecciones_esp[cat] = jug
                                     esp_buffer[cat] = jug
                                     st.rerun()
+                    else:
+                        st.caption(f"Escribí el nombre y tocá la lupa para buscar {label_w}.")
                 else:
                     if st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}"):
-                        st.session_state[f"esp_cambiar_{cat}"] = True
+                        st.session_state[cambiar_key] = True
                         st.rerun()
 
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
