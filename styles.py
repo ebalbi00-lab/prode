@@ -139,6 +139,8 @@ def inject_css():
             radial-gradient(circle at 100% 0%, rgba(139,92,246,0.20), transparent 24%),
             radial-gradient(circle at 50% 100%, rgba(52,211,153,0.10), transparent 26%),
             linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text);
     }}
 
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
@@ -153,6 +155,18 @@ def inject_css():
     [data-testid="stHeader"], header, #MainMenu, footer {{
         visibility: hidden !important;
         height: 0 !important;
+    }}
+
+    html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+    [data-testid="stAppViewBlockContainer"], section.main, section[data-testid="stSidebar"] {{
+        color: var(--text) !important;
+        background-color: var(--bg) !important;
+    }}
+
+    [data-testid="stAppViewContainer"] * ,
+    .stApp * ,
+    section[data-testid="stSidebar"] * {{
+        color: inherit;
     }}
 
     .block-container {{
@@ -255,8 +269,11 @@ def inject_css():
     .stTextArea label,
     .stMultiSelect label,
     .stRadio label,
-    .stCheckbox label {{
+    .stCheckbox label,
+    [data-testid="stWidgetLabel"],
+    [data-testid="stWidgetLabel"] * {{
         color: var(--text2) !important;
+        -webkit-text-fill-color: var(--text2) !important;
         font-size: 0.73rem !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
@@ -430,6 +447,55 @@ def inject_css():
     /* Progress */
     .stProgress > div > div > div > div {{
         background: linear-gradient(90deg, #22d3ee 0%, #8b5cf6 100%) !important;
+    }}
+
+
+
+    /* Defensive contrast fixes for light-mode browsers / mobile webviews */
+    input, textarea, select, button {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }}
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill {{
+        -webkit-text-fill-color: var(--text) !important;
+        -webkit-box-shadow: 0 0 0px 1000px rgba(8,18,32,0.98) inset !important;
+        transition: background-color 9999s ease-out 0s;
+    }}
+
+    .stButton > button p,
+    .stDownloadButton > button p,
+    .stFormSubmitButton > button p,
+    button[role="tab"] p,
+    [role="option"] *,
+    details summary *,
+    .stAlert *,
+    .stDataFrame *,
+    div[data-testid="stTable"] *,
+    [data-testid="stMarkdownContainer"] span,
+    [data-testid="stMarkdownContainer"] strong {{
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }}
+
+    [data-testid="stSelectbox"] [data-baseweb="select"] * ,
+    [data-testid="stMultiSelect"] [data-baseweb="select"] * {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
+
+    [data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, rgba(7,17,31,0.96) 0%, rgba(11,23,41,0.96) 100%) !important;
+        border-right: 1px solid var(--border) !important;
+    }}
+
+    @media (prefers-color-scheme: light) {{
+        html, body {{
+            color-scheme: dark !important;
+        }}
     }}
 
     /* Scrollbar */

@@ -7,6 +7,8 @@ st.markdown("""
 <link rel="apple-touch-icon" href="static/favicon.png">
 <meta name="apple-mobile-web-app-title" content="Prode Il Baigo">
 <meta name="application-name" content="Prode Il Baigo">
+<meta name="theme-color" content="#07111f">
+<meta name="color-scheme" content="dark">
 """, unsafe_allow_html=True)
 
 _original_markdown = st.markdown

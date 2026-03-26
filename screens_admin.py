@@ -836,39 +836,79 @@ def _tab_especiales():
 
 
 
-    with st.form("form_admin_esp_todos"):
-        selecciones_adm = {}
-        for cat, info in CATEGORIAS_ESPECIALES.items():
-            resultado_actual = db_get_resultado_especial(cat)
-            col_tit, col_pts = st.columns([4, 1])
-            col_tit.markdown(f"**{info['label']}**")
-            col_pts.markdown(f"<div style='text-align:right; color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.1rem;'>+{info['puntos']} pts</div>", unsafe_allow_html=True)
-            if resultado_actual:
-                st.markdown(f"<div style='color:var(--green); font-size:0.82rem; margin-bottom:2px;'>Guardado: <b>{resultado_actual}</b></div>", unsafe_allow_html=True)
+    selecciones_adm = {}
+    for cat, info in CATEGORIAS_ESPECIALES.items():
+        resultado_actual = db_get_resultado_especial(cat)
+        col_tit, col_pts = st.columns([4, 1])
+        col_tit.markdown(f"**{info['label']}**")
+        col_pts.markdown(f"<div style='text-align:right; color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.1rem;'>+{info['puntos']} pts</div>", unsafe_allow_html=True)
+        if resultado_actual:
+            st.markdown(f"<div style='color:var(--green); font-size:0.82rem; margin-bottom:2px;'>Guardado: <b>{resultado_actual}</b></div>", unsafe_allow_html=True)
 
-            if cat == "campeon":
-                ops_adm = [f"{bandera(e)} {e}" for e in equipos_adm]
-                d2n_adm = {f"{bandera(e)} {e}": e for e in equipos_adm}
-                idx_adm = next((i for i, e in enumerate(equipos_adm) if e == resultado_actual), 0)
-                sel_adm = st.selectbox("Nuevo campeón real", ops_adm, index=idx_adm, key=f"adm_sel_{cat}")
-                selecciones_adm[cat] = d2n_adm.get(sel_adm, sel_adm)
-            else:
-                lista_adm = db_get_lista_especiales('arqueros') if cat == 'arquero' else db_get_lista_especiales('jugadores')
-                label_adm = "arquero" if cat == "arquero" else "jugador"
-                busq_adm = st.text_input(f"Buscar {label_adm}", value="", key=f"adm_busq_{cat}", placeholder="Escribí el nombre...")
-                filtrados_adm = [j for j in lista_adm if _norm(busq_adm) in _norm(j)] if busq_adm else lista_adm
-                opciones_adm = ["— Seleccioná —"] + filtrados_adm
-                if resultado_actual and resultado_actual in filtrados_adm:
-                    idx_adm = filtrados_adm.index(resultado_actual) + 1
+        if cat == "campeon":
+            ops_adm = [f"{bandera(e)} {e}" for e in equipos_adm]
+            d2n_adm = {f"{bandera(e)} {e}": e for e in equipos_adm}
+            idx_adm = next((i for i, e in enumerate(equipos_adm) if e == resultado_actual), 0)
+            sel_adm = st.selectbox("Nuevo campeón real", ops_adm, index=idx_adm, key=f"adm_sel_{cat}")
+            selecciones_adm[cat] = d2n_adm.get(sel_adm, sel_adm)
+        else:
+            lista_adm = db_get_lista_especiales('arqueros') if cat == 'arquero' else db_get_lista_especiales('jugadores')
+            label_adm = "arquero" if cat == "arquero" else "jugador"
+
+            sel_key = f"adm_elegido_{cat}"
+            cambiar_key = f"adm_cambiar_{cat}"
+            input_key = f"adm_busq_{cat}"
+            applied_key = f"adm_busq_aplicada_{cat}"
+            reset_key = f"adm_busq_reset_{cat}"
+
+            if st.session_state.pop(reset_key, False):
+                st.session_state[input_key] = ""
+                st.session_state[applied_key] = ""
+
+            sel_actual = st.session_state.get(sel_key, resultado_actual)
+            if sel_actual:
+                st.markdown(f"<div style='color:var(--green); font-size:0.88rem; margin:4px 0 8px 0;'>✅ Elegido: <b>{sel_actual}</b></div>", unsafe_allow_html=True)
+            selecciones_adm[cat] = sel_actual
+
+            if st.session_state.get(cambiar_key, not bool(sel_actual)):
+                col_busq, col_btn = st.columns([5, 1])
+                with col_busq:
+                    st.text_input(
+                        f"Buscar {label_adm}",
+                        key=input_key,
+                        placeholder="Escribí el nombre (con o sin acento)...",
+                    )
+                with col_btn:
+                    st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
+                    if st.button("🔎", key=f"adm_lupa_{cat}", use_container_width=True):
+                        st.session_state[applied_key] = (st.session_state.get(input_key, "") or "").strip()
+                        st.rerun()
+
+                busqueda_aplicada = (st.session_state.get(applied_key, "") or "").strip()
+                if busqueda_aplicada:
+                    filtrados_adm = [j for j in lista_adm if _norm(busqueda_aplicada) in _norm(j)][:8]
+                    if not filtrados_adm:
+                        st.caption(f"No se encontró ningún {label_adm}.")
+                    else:
+                        for jug in filtrados_adm:
+                            if st.button(jug, key=f"adm_jug_{cat}_{jug}", use_container_width=True):
+                                st.session_state[sel_key] = jug
+                                st.session_state[cambiar_key] = False
+                                st.session_state[reset_key] = True
+                                selecciones_adm[cat] = jug
+                                st.rerun()
                 else:
-                    idx_adm = 0
-                sel_adm = st.selectbox(f"Nuevo {label_adm} real", opciones_adm, index=idx_adm, key=f"adm_sel_{cat}")
-                selecciones_adm[cat] = sel_adm if sel_adm != "— Seleccioná —" else None
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+                    st.caption(f"Escribí el nombre y tocá la lupa para buscar {label_adm}.")
+            else:
+                if st.button(f"✏️ Cambiar {label_adm}", key=f"adm_cambiar_btn_{cat}"):
+                    st.session_state[cambiar_key] = True
+                    st.session_state[reset_key] = True
+                    st.rerun()
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-        st.divider()
-        pw_esp_adm     = st.text_input("🔒 Tu contraseña de admin", type="password", key="pw_guardar_esp")
-        guardar_todos_esp = st.form_submit_button("💾 Guardar todos y aplicar puntos", type="primary")
+    st.divider()
+    pw_esp_adm = st.text_input("🔒 Tu contraseña de admin", type="password", key="pw_guardar_esp")
+    guardar_todos_esp = st.button("💾 Guardar todos y aplicar puntos", type="primary", use_container_width=True)
 
     if guardar_todos_esp:
         admin_esp = db_get_usuario(st.session_state.usuario)
@@ -879,7 +919,8 @@ def _tab_especiales():
             with st.spinner("Guardando..."):
                 for cat, ganador in selecciones_adm.items():
                     if ganador:
-                        db_guardar_resultado_especial(cat, ganador); guardados += 1
+                        db_guardar_resultado_especial(cat, ganador)
+                        guardados += 1
                 if guardados:
                     db_calcular_puntos_especiales()
             st.session_state["msg_esp_adm"] = f"✅ {guardados} resultado(s) guardado(s) y puntos aplicados." if guardados else "⚠️ No seleccionaste ningún ganador."
