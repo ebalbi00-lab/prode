@@ -368,6 +368,8 @@ def _tab_partidos():
         inicio = "ABCDEFGHIJKL".index(letra) * 6
         existentes_map = {p["idx"]: p for p in partidos_cargados}
         defaults = GRUPOS_DEFAULT.get(letra, [("", "")] * 6)
+        idxs_grupo = list(range(inicio, inicio + 6))
+        faltantes_idx = [idx for idx in idxs_grupo if idx not in existentes_map]
 
         equipos_existentes = db_get_equipos_grupos()
         equipos_base = sorted(
@@ -379,6 +381,33 @@ def _tab_partidos():
             key=lambda x: str(x).lower()
         )
 
+        st.markdown("### Estado del grupo")
+        if faltantes_idx:
+            nums = ", ".join(str((idx - inicio) + 1) for idx in faltantes_idx)
+            st.warning(
+                f"Hay {len(faltantes_idx)} partido(s) de Grupo {letra} que NO están guardados en la base: {nums}. "
+                "Admin puede mostrarlos con valores por defecto, pero en Pronósticos no aparecen hasta guardarlos de verdad."
+            )
+        else:
+            st.success(f"Los 6 partidos del Grupo {letra} están guardados en la base.")
+
+        if st.button(f"Completar faltantes de Grupo {letra} con defaults", key=f"hidratar_grupo_{letra}", use_container_width=True):
+            guardados = 0
+            with st.spinner(f"Completando faltantes de Grupo {letra}..."):
+                for j, idx_global in enumerate(idxs_grupo):
+                    if idx_global in existentes_map:
+                        continue
+                    loc, vis = defaults[j]
+                    if loc and vis:
+                        db_guardar_partido("Grupos", idx_global, loc, vis)
+                        guardados += 1
+            st.session_state["msg_grupos"] = (
+                f"✅ Se completaron {guardados} partido(s) faltante(s) del Grupo {letra}."
+                if guardados else f"ℹ️ El Grupo {letra} ya estaba completo."
+            )
+            st.rerun()
+
+        st.divider()
         st.markdown("### Editar nombres de equipos")
         st.caption("Esto reemplaza el nombre en partidos y selecciones especiales donde ya exista.")
         c_ren1, c_ren2 = st.columns([1.2, 1.2])
@@ -404,8 +433,6 @@ def _tab_partidos():
             else:
                 db_renombrar_equipo_global(equipo_actual, nombre_limpio)
 
-                # No tocar valores de widgets ya instanciados en este mismo render.
-                # Se limpian las keys y el rerun reconstruye todo con el nombre nuevo.
                 for k in [f"ren_equipo_{letra}", f"ren_equipo_nuevo_{letra}"]:
                     if k in st.session_state:
                         del st.session_state[k]
@@ -415,13 +442,25 @@ def _tab_partidos():
 
         st.divider()
 
-        with st.form(f"form_grupo_{letra}"):
-            nuevos = []
+        seed_key = "admin_grupo_seed"
+        if st.session_state.get(seed_key) != letra:
             for j in range(6):
                 idx_global = inicio + j
                 prev = existentes_map.get(idx_global, {})
                 local_actual = prev.get("local", defaults[j][0])
                 visita_actual = prev.get("visita", defaults[j][1])
+                st.session_state[f"gl_{letra}_{j}"] = local_actual
+                st.session_state[f"gv_{letra}_{j}"] = visita_actual
+            st.session_state[seed_key] = letra
+
+        with st.form(f"form_grupo_{letra}"):
+            nuevos = []
+            for j in range(6):
+                idx_global = inicio + j
+                prev = existentes_map.get(idx_global, {})
+                persistido = idx_global in existentes_map
+                local_actual = st.session_state.get(f"gl_{letra}_{j}", prev.get("local", defaults[j][0]))
+                visita_actual = st.session_state.get(f"gv_{letra}_{j}", prev.get("visita", defaults[j][1]))
 
                 opciones_local = equipos_base[:]
                 if local_actual and local_actual not in opciones_local:
@@ -432,6 +471,14 @@ def _tab_partidos():
                 if visita_actual and visita_actual not in opciones_visita:
                     opciones_visita.append(visita_actual)
                 opciones_visita = sorted(set(opciones_visita), key=lambda x: str(x).lower())
+
+                badge = "✅ Guardado" if persistido else "⚠️ Solo visible por default"
+                color = "var(--green)" if persistido else "var(--orange)"
+                st.markdown(
+                    f"<div style='font-size:0.75rem; margin:0.8rem 0 0.35rem 0; color:{color}; font-weight:700;'>"
+                    f"Partido {j + 1} · idx {idx_global} · {badge}</div>",
+                    unsafe_allow_html=True,
+                )
 
                 c1, c2 = st.columns(2)
                 l = c1.selectbox(
@@ -456,14 +503,14 @@ def _tab_partidos():
 
         if guardar:
             errores = [f"Partido {((idx_global - inicio) + 1)}: mismo equipo de local y visitante" for idx_global, l, v in nuevos if l and v and l == v]
-            if errores:
-                st.error("⚠️ " + " · ".join(errores))
+            incompletos = [f"Partido {((idx_global - inicio) + 1)}: faltan equipos" for idx_global, l, v in nuevos if not l or not v]
+            if errores or incompletos:
+                st.error("⚠️ " + " · ".join(errores + incompletos))
             else:
                 with st.spinner(f"Guardando Grupo {letra}..."):
                     for idx_global, l, v in nuevos:
-                        if l and v:
-                            db_guardar_partido("Grupos", idx_global, l, v)
-                st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado."
+                        db_guardar_partido("Grupos", idx_global, l, v)
+                st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado completo en base." 
                 st.rerun()
 
         if guardar_todos:
