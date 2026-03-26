@@ -887,6 +887,11 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 cambiar_key = f"esp_cambiar_{cat}"
                 input_key = f"esp_busq_{cat}"
                 applied_key = f"esp_busq_aplicada_{cat}"
+                reset_key = f"esp_busq_reset_{cat}"
+
+                if st.session_state.pop(reset_key, False):
+                    st.session_state[input_key] = ""
+                    st.session_state[applied_key] = ""
 
                 sel_actual = st.session_state.get(sel_key, elec_w)
                 if sel_actual:
@@ -898,7 +903,6 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                     with col_busq:
                         st.text_input(
                             f"Buscar {label_w}",
-                            value=st.session_state.get(input_key, ""),
                             key=input_key,
                             placeholder="Escribí el nombre (con o sin acento)...",
                         )
@@ -906,6 +910,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                         st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
                         if st.button("🔎", key=f"esp_lupa_{cat}", use_container_width=True):
                             st.session_state[applied_key] = (st.session_state.get(input_key, "") or "").strip()
+                            st.rerun()
 
                     busqueda_aplicada = (st.session_state.get(applied_key, "") or "").strip()
                     if busqueda_aplicada:
@@ -917,8 +922,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                                 if st.button(jug, key=f"jug_{cat}_{jug}", use_container_width=True):
                                     st.session_state[sel_key] = jug
                                     st.session_state[cambiar_key] = False
-                                    st.session_state[input_key] = ""
-                                    st.session_state[applied_key] = ""
+                                    st.session_state[reset_key] = True
                                     selecciones_esp[cat] = jug
                                     esp_buffer[cat] = jug
                                     st.rerun()
@@ -927,6 +931,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 else:
                     if st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}"):
                         st.session_state[cambiar_key] = True
+                        st.session_state[reset_key] = True
                         st.rerun()
 
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
