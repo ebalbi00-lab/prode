@@ -915,7 +915,9 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
     if "msg_esp" in st.session_state:
         st.success(st.session_state.pop("msg_esp"))
 
-    if st.button("💾 Guardar grupos y especiales", key="guardar_grupos_especiales", type="primary", use_container_width=True):
+    clave_especiales = st.text_input("🔒 Confirmá los especiales con tu contraseña", type="password", key="pw_confirmar_especiales")
+
+    if st.button("💾 Guardar grupos y confirmar especiales", key="guardar_grupos_especiales", type="primary", use_container_width=True):
         esp_confirmados = especiales_usuario
         sin_elegir = [
             info["label"]
@@ -924,6 +926,10 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
         ]
         if sin_elegir:
             st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
+        elif not clave_especiales:
+            st.error("⚠️ Tenés que ingresar tu contraseña para confirmar los especiales.")
+        elif not u or u.get("clave") != hash_clave(clave_especiales):
+            st.error("❌ Contraseña incorrecta.")
         else:
             with st.spinner("Guardando pronósticos..."):
                 _flush_pred_buffer(username, fase)
@@ -931,13 +937,14 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                     esp_cat = esp_confirmados.get(cat) or {}
                     if elec and not esp_cat.get("confirmado"):
                         db_guardar_especial(username, cat, elec)
+                        db_confirmar_especial(username, cat)
                 _get_special_buffer(username).clear()
             st.session_state["wizard_grupos_completo"] = True
-            st.session_state["msg_grupos"] = "✅ Grupos y especiales guardados. Podés editarlos hasta que el admin cierre la fase."
+            st.session_state["msg_grupos"] = "✅ Partidos guardados y especiales confirmados. Los partidos se pueden seguir editando hasta que el admin cierre la fase."
             db_set_config(f"wizard_pos_{username}", "0")
             st.rerun()
 
-    st.caption("No hace falta confirmación final. Podés volver a editar todo mientras la fase siga abierta.")
+    st.caption("Los partidos no requieren confirmación uno por uno. Los especiales sí se confirman con contraseña.")
 
     esp_buffer = _get_special_buffer(username)
     for cat, elec in selecciones_esp.items():

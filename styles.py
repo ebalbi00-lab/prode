@@ -380,6 +380,56 @@ def inject_css():
         box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
     }}
 
+
+    /* Icon buttons inside inputs / toolbars */
+    .stNumberInput button,
+    .stPasswordInput button,
+    [data-testid="stNumberInput"] button,
+    [data-testid="stPasswordInput"] button,
+    [data-baseweb="input"] button,
+    [data-baseweb="base-input"] button {{
+        color: var(--text) !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid var(--border) !important;
+    }}
+
+    .stNumberInput button:hover,
+    .stPasswordInput button:hover,
+    [data-testid="stNumberInput"] button:hover,
+    [data-testid="stPasswordInput"] button:hover,
+    [data-baseweb="input"] button:hover,
+    [data-baseweb="base-input"] button:hover {{
+        color: var(--text) !important;
+        border-color: var(--accent) !important;
+        background: rgba(110,231,255,0.10) !important;
+    }}
+
+    .stNumberInput button svg,
+    .stPasswordInput button svg,
+    [data-testid="stNumberInput"] button svg,
+    [data-testid="stPasswordInput"] button svg,
+    [data-baseweb="input"] button svg,
+    [data-baseweb="base-input"] button svg,
+    [data-testid="stToolbar"] *,
+    [data-testid="stAppToolbar"] *,
+    [data-testid="stStatusWidget"] *,
+    [data-testid="stDecoration"] *,
+    [class*="toolbar"] *,
+    [class*="status"] * {{
+        color: var(--text) !important;
+        fill: currentColor !important;
+        stroke: currentColor !important;
+        -webkit-text-fill-color: currentColor !important;
+    }}
+
+    [data-testid="stToolbar"],
+    [data-testid="stAppToolbar"],
+    [data-testid="stStatusWidget"],
+    [class*="toolbar"],
+    [class*="status"] {{
+        color: var(--text) !important;
+    }}
+
     /* Alerts */
     [data-testid="stSuccess"],
     [data-testid="stInfo"],

@@ -275,8 +275,8 @@ def pantalla_acerca():
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
                     color:var(--green); margin-bottom:6px;">⚽ ¿Cómo funciona?</div>
         <div style="color:var(--text2); font-size:0.92rem; line-height:1.75;">
-            Pronosticás el resultado de cada partido <strong>antes de que empiece</strong>.<br>
-            Una vez que arranca, tu pronóstico queda bloqueado. Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
+            Pronosticás el resultado de cada partido <strong>antes de que el administrador cierre la fase</strong>.<br>
+            Podés modificar tus pronósticos todas las veces que quieras mientras la fase siga abierta. Se guardan automáticamente mientras navegás.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -358,8 +358,8 @@ def pantalla_acerca():
     """, unsafe_allow_html=True)
 
     st.divider()
-    with st.expander("¿Puedo modificar mi pronóstico después de confirmarlo?"):
-        st.write("No. Una vez que confirmás con tu contraseña, el pronóstico queda bloqueado definitivamente.")
+    with st.expander("¿Puedo modificar mi pronóstico después de guardarlo?"):
+        st.write("Sí. Los partidos se pueden seguir editando hasta que el administrador cierre la fase. Los especiales quedan confirmados cuando los validás con tu contraseña.")
     with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
         st.write("No sumás puntos para esa fase.")
     with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
