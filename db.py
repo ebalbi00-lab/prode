@@ -5,6 +5,7 @@ Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 import datetime
 import hashlib
 import os
+import zoneinfo
 
 import psycopg2
 import psycopg2.extras
@@ -333,9 +334,11 @@ def db_resetear_todos_puntajes():
         cur.execute("DELETE FROM prodes")
         cur.execute("DELETE FROM resultados")
         cur.execute("DELETE FROM consumo_log")
+        cur.execute("ALTER SEQUENCE consumo_log_id_seq RESTART WITH 1")
         cur.execute("DELETE FROM especiales")
         cur.execute("DELETE FROM especiales_resultados")
         cur.execute("DELETE FROM actividad_feed")
+        cur.execute("ALTER SEQUENCE actividad_feed_id_seq RESTART WITH 1")
         cur.execute("DELETE FROM actividad_usuarios")
         cur.execute("DELETE FROM config WHERE clave LIKE 'wizard_pos_%'")
     st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
@@ -661,7 +664,7 @@ def db_sumar_consumo(username, puntos, descripcion=""):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE usuarios SET consumo=consumo+%s WHERE username=%s", (puntos, username))
-        fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        fecha = datetime.datetime.now(zoneinfo.ZoneInfo("America/Argentina/Buenos_Aires")).strftime("%Y-%m-%d %H:%M")
         cur.execute(
             "INSERT INTO consumo_log (username, puntos, descripcion, fecha) VALUES (%s, %s, %s, %s)",
             (username, puntos, descripcion, fecha)
@@ -677,11 +680,15 @@ def db_sumar_consumo(username, puntos, descripcion=""):
 
 
 def db_eliminar_consumo_log(log_id):
+    username_borrado = None
+    puntos_borrados = 0
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM consumo_log WHERE id=%s", (log_id,))
         row = cur.fetchone()
         if row:
+            username_borrado = row["username"]
+            puntos_borrados = row["puntos"]
             cur.execute(
                 "UPDATE usuarios SET consumo=GREATEST(0, consumo-%s) WHERE username=%s",
                 (row["puntos"], row["username"])
@@ -692,6 +699,8 @@ def db_eliminar_consumo_log(log_id):
         db_get_consumo_log.clear()
     except Exception:
         pass
+    if username_borrado:
+        db_feed_event(f"🗑️ Se eliminó registro de consumo de {username_borrado} ({puntos_borrados} pts)", "consumo")
 
 
 @st.cache_data(ttl=20)
