@@ -73,9 +73,18 @@ def pantalla_login():
     if "login_error" in st.session_state:
         st.error(st.session_state.pop("login_error"))
 
+    if "show_login_password" not in st.session_state:
+        st.session_state.show_login_password = False
+
     with st.form("form_login"):
         usuario = st.text_input("Usuario", placeholder="tu_usuario")
-        clave = st.text_input("Clave", type="password", placeholder="••••••••")
+        clave = st.text_input(
+            "Clave",
+            type="default" if st.session_state.show_login_password else "password",
+            placeholder="••••••••",
+            help="Podés mostrar u ocultar la clave con el switch de abajo.",
+        )
+        st.toggle("Mostrar clave", key="show_login_password")
         col1, col2 = st.columns(2)
         ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
         registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
@@ -169,10 +178,14 @@ def pantalla_registro_cuenta():
     </div>
     """, unsafe_allow_html=True)
 
+    if "show_reg_password" not in st.session_state:
+        st.session_state.show_reg_password = False
+
     with st.form("form_registro_cuenta"):
         usuario   = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
-        clave     = st.text_input("Clave (mínimo 4 caracteres)", type="password")
-        confirmar = st.text_input("Confirmar clave", type="password")
+        clave     = st.text_input("Clave (mínimo 4 caracteres)", type="default" if st.session_state.show_reg_password else "password")
+        confirmar = st.text_input("Confirmar clave", type="default" if st.session_state.show_reg_password else "password")
+        st.toggle("Mostrar claves", key="show_reg_password")
         st.markdown(f"""
         <div style="background:linear-gradient(135deg, rgba(103,190,255,0.12), rgba(47,126,247,0.10)); border:1.5px solid var(--blue-border);
                     border-radius:10px; padding:12px 16px; margin:0.5rem 0;">

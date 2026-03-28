@@ -703,6 +703,26 @@ def inject_css():
         background: var(--input-bg) !important;
     }}
 
+
+    .stToggle label,
+    .stCheckbox label {
+        color: var(--text2) !important;
+        font-weight: 600 !important;
+    }
+
+    .stToggle [data-baseweb="checkbox"] > div,
+    .stCheckbox [data-baseweb="checkbox"] > div {
+        background: rgba(103,190,255,0.10) !important;
+        border-color: var(--blue-border) !important;
+    }
+
+    .stToggle [data-baseweb="checkbox"] input:checked + div,
+    .stCheckbox [data-baseweb="checkbox"] input:checked + div {
+        background: linear-gradient(135deg, #2f7ef7 0%, #1459c7 100%) !important;
+        border-color: rgba(103,190,255,0.60) !important;
+    }
+
+
     @media (max-width: 768px) {{
         .block-container {{
             padding-top: 0.9rem !important;
