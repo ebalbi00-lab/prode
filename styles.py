@@ -554,10 +554,10 @@ def inject_css():
         height: 40px !important;
         min-height: 40px !important;
         border-radius: 12px !important;
-        background: linear-gradient(135deg, rgba(219,238,255,0.98) 0%, rgba(175,218,255,0.98) 52%, rgba(103,190,255,0.98) 100%) !important;
-        background-color: rgba(175,218,255,0.98) !important;
-        border: 1px solid rgba(47,126,247,0.34) !important;
-        box-shadow: 0 10px 22px rgba(10,33,66,0.18) !important;
+        background: linear-gradient(135deg, #2f7ef7 0%, #1459c7 100%) !important;
+        background-color: #1459c7 !important;
+        border: 1px solid rgba(103,190,255,0.60) !important;
+        box-shadow: 0 10px 22px rgba(10,33,66,0.24) !important;
         padding: 0 !important;
         margin: 0 !important;
         outline: none !important;
@@ -571,15 +571,34 @@ def inject_css():
     .stPasswordInput [data-baseweb="base-input"] button:focus,
     .stPasswordInput button:focus,
     .stPasswordInput button[kind="secondary"]:focus {{
-        background: linear-gradient(135deg, rgba(233,244,255,0.99) 0%, rgba(196,226,255,0.99) 50%, rgba(124,186,255,0.98) 100%) !important;
-        border-color: #2f7ef7 !important;
-        box-shadow: 0 14px 26px rgba(10,33,66,0.22), 0 0 0 1px rgba(47,126,247,0.16) inset !important;
+        background: linear-gradient(135deg, #4895ff 0%, #1b67d9 100%) !important;
+        border-color: #8fc9ff !important;
+        box-shadow: 0 14px 26px rgba(10,33,66,0.28), 0 0 0 1px rgba(143,201,255,0.22) inset !important;
     }}
 
     .stPasswordInput button svg,
     .stPasswordInput button[kind="secondary"] svg,
     .stPasswordInput [data-baseweb="input"] button svg,
-    .stPasswordInput [data-baseweb="base-input"] button svg,
+    .stPasswordInput [data-baseweb="base-input"] button svg {{
+        width: 20px !important;
+        height: 20px !important;
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+        opacity: 1 !important;
+        filter: drop-shadow(0 1px 1px rgba(4,17,31,0.25)) !important;
+    }}
+
+    .stPasswordInput button svg *,
+    .stPasswordInput button[kind="secondary"] svg *,
+    .stPasswordInput [data-baseweb="input"] button svg *,
+    .stPasswordInput [data-baseweb="base-input"] button svg * {{
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+        opacity: 1 !important;
+    }}
+
     .stNumberInput button svg,
     .stNumberInput [data-baseweb="input"] button svg,
     .stNumberInput [data-baseweb="base-input"] button svg {{
@@ -600,7 +619,7 @@ def inject_css():
     .stPasswordInput button[kind="secondary"]:hover {{
         border-color: #2f7ef7 !important;
         box-shadow: 0 14px 26px rgba(10,33,66,0.22), 0 0 0 1px rgba(47,126,247,0.16) inset !important;
-        background: linear-gradient(135deg, rgba(233,244,255,0.98) 0%, rgba(191,223,255,0.98) 48%, rgba(124,186,255,0.95) 100%) !important;
+        background: linear-gradient(135deg, #4895ff 0%, #1b67d9 100%) !important;
     }}
 
     [data-testid="stSpinner"],
@@ -634,6 +653,16 @@ def inject_css():
     }}
 
     [data-testid="stHorizontalBlock"] > div {{ gap: 0.9rem !important; }}
+
+
+
+    .stPasswordInput [data-baseweb="input"] > div:last-child button,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child button,
+    .stPasswordInput [data-baseweb="input"] > div:last-child button:hover,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child button:hover {{
+        background: linear-gradient(135deg, #2f7ef7 0%, #1459c7 100%) !important;
+        color: #ffffff !important;
+    }}
 
     @media (max-width: 768px) {{
         .block-container {{
