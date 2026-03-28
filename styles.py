@@ -2,6 +2,7 @@
 styles.py — Tema visual premium unificado para toda la app.
 """
 import streamlit as st
+from string import Template
 
 PREMIUM_THEME = dict(
     scheme="dark",
@@ -67,59 +68,59 @@ def render_tema_boton():
 
 def inject_css():
     v = PREMIUM_THEME
-    st.markdown(f"""
+    css = Template(r"""
     <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Bebas+Neue&display=swap");
     :root {{
-        color-scheme: {v['scheme']};
-        --bg: {v['bg']};
-        --bg2: {v['bg2']};
-        --bg3: {v['bg3']};
-        --surface: {v['surface']};
-        --surface-elevated: {v['surface_elevated']};
-        --surface-soft: {v['surface_soft']};
-        --surface2: {v['surface2']};
-        --text: {v['text']};
-        --text2: {v['text2']};
-        --text3: {v['text3']};
-        --border: {v['border']};
-        --border2: {v['border2']};
-        --hover-border: {v['hover_border']};
-        --shadow-clr: {v['shadow']};
-        --input-bg: {v['input_bg']};
-        --input-text: {v['input_text']};
-        --table-bg: {v['table_bg']};
-        --table-head: {v['table_head']};
-        --table-row: {v['table_row']};
-        --accent: {v['accent']};
-        --accent-2: {v['accent_2']};
-        --accent-3: {v['accent_3']};
-        --gold: {v['gold']};
-        --gold2: {v['gold2']};
-        --gold-dim: {v['gold_dim']};
-        --gold-glow: {v['gold_glow']};
-        --gold-border: {v['gold_border']};
-        --blue: {v['blue']};
-        --blue2: {v['blue2']};
-        --blue-dim: {v['blue_dim']};
-        --blue-border: {v['blue_border']};
-        --cyan: {v['cyan']};
-        --cyan-dim: {v['cyan_dim']};
-        --cyan-border: {v['cyan_border']};
-        --red: {v['red']};
-        --red-dim: {v['red_dim']};
-        --red-border: {v['red_border']};
-        --orange: {v['orange']};
-        --orange-dim: {v['orange_dim']};
-        --orange-border: {v['orange_border']};
-        --green: {v['green']};
-        --green2: {v['green2']};
-        --green-dim: {v['green_dim']};
-        --green-border: {v['green_border']};
-        --green-glow: {v['green_glow']};
-        --success: {v['success']};
-        --warning: {v['warning']};
-        --danger: {v['danger']};
+        color-scheme: $scheme;
+        --bg: $bg;
+        --bg2: $bg2;
+        --bg3: $bg3;
+        --surface: $surface;
+        --surface-elevated: $surface_elevated;
+        --surface-soft: $surface_soft;
+        --surface2: $surface2;
+        --text: $text;
+        --text2: $text2;
+        --text3: $text3;
+        --border: $border;
+        --border2: $border2;
+        --hover-border: $hover_border;
+        --shadow-clr: $shadow;
+        --input-bg: $input_bg;
+        --input-text: $input_text;
+        --table-bg: $table_bg;
+        --table-head: $table_head;
+        --table-row: $table_row;
+        --accent: $accent;
+        --accent-2: $accent_2;
+        --accent-3: $accent_3;
+        --gold: $gold;
+        --gold2: $gold2;
+        --gold-dim: $gold_dim;
+        --gold-glow: $gold_glow;
+        --gold-border: $gold_border;
+        --blue: $blue;
+        --blue2: $blue2;
+        --blue-dim: $blue_dim;
+        --blue-border: $blue_border;
+        --cyan: $cyan;
+        --cyan-dim: $cyan_dim;
+        --cyan-border: $cyan_border;
+        --red: $red;
+        --red-dim: $red_dim;
+        --red-border: $red_border;
+        --orange: $orange;
+        --orange-dim: $orange_dim;
+        --orange-border: $orange_border;
+        --green: $green;
+        --green2: $green2;
+        --green-dim: $green_dim;
+        --green-border: $green_border;
+        --green-glow: $green_glow;
+        --success: $success;
+        --warning: $warning;
+        --danger: $danger;
         --radius: 18px;
         --radius-sm: 14px;
         --radius-lg: 26px;
@@ -133,7 +134,7 @@ def inject_css():
     }}
 
     html, body {{
-        background: {v['bg_html']} !important;
+        background: $bg_html !important;
         color: var(--text) !important;
     }}
 
@@ -714,4 +715,6 @@ def inject_css():
     ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
     </style>
-    """, unsafe_allow_html=True)
+    """).safe_substitute(**v)
+    css = css.replace("{{", "{").replace("}}", "}")
+    st.markdown(css, unsafe_allow_html=True)
