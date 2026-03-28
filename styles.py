@@ -506,36 +506,57 @@ def inject_css():
     ::-webkit-scrollbar-thumb {{ background: rgba(128,165,214,0.30); border-radius: 999px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(103,190,255,0.40); }}
 
+    .stPasswordInput button,
     .stPasswordInput button[kind="secondary"],
     .stPasswordInput button[kind="secondary"]:hover,
     .stPasswordInput button[kind="secondary"]:focus,
     .stPasswordInput button[kind="secondary"]:active,
+    .stPasswordInput [data-baseweb="input"] button,
+    .stPasswordInput [data-baseweb="base-input"] button,
+    .stPasswordInput [aria-label*="password" i],
+    .stPasswordInput [title*="password" i],
+    .stPasswordInput [aria-label*="contraseña" i],
+    .stPasswordInput [title*="contraseña" i],
     .stNumberInput button,
     .stNumberInput button:hover,
     .stNumberInput button:focus,
-    .stNumberInput button:active {{
-        background: linear-gradient(135deg, rgba(103,190,255,0.18) 0%, rgba(47,126,247,0.22) 100%) !important;
+    .stNumberInput button:active,
+    .stNumberInput [data-baseweb="input"] button,
+    .stNumberInput [data-baseweb="base-input"] button {{
+        background: linear-gradient(135deg, rgba(103,190,255,0.22) 0%, rgba(47,126,247,0.30) 100%) !important;
+        background-color: rgba(47,126,247,0.26) !important;
         color: var(--text) !important;
-        border: 1px solid rgba(103,190,255,0.22) !important;
+        -webkit-text-fill-color: var(--text) !important;
+        border: 1px solid rgba(103,190,255,0.28) !important;
         border-radius: 12px !important;
         box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
         outline: none !important;
         min-height: 36px !important;
         min-width: 36px !important;
+        padding: 0 !important;
     }}
 
+    .stPasswordInput button svg,
     .stPasswordInput button[kind="secondary"] svg,
-    .stNumberInput button svg {{
+    .stPasswordInput [data-baseweb="input"] button svg,
+    .stPasswordInput [data-baseweb="base-input"] button svg,
+    .stNumberInput button svg,
+    .stNumberInput [data-baseweb="input"] button svg,
+    .stNumberInput [data-baseweb="base-input"] button svg {{
         color: var(--blue2) !important;
         fill: currentColor !important;
+        stroke: currentColor !important;
     }}
 
     .stNumberInput > div > div,
-    .stPasswordInput > div > div {{
+    .stPasswordInput > div > div,
+    .stPasswordInput [data-baseweb="base-input"],
+    .stNumberInput [data-baseweb="base-input"] {{
         gap: 0.35rem !important;
     }}
 
     .stNumberInput button:hover,
+    .stPasswordInput button:hover,
     .stPasswordInput button[kind="secondary"]:hover {{
         border-color: var(--accent) !important;
         box-shadow: 0 14px 26px rgba(0,0,0,0.20), 0 0 0 1px rgba(103,190,255,0.10) inset !important;

@@ -88,9 +88,9 @@ def pantalla_ranking():
         <div style="position:relative; z-index:1; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
                     color:var(--text3); margin-bottom:0.35rem;">Il Baigo — Mundial 2026</div>
         <div style="position:relative; z-index:1; font-family:Outfit,Inter,sans-serif; font-size:3rem; font-weight:800; letter-spacing:0.06em;
-                    background:linear-gradient(135deg,#eaf5ff 0%,#67beff 44%,#2f7ef7 100%);
+                    background:linear-gradient(135deg,#fff7cc 0%,#f8d66d 38%,#d4a73b 70%,#fff0a8 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.05; text-transform:uppercase;">Ranking</div>
+                    background-clip:text; line-height:1.05; text-transform:uppercase; filter:drop-shadow(0 8px 22px rgba(212,167,59,0.18));">Ranking</div>
     </div>
     """, unsafe_allow_html=True)
 

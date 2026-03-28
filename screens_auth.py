@@ -65,9 +65,6 @@ def pantalla_login():
                     background:linear-gradient(135deg,#dff1ff 0%,#67beff 42%,#2f7ef7 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                     background-clip:text; line-height:1.0; margin-bottom:0.45rem; text-transform:uppercase;">PRODE IL BAIGO</div>
-        <div style="position:relative; z-index:1; display:inline-block; background:linear-gradient(135deg,rgba(103,190,255,0.18),rgba(47,126,247,0.12)); border:1px solid rgba(103,190,255,0.32);
-                    border-radius:999px; padding:5px 16px; font-size:0.74rem; color:#cfe7ff;
-                    font-weight:800; letter-spacing:2.4px; text-transform:uppercase; box-shadow:0 10px 24px rgba(47,126,247,0.14);">Experiencia premium · Mundial 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
