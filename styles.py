@@ -1,64 +1,65 @@
 """
-styles.py — Tema visual premium unificado para toda la app.
+styles.py — Rediseño visual integral de la app.
+Mantiene la lógica intacta y rehace completamente la interfaz.
 """
 import streamlit as st
 
 PREMIUM_THEME = dict(
-    scheme="dark",
-    bg_html="#0b1020",
-    bg="#0f172a",
-    bg2="#131d34",
-    bg3="#18233d",
-    surface="rgba(18, 28, 50, 0.78)",
-    surface_elevated="rgba(22, 34, 58, 0.94)",
-    surface_soft="rgba(148, 163, 184, 0.08)",
-    surface2="rgba(148, 163, 184, 0.12)",
-    text="#f8fafc",
-    text2="#cbd5e1",
-    text3="#94a3b8",
-    border="rgba(148, 163, 184, 0.16)",
-    border2="rgba(148, 163, 184, 0.26)",
-    hover_border="rgba(96, 165, 250, 0.44)",
-    shadow="rgba(2, 6, 23, 0.50)",
-    input_bg="rgba(10, 18, 34, 0.96)",
-    input_text="#f8fafc",
-    table_bg="rgba(10, 18, 34, 0.94)",
-    table_head="rgba(96, 165, 250, 0.10)",
-    table_row="rgba(255, 255, 255, 0.02)",
-    accent="#60a5fa",
-    accent_2="#a78bfa",
-    accent_3="#2dd4bf",
-    gold="#f8d38b",
-    gold2="#fde7b0",
-    gold_dim="rgba(248, 211, 139, 0.12)",
-    gold_glow="rgba(248, 211, 139, 0.24)",
-    gold_border="rgba(248, 211, 139, 0.30)",
-    blue="#60a5fa",
-    blue2="#bfdbfe",
-    blue_dim="rgba(96, 165, 250, 0.12)",
-    blue_border="rgba(96, 165, 250, 0.28)",
-    cyan="#38bdf8",
-    cyan_dim="rgba(56, 189, 248, 0.12)",
-    cyan_border="rgba(56, 189, 248, 0.26)",
-    red="#fb7185",
-    red_dim="rgba(251, 113, 133, 0.12)",
-    red_border="rgba(251, 113, 133, 0.28)",
-    orange="#fb923c",
-    orange_dim="rgba(251, 146, 60, 0.14)",
-    orange_border="rgba(251, 146, 60, 0.28)",
-    green="#34d399",
-    green2="#2dd4bf",
-    green_dim="rgba(52, 211, 153, 0.14)",
-    green_border="rgba(52, 211, 153, 0.28)",
-    green_glow="rgba(52, 211, 153, 0.20)",
-    success="#34d399",
-    warning="#f59e0b",
-    danger="#fb7185",
+    scheme="light",
+    bg_html="#f4f1ea",
+    bg="#f8f5ef",
+    bg2="#f2eee7",
+    bg3="#ffffff",
+    surface="rgba(255, 255, 255, 0.82)",
+    surface_elevated="rgba(255, 255, 255, 0.96)",
+    surface_soft="rgba(120, 113, 108, 0.06)",
+    surface2="rgba(120, 113, 108, 0.10)",
+    text="#191616",
+    text2="#4b4645",
+    text3="#7a7370",
+    border="rgba(38, 28, 20, 0.10)",
+    border2="rgba(38, 28, 20, 0.16)",
+    hover_border="rgba(143, 98, 54, 0.34)",
+    shadow="rgba(42, 26, 12, 0.10)",
+    input_bg="#fffdf8",
+    input_text="#191616",
+    table_bg="#fffdfa",
+    table_head="rgba(196, 167, 122, 0.16)",
+    table_row="rgba(97, 84, 71, 0.03)",
+    accent="#8f6236",
+    accent_2="#b78a57",
+    accent_3="#3e6b66",
+    gold="#b78a57",
+    gold2="#d3ae7d",
+    gold_dim="rgba(183, 138, 87, 0.12)",
+    gold_glow="rgba(183, 138, 87, 0.16)",
+    gold_border="rgba(183, 138, 87, 0.28)",
+    blue="#56748f",
+    blue2="#8ba4ba",
+    blue_dim="rgba(86, 116, 143, 0.12)",
+    blue_border="rgba(86, 116, 143, 0.24)",
+    cyan="#3e6b66",
+    cyan_dim="rgba(62, 107, 102, 0.12)",
+    cyan_border="rgba(62, 107, 102, 0.24)",
+    red="#b04c4c",
+    red_dim="rgba(176, 76, 76, 0.10)",
+    red_border="rgba(176, 76, 76, 0.24)",
+    orange="#c17a34",
+    orange_dim="rgba(193, 122, 52, 0.12)",
+    orange_border="rgba(193, 122, 52, 0.24)",
+    green="#2f7a58",
+    green2="#3e8f6b",
+    green_dim="rgba(47, 122, 88, 0.12)",
+    green_border="rgba(47, 122, 88, 0.24)",
+    green_glow="rgba(47, 122, 88, 0.16)",
+    success="#2f7a58",
+    warning="#b6722b",
+    danger="#b04c4c",
 )
 
 
 def get_tema() -> str:
-    return "executive-night"
+    return "atelier-editorial"
 
 
 def render_tema_boton():
@@ -67,9 +68,10 @@ def render_tema_boton():
 
 def inject_css():
     v = PREMIUM_THEME
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
 
     :root {{
         color-scheme: {v['scheme']};
@@ -121,11 +123,11 @@ def inject_css():
         --success: {v['success']};
         --warning: {v['warning']};
         --danger: {v['danger']};
-        --radius: 22px;
-        --radius-sm: 16px;
-        --radius-lg: 30px;
-        --panel-bg: linear-gradient(180deg, rgba(20, 30, 52, 0.82) 0%, rgba(12, 19, 35, 0.94) 100%);
-        --panel-stroke: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%);
+        --radius: 26px;
+        --radius-sm: 18px;
+        --radius-lg: 34px;
+        --panel-bg: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,251,245,0.98) 100%);
+        --panel-stroke: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(92,72,52,0.10) 100%);
     }}
 
     html, body, [class*="css"] {{
@@ -139,20 +141,20 @@ def inject_css():
 
     body {{
         background:
-            radial-gradient(circle at 0% 0%, rgba(96,165,250,0.16), transparent 26%),
-            radial-gradient(circle at 100% 0%, rgba(167,139,250,0.14), transparent 22%),
-            radial-gradient(circle at 50% 100%, rgba(45,212,191,0.10), transparent 24%),
-            linear-gradient(180deg, #0b1020 0%, #10192c 38%, #0f172a 100%) !important;
+            radial-gradient(circle at top left, rgba(183,138,87,0.16), transparent 23%),
+            radial-gradient(circle at top right, rgba(86,116,143,0.12), transparent 20%),
+            radial-gradient(circle at bottom center, rgba(62,107,102,0.10), transparent 24%),
+            linear-gradient(180deg, #f6f2ea 0%, #f8f5ef 48%, #f2ede6 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text);
     }}
 
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
         background:
-            radial-gradient(circle at top left, rgba(96,165,250,0.12), transparent 24%),
-            radial-gradient(circle at top right, rgba(167,139,250,0.10), transparent 20%),
-            radial-gradient(circle at bottom center, rgba(45,212,191,0.07), transparent 24%),
-            linear-gradient(180deg, #0b1020 0%, #10192c 38%, #0f172a 100%) !important;
+            radial-gradient(circle at 0% 0%, rgba(183,138,87,0.12), transparent 18%),
+            radial-gradient(circle at 100% 10%, rgba(86,116,143,0.10), transparent 22%),
+            radial-gradient(circle at 50% 100%, rgba(62,107,102,0.08), transparent 24%),
+            linear-gradient(180deg, #f7f3ec 0%, #f8f5ef 42%, #f1ece4 100%) !important;
         color: var(--text) !important;
     }}
 
@@ -174,9 +176,9 @@ def inject_css():
     }}
 
     .block-container {{
-        max-width: 1180px !important;
+        max-width: 1240px !important;
         padding-top: 1.25rem !important;
-        padding-bottom: 3rem !important;
+        padding-bottom: 3.5rem !important;
     }}
 
     .block-container > div {{
@@ -184,9 +186,37 @@ def inject_css():
         z-index: 1;
     }}
 
+    .block-container::before {{
+        content: "";
+        position: fixed;
+        inset: 18px 18px auto 18px;
+        height: 86px;
+        border-radius: 28px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.58));
+        border: 1px solid rgba(49,36,22,0.08);
+        box-shadow: 0 12px 34px rgba(42,26,12,0.08);
+        backdrop-filter: blur(20px);
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.88;
+    }}
+
     h1, h2, h3, h4, h5, h6 {{
-        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
-        letter-spacing: -0.02em;
+        font-family: 'Manrope', 'Inter', sans-serif !important;
+        letter-spacing: -0.04em;
+        color: var(--text) !important;
+    }}
+
+    /* Convierte títulos viejos tipo "Bebas" a un look editorial moderno */
+    [style*="font-family:Bebas Neue"],
+    [style*="font-family: Bebas Neue"],
+    [style*="letter-spacing:3px"],
+    [style*="letter-spacing: 3px"],
+    [style*="text-transform:uppercase"],
+    [style*="text-transform: uppercase"] {{
+        font-family: 'Manrope', 'Inter', sans-serif !important;
+        letter-spacing: -0.03em !important;
+        text-transform: none !important;
     }}
 
     h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small {{
@@ -208,17 +238,23 @@ def inject_css():
     }}
 
     hr {{
-        border-color: rgba(148,163,184,0.14) !important;
+        border-color: rgba(38,28,20,0.10) !important;
     }}
 
     [data-testid="stHorizontalBlock"] > div {{
-        gap: 0.9rem !important;
+        gap: 1rem !important;
     }}
 
     [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlockBorderWrapper"] > div,
     div[data-testid="stExpander"],
     .stForm,
-    div[data-testid="stMetric"] {{
+    div[data-testid="stMetric"],
+    div[style*="background:var(--bg3)"],
+    div[style*="background: var(--bg3)"],
+    div[style*="background:var(--blue-dim)"],
+    div[style*="background: var(--blue-dim)"],
+    div[style*="background:var(--gold-dim)"],
+    div[style*="background: var(--gold-dim)"] {{
         border-radius: var(--radius) !important;
     }}
 
@@ -226,15 +262,20 @@ def inject_css():
     div[data-testid="stMetric"],
     details,
     .stDataFrame,
-    div[data-testid="stTable"] {{
+    div[data-testid="stTable"],
+    div[style*="background:var(--bg3);border:1px solid var(--border)"],
+    div[style*="background: var(--bg3); border:1px solid var(--border)"],
+    div[style*="background:var(--bg3); border:1px solid var(--border)"],
+    div[style*="background:var(--blue-dim); border:1.5px solid var(--blue-border)"],
+    div[style*="background:var(--gold-dim);border:1.5px solid var(--gold-border)"] {{
         background: var(--panel-bg) !important;
-        border: 1px solid var(--border) !important;
-        box-shadow: 0 20px 50px var(--shadow-clr) !important;
-        backdrop-filter: blur(18px);
+        border: 1px solid rgba(55, 40, 24, 0.10) !important;
+        box-shadow: 0 18px 42px var(--shadow-clr) !important;
+        backdrop-filter: blur(16px);
     }}
 
     .stForm {{
-        padding: 1.15rem 1.15rem 0.8rem 1.15rem !important;
+        padding: 1.2rem 1.2rem 0.8rem 1.2rem !important;
     }}
 
     .stTextInput > div > div > input,
@@ -246,11 +287,11 @@ def inject_css():
     [data-baseweb="select"] > div,
     [data-baseweb="base-input"] > div,
     [data-testid="stFileUploaderDropzone"] {{
-        background: linear-gradient(180deg, rgba(8, 14, 28, 0.98) 0%, rgba(13, 22, 39, 0.98) 100%) !important;
+        background: linear-gradient(180deg, #fffdfa 0%, #fcf8f1 100%) !important;
         color: var(--input-text) !important;
-        border: 1px solid rgba(148,163,184,0.20) !important;
+        border: 1px solid rgba(55,40,24,0.10) !important;
         border-radius: 18px !important;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.20) !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 8px 22px rgba(40,26,12,0.04) !important;
     }}
 
     .stTextInput > div > div > input,
@@ -259,7 +300,7 @@ def inject_css():
     .stDateInput input,
     .stTextArea textarea,
     textarea {{
-        padding: 0.88rem 0.98rem !important;
+        padding: 0.92rem 1rem !important;
         font-size: 0.98rem !important;
         caret-color: var(--accent) !important;
     }}
@@ -280,8 +321,8 @@ def inject_css():
     textarea:focus,
     [data-baseweb="select"] > div:focus-within,
     [data-baseweb="base-input"] > div:focus-within {{
-        border-color: rgba(96,165,250,0.72) !important;
-        box-shadow: 0 0 0 3px rgba(96,165,250,0.14), 0 10px 26px rgba(96,165,250,0.10) !important;
+        border-color: rgba(143,98,54,0.45) !important;
+        box-shadow: 0 0 0 4px rgba(183,138,87,0.10), 0 10px 28px rgba(143,98,54,0.10) !important;
     }}
 
     .stTextInput label,
@@ -301,7 +342,7 @@ def inject_css():
         font-size: 0.72rem !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1.3px !important;
+        letter-spacing: 1.2px !important;
     }}
 
     [data-baseweb="select"] > div,
@@ -310,7 +351,7 @@ def inject_css():
     [data-baseweb="select"] [aria-haspopup="listbox"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
-        background: linear-gradient(180deg, rgba(8,14,28,0.98) 0%, rgba(13,22,39,0.98) 100%) !important;
+        background: linear-gradient(180deg, #fffdfa 0%, #fcf8f1 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -327,10 +368,10 @@ def inject_css():
     [role="listbox"],
     ul[role="listbox"],
     div[role="listbox"] {{
-        background: rgba(9, 15, 29, 0.985) !important;
+        background: rgba(255, 252, 246, 0.98) !important;
         color: var(--text) !important;
-        border: 1px solid rgba(148,163,184,0.22) !important;
-        box-shadow: 0 20px 44px rgba(0,0,0,0.36) !important;
+        border: 1px solid rgba(55,40,24,0.12) !important;
+        box-shadow: 0 18px 36px rgba(40,26,12,0.08) !important;
         border-radius: 18px !important;
         backdrop-filter: blur(16px);
     }}
@@ -338,7 +379,7 @@ def inject_css():
     [role="option"],
     li[role="option"],
     div[role="option"] {{
-        background: rgba(9, 15, 29, 0.985) !important;
+        background: rgba(255,252,246,0.98) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -356,7 +397,7 @@ def inject_css():
     [role="option"]:hover,
     li[role="option"]:hover,
     div[role="option"]:hover {{
-        background: rgba(96,165,250,0.14) !important;
+        background: rgba(183,138,87,0.12) !important;
         color: var(--text) !important;
     }}
 
@@ -371,85 +412,86 @@ def inject_css():
     .stButton > button,
     .stDownloadButton > button,
     .stFormSubmitButton > button {{
-        min-height: 46px !important;
-        border-radius: 16px !important;
+        min-height: 48px !important;
+        border-radius: 999px !important;
         font-weight: 800 !important;
-        letter-spacing: 0.2px !important;
+        letter-spacing: 0 !important;
         transition: all 0.18s ease !important;
+        box-shadow: 0 10px 24px rgba(40,26,12,0.06) !important;
     }}
 
     .stButton > button,
     .stDownloadButton > button {{
-        background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%) !important;
+        background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(248,243,234,0.95) 100%) !important;
         color: var(--text) !important;
-        border: 1px solid rgba(148,163,184,0.20) !important;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important;
+        border: 1px solid rgba(55,40,24,0.10) !important;
     }}
 
     .stButton > button:hover,
     .stDownloadButton > button:hover,
     .stFormSubmitButton > button:hover {{
         transform: translateY(-1px);
-        border-color: rgba(96,165,250,0.45) !important;
-        box-shadow: 0 16px 34px rgba(0,0,0,0.24), 0 0 0 1px rgba(96,165,250,0.10) inset !important;
+        border-color: rgba(143,98,54,0.32) !important;
+        box-shadow: 0 16px 32px rgba(40,26,12,0.10) !important;
     }}
 
     .stButton > button[kind="primary"],
     .stFormSubmitButton > button,
     .stDownloadButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, #60a5fa 0%, #818cf8 52%, #2dd4bf 100%) !important;
-        color: #07111f !important;
+        background: linear-gradient(135deg, #8f6236 0%, #b78a57 55%, #3e6b66 100%) !important;
+        color: #fffdf9 !important;
         border: 0 !important;
-        box-shadow: 0 18px 38px rgba(96,165,250,0.18), 0 10px 24px rgba(45,212,191,0.12) !important;
+        box-shadow: 0 18px 34px rgba(143,98,54,0.16) !important;
     }}
 
     .stButton > button:focus,
     .stFormSubmitButton > button:focus {{
-        box-shadow: 0 0 0 3px rgba(96,165,250,0.16) !important;
+        box-shadow: 0 0 0 4px rgba(183,138,87,0.12) !important;
     }}
 
     [data-testid="stSuccess"],
     [data-testid="stInfo"],
     [data-testid="stWarning"],
     [data-testid="stError"] {{
-        border-radius: 18px !important;
-        border: 1px solid var(--border) !important;
-        box-shadow: 0 12px 26px rgba(0,0,0,0.18) !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(55,40,24,0.10) !important;
+        box-shadow: 0 12px 26px rgba(40,26,12,0.06) !important;
         backdrop-filter: blur(10px);
     }}
 
-    [data-testid="stSuccess"] {{ background: rgba(16, 185, 129, 0.12) !important; }}
-    [data-testid="stInfo"] {{ background: rgba(96, 165, 250, 0.10) !important; }}
-    [data-testid="stWarning"] {{ background: rgba(245, 158, 11, 0.12) !important; }}
-    [data-testid="stError"] {{ background: rgba(251, 113, 133, 0.12) !important; }}
+    [data-testid="stSuccess"] {{ background: rgba(47, 122, 88, 0.10) !important; }}
+    [data-testid="stInfo"] {{ background: rgba(86, 116, 143, 0.10) !important; }}
+    [data-testid="stWarning"] {{ background: rgba(193, 122, 52, 0.10) !important; }}
+    [data-testid="stError"] {{ background: rgba(176, 76, 76, 0.10) !important; }}
 
     button[role="tab"] {{
-        background: rgba(255,255,255,0.03) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 16px !important;
+        background: rgba(255,255,255,0.75) !important;
+        border: 1px solid rgba(55,40,24,0.08) !important;
+        border-radius: 999px !important;
         color: var(--text2) !important;
-        padding: 0.76rem 1rem !important;
+        padding: 0.82rem 1.1rem !important;
         font-weight: 700 !important;
-        margin-right: 0.35rem !important;
+        margin-right: 0.45rem !important;
+        box-shadow: 0 8px 20px rgba(40,26,12,0.04) !important;
     }}
 
     button[role="tab"][aria-selected="true"] {{
-        color: var(--text) !important;
-        border-color: var(--accent) !important;
-        background: linear-gradient(135deg, rgba(96,165,250,0.14) 0%, rgba(167,139,250,0.12) 100%) !important;
-        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
+        color: #fffdf9 !important;
+        border-color: transparent !important;
+        background: linear-gradient(135deg, #8f6236 0%, #b78a57 55%, #3e6b66 100%) !important;
+        box-shadow: 0 12px 28px rgba(143,98,54,0.16) !important;
     }}
 
     .stRadio [role="radiogroup"] > label,
     .stCheckbox > label {{
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 0.4rem 0.65rem;
+        background: rgba(255,255,255,0.66);
+        border: 1px solid rgba(55,40,24,0.08);
+        border-radius: 16px;
+        padding: 0.45rem 0.7rem;
     }}
 
     .stDataFrame, div[data-testid="stTable"] {{
-        border-radius: 20px !important;
+        border-radius: 22px !important;
         overflow: hidden !important;
     }}
 
@@ -466,20 +508,20 @@ def inject_css():
     }}
 
     th, td {{
-        border-color: rgba(148,163,184,0.10) !important;
+        border-color: rgba(55,40,24,0.08) !important;
     }}
 
     details {{
-        border-radius: 18px !important;
+        border-radius: 20px !important;
         overflow: hidden !important;
     }}
 
     details summary {{
-        background: rgba(255,255,255,0.02) !important;
+        background: rgba(255,255,255,0.58) !important;
     }}
 
     div[data-testid="stMetric"] {{
-        padding: 0.95rem 1rem !important;
+        padding: 1rem 1.05rem !important;
     }}
 
     div[data-testid="stMetric"] label {{
@@ -494,7 +536,7 @@ def inject_css():
     }}
 
     .stProgress > div > div > div > div {{
-        background: linear-gradient(90deg, #60a5fa 0%, #818cf8 60%, #2dd4bf 100%) !important;
+        background: linear-gradient(90deg, #8f6236 0%, #b78a57 60%, #3e6b66 100%) !important;
     }}
 
     input, textarea, select, button {{
@@ -507,7 +549,7 @@ def inject_css():
     input:-webkit-autofill:focus,
     textarea:-webkit-autofill {{
         -webkit-text-fill-color: var(--text) !important;
-        -webkit-box-shadow: 0 0 0px 1000px rgba(8,14,28,0.98) inset !important;
+        -webkit-box-shadow: 0 0 0px 1000px #fffdfa inset !important;
         transition: background-color 9999s ease-out 0s;
     }}
 
@@ -533,7 +575,7 @@ def inject_css():
     }}
 
     select, option, optgroup {{
-        background-color: #0a1323 !important;
+        background-color: #fffdfa !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -549,19 +591,42 @@ def inject_css():
     }}
 
     [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, rgba(10,16,31,0.96) 0%, rgba(14,22,39,0.96) 100%) !important;
-        border-right: 1px solid var(--border) !important;
+        background: linear-gradient(180deg, rgba(255,250,243,0.94) 0%, rgba(247,241,231,0.94) 100%) !important;
+        border-right: 1px solid rgba(55,40,24,0.08) !important;
+        box-shadow: inset -1px 0 0 rgba(255,255,255,0.60) !important;
     }}
 
     [data-testid="stDivider"] {{
         margin: 1rem 0 !important;
     }}
 
+    /* Retoca bloques HTML heredados para que no se sigan viendo como la versión anterior */
+    div[style*="border-radius:10px"],
+    div[style*="border-radius:12px"],
+    div[style*="border-radius:14px"],
+    div[style*="border-radius:16px"] {{
+        border-radius: 22px !important;
+    }}
+
+    div[style*="font-size:0.6rem;color:var(--text3);text-transform:uppercase"],
+    div[style*="font-size:0.7rem; font-weight:700; text-transform:uppercase"],
+    div[style*="font-size:0.72rem; font-weight:700; text-transform:uppercase"] {{
+        color: var(--text3) !important;
+        opacity: 0.95;
+        letter-spacing: 1.3px !important;
+    }}
+
     @media (max-width: 900px) {{
         .block-container {{
-            padding-top: 0.9rem !important;
+            padding-top: 0.85rem !important;
             padding-left: 1rem !important;
             padding-right: 1rem !important;
+        }}
+
+        .block-container::before {{
+            inset: 12px 12px auto 12px;
+            height: 74px;
+            border-radius: 24px;
         }}
 
         .stForm {{
@@ -569,15 +634,11 @@ def inject_css():
         }}
     }}
 
-    @media (prefers-color-scheme: light) {{
-        html, body {{
-            color-scheme: dark !important;
-        }}
-    }}
-
     ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
-    ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
-    ::-webkit-scrollbar-thumb {{ background: rgba(148,163,184,0.30); border-radius: 999px; }}
-    ::-webkit-scrollbar-thumb:hover {{ background: rgba(96,165,250,0.42); }}
+    ::-webkit-scrollbar-track {{ background: rgba(80,58,38,0.05); }}
+    ::-webkit-scrollbar-thumb {{ background: rgba(143,98,54,0.26); border-radius: 999px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: rgba(143,98,54,0.40); }}
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
