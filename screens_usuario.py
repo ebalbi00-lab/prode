@@ -235,25 +235,25 @@ def _render_scroll_top():
 def _render_header(nombre_display, usuarios_en_linea):
     inicial = (str(nombre_display or "?").strip()[:1] or "?").upper()
     st.markdown(f"""
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;
-                padding:0.2rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem; flex-wrap:wrap;">
-        <div style="display:flex; align-items:center; gap:14px;">
-            <div style="width:48px; height:48px; border-radius:16px;
-                        background:linear-gradient(135deg, rgba(96,165,250,0.95), rgba(167,139,250,0.95));
+    <div style="display:flex; align-items:center; justify-content:space-between;
+                padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:50%;
+                        background:linear-gradient(135deg,#00c860,#009944);
                         display:flex; align-items:center; justify-content:center;
-                        font-size:1rem; font-weight:800; color:#fff; flex-shrink:0; box-shadow:0 14px 30px rgba(2,6,23,0.24);">
+                        font-size:1.1rem; font-weight:800; color:#fff; flex-shrink:0;">
                 {inicial}
             </div>
             <div>
-                <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:1.35rem; font-weight:800; letter-spacing:-0.6px; color:var(--text); line-height:1.1;">{nombre_display}</div>
-                <div style="font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px;">Panel de usuario</div>
+                <div style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text); line-height:1.1;">{nombre_display}</div>
+                <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px;">Mundial 2026</div>
             </div>
         </div>
-        <div style="text-align:right; margin-left:auto;">
-            <div style="font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:6px;">Prode Il Baigo</div>
-            <div style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-dim);border:1px solid var(--blue-border);
-                        color:var(--blue);padding:5px 12px;border-radius:999px;font-size:0.74rem;font-weight:800;">
-                <span>●</span><span>{usuarios_en_linea} en línea</span>
+        <div style="text-align:right;">
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Prode Il Baigo</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-dim);border:1px solid var(--blue-border);
+                        color:var(--blue);padding:3px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;">
+                <span>🟢</span><span>{usuarios_en_linea} en línea</span>
             </div>
         </div>
     </div>

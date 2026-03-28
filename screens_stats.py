@@ -83,11 +83,13 @@ def pantalla_ranking():
         st_autorefresh(interval=60 * 1000, key="ranking_refresh")
 
     st.markdown("""
-    <div style="text-align:center; padding:1rem 0 1rem 0;">
-        <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--blue); margin-bottom:0.45rem;">Il Baigo · Mundial 2026</div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2.8rem; font-weight:800; letter-spacing:-1px;
-                    color:var(--text); line-height:1.05;">Ranking general</div>
+    <div style="text-align:center; padding:1.2rem 0 1rem 0;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
+                    color:var(--text3); margin-bottom:0.3rem;">Il Baigo — Mundial 2026</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:3.2rem; letter-spacing:4px;
+                    background:linear-gradient(135deg,#ffc940 0%,#ffd86b 45%,#ffb300 100%);
+                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+                    background-clip:text; line-height:1.05; text-shadow:0 4px 18px rgba(255,200,40,0.35);">🏆 RANKING</div>
     </div>
     """, unsafe_allow_html=True)
 

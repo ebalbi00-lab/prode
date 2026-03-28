@@ -58,15 +58,15 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 
 def pantalla_login():
     st.markdown("""
-    <div style="text-align:center; padding: 1.8rem 0 1.6rem 0;">
-        <div style="display:inline-flex; align-items:center; justify-content:center; width:70px; height:70px; border-radius:22px;
-                    background:linear-gradient(135deg, rgba(96,165,250,0.22), rgba(167,139,250,0.18));
-                    border:1px solid rgba(148,163,184,0.18); box-shadow:0 18px 40px rgba(2,6,23,0.28); font-size:2rem; margin-bottom:0.9rem;">⚽</div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:3rem; font-weight:800; letter-spacing:-1.5px;
-                    color:var(--text); line-height:1.0; margin-bottom:0.55rem;">Prode Il Baigo</div>
-        <div style="display:inline-block; background:rgba(96,165,250,0.10); border:1px solid rgba(96,165,250,0.22);
-                    border-radius:999px; padding:7px 16px; font-size:0.72rem; color:var(--blue);
-                    font-weight:800; letter-spacing:1.8px; text-transform:uppercase; box-shadow:0 10px 24px rgba(2,6,23,0.14);">Edición Mundial 2026</div>
+    <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
+        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:3.8rem; letter-spacing:5px;
+                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
+                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+                    background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
+        <div style="display:inline-block; background:linear-gradient(135deg,rgba(255,210,76,0.18),rgba(255,190,32,0.12)); border:1px solid rgba(228,175,33,0.35);
+                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#d49a00;
+                    font-weight:800; letter-spacing:3px; text-transform:uppercase; box-shadow:0 4px 14px rgba(212,154,0,0.10);">⚽ MUNDIAL 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -109,10 +109,10 @@ def pantalla_login():
 
 def pantalla_registro_datos():
     st.markdown("""
-    <div style="padding:0.3rem 0 1rem 0;">
-        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1.8px;
-                    color:var(--blue); margin-bottom:0.35rem;">Paso 1 de 2</div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2rem; font-weight:800; letter-spacing:-0.8px; color:var(--text);">
+    <div style="padding:0.5rem 0 1rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                    color:var(--text3); margin-bottom:0.3rem;">Paso 1 de 2</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:2.2rem; letter-spacing:3px; color:var(--text);">
             Datos personales</div>
     </div>
     """, unsafe_allow_html=True)
@@ -161,10 +161,10 @@ def pantalla_registro_cuenta():
     instrucciones_pago = pago.get("instrucciones", "")
 
     st.markdown("""
-    <div style="padding:0.3rem 0 1rem 0;">
-        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1.8px;
-                    color:var(--blue); margin-bottom:0.35rem;">Paso 2 de 2</div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2rem; font-weight:800; letter-spacing:-0.8px; color:var(--text);">
+    <div style="padding:0.5rem 0 1rem 0;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                    color:var(--text3); margin-bottom:0.3rem;">Paso 2 de 2</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:2.2rem; letter-spacing:3px; color:var(--text);">
             Cuenta y pago</div>
     </div>
     """, unsafe_allow_html=True)
@@ -262,10 +262,10 @@ def pantalla_acerca():
     <div style="padding:0.5rem 0 1.2rem 0;">
         <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
                     color:var(--text3); margin-bottom:0.3rem;">Guía del participante</div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2.4rem; font-weight:800; letter-spacing:-1px;
-                    color:var(--text); line-height:1.05;">Guía Prode Il Baigo</div>
-        <div style="font-size:0.85rem; font-weight:700; letter-spacing:1.6px;
-                    text-transform:uppercase; color:var(--text3);">Mundial 2026</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:2.8rem; letter-spacing:3px;
+                    color:var(--text); line-height:1.05;">ℹ️ PRODE IL BAIGO</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:1.3rem; letter-spacing:2px;
+                    color:var(--text3);">MUNDIAL 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
