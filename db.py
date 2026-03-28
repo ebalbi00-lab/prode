@@ -339,6 +339,7 @@ def db_resetear_todos_puntajes():
         cur.execute("DELETE FROM actividad_usuarios")
         cur.execute("DELETE FROM config WHERE clave LIKE 'wizard_pos_%'")
     st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
+    db_feed_event("♻️ Reseteo total realizado: pronósticos, resultados y consumo reiniciados a cero.", "admin")
 
 
 # ─── Fases ────────────────────────────────────────────────────────────────────
@@ -677,11 +678,13 @@ def db_sumar_consumo(username, puntos, descripcion=""):
 
 
 def db_eliminar_consumo_log(log_id):
+    eliminado = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM consumo_log WHERE id=%s", (log_id,))
         row = cur.fetchone()
         if row:
+            eliminado = dict(row)
             cur.execute(
                 "UPDATE usuarios SET consumo=GREATEST(0, consumo-%s) WHERE username=%s",
                 (row["puntos"], row["username"])
@@ -690,8 +693,17 @@ def db_eliminar_consumo_log(log_id):
     try:
         db_get_todos_usuarios.clear()
         db_get_consumo_log.clear()
+        if eliminado and eliminado.get("username"):
+            db_get_usuario.clear(eliminado["username"])
     except Exception:
         pass
+    if eliminado:
+        desc = str(eliminado.get("descripcion") or "").strip()
+        detalle = f" — {desc}" if desc else ""
+        db_feed_event(
+            f"🗑️ Se eliminó consumo de {eliminado['username']} (-{eliminado['puntos']} pts){detalle}",
+            "consumo"
+        )
 
 
 @st.cache_data(ttl=20)

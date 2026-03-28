@@ -1157,7 +1157,7 @@ def _tab_reset():
             st.error("Tenés que escribir exactamente CONFIRMAR para continuar.")
         else:
             db_resetear_todos_puntajes()
-            st.success("✅ Todos los puntajes, pronósticos y resultados fueron reseteados.")
+            st.success("✅ Todos los puntajes, pronósticos, resultados y consumos fueron reseteados.")
 
 
 def _tab_exportar():
