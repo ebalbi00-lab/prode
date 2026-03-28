@@ -365,14 +365,15 @@ def inject_css():
     [data-baseweb="input"] button,
     [data-baseweb="base-input"] button,
     button[kind="secondary"] {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
-        background-color: rgba(8,18,32,0.98) !important;
+        background: transparent !important;
+        background-color: transparent !important;
         color: var(--text) !important;
-        border: 1.5px solid var(--border2) !important;
-        border-left-color: rgba(143,170,214,0.16) !important;
-        border-radius: 16px !important;
+        border: 0 !important;
+        outline: none !important;
+        border-left: 1px solid rgba(143,170,214,0.16) !important;
+        border-radius: 0 !important;
         box-shadow: none !important;
-        transition: all 0.18s ease !important;
+        min-width: auto !important;
     }}
 
     .stNumberInput button:hover,
@@ -381,13 +382,14 @@ def inject_css():
     [data-baseweb="input"] button:hover,
     [data-baseweb="base-input"] button:hover,
     button[kind="secondary"]:hover {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
-        background-color: rgba(8,18,32,0.98) !important;
+        background: transparent !important;
+        background-color: transparent !important;
         color: var(--text) !important;
-        border-color: var(--border2) !important;
-        border-left-color: rgba(143,170,214,0.16) !important;
+        border: 0 !important;
+        border-left: 1px solid rgba(143,170,214,0.16) !important;
         transform: none !important;
         box-shadow: none !important;
+        outline: none !important;
     }}
 
     .stNumberInput button:active,
@@ -395,11 +397,42 @@ def inject_css():
     .stTextInput button:active,
     [data-baseweb="input"] button:active,
     [data-baseweb="base-input"] button:active,
-    button[kind="secondary"]:active {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
-        background-color: rgba(8,18,32,0.98) !important;
+    button[kind="secondary"]:active,
+    .stNumberInput button:focus,
+    .stPasswordInput button:focus,
+    .stTextInput button:focus,
+    [data-baseweb="input"] button:focus,
+    [data-baseweb="base-input"] button:focus,
+    button[kind="secondary"]:focus,
+    .stNumberInput button:focus-visible,
+    .stPasswordInput button:focus-visible,
+    .stTextInput button:focus-visible,
+    [data-baseweb="input"] button:focus-visible,
+    [data-baseweb="base-input"] button:focus-visible,
+    button[kind="secondary"]:focus-visible {{
+        background: transparent !important;
+        background-color: transparent !important;
+        border: 0 !important;
+        border-left: 1px solid rgba(143,170,214,0.16) !important;
         box-shadow: none !important;
+        outline: none !important;
         transform: none !important;
+    }}
+
+    .stNumberInput button::before,
+    .stPasswordInput button::before,
+    .stTextInput button::before,
+    [data-baseweb="input"] button::before,
+    [data-baseweb="base-input"] button::before,
+    button[kind="secondary"]::before,
+    .stNumberInput button::after,
+    .stPasswordInput button::after,
+    .stTextInput button::after,
+    [data-baseweb="input"] button::after,
+    [data-baseweb="base-input"] button::after,
+    button[kind="secondary"]::after {{
+        display: none !important;
+        content: none !important;
     }}
 
     .stNumberInput button svg,
@@ -410,6 +443,8 @@ def inject_css():
     button[kind="secondary"] svg {{
         fill: var(--blue2) !important;
         color: var(--blue2) !important;
+        background: transparent !important;
+        border-radius: 0 !important;
     }}
 
     .stNumberInput [data-testid="stWidgetLabel"] + div,
