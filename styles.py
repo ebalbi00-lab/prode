@@ -703,23 +703,88 @@ def inject_css():
         background: var(--input-bg) !important;
     }}
 
-
-    .stToggle label,
-    .stCheckbox label {{
-        color: var(--text2) !important;
-        font-weight: 600 !important;
+    /* ===== FIX DEFINITIVO OJO PASSWORD ===== */
+    .stPasswordInput [data-testid="stTextInputRootElement"],
+    .stPasswordInput [data-testid="stTextInputRootElement"] > div,
+    .stPasswordInput [data-baseweb="base-input"],
+    .stPasswordInput [data-baseweb="input"] {{
+        background: var(--input-bg) !important;
     }}
 
-    .stToggle [data-baseweb="checkbox"] > div,
-    .stCheckbox [data-baseweb="checkbox"] > div {{
-        background: rgba(103,190,255,0.10) !important;
-        border-color: var(--blue-border) !important;
+    .stPasswordInput [data-baseweb="input"] > div:last-child,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child,
+    .stPasswordInput [data-baseweb="input"] > div:last-child > div,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child > div {{
+        background: transparent !important;
+        box-shadow: none !important;
     }}
 
-    .stToggle [data-baseweb="checkbox"] input:checked + div,
-    .stCheckbox [data-baseweb="checkbox"] input:checked + div {{
+    .stPasswordInput [data-baseweb="input"] > div:last-child button,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child button,
+    .stPasswordInput button[kind="secondary"],
+    .stPasswordInput button[title*="password" i],
+    .stPasswordInput button[aria-label*="password" i],
+    .stPasswordInput button[title*="contraseña" i],
+    .stPasswordInput button[aria-label*="contraseña" i] {{
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 40px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(103,190,255,0.55) !important;
         background: linear-gradient(135deg, #2f7ef7 0%, #1459c7 100%) !important;
-        border-color: rgba(103,190,255,0.60) !important;
+        background-color: #1459c7 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 10px 22px rgba(10,33,66,0.26) !important;
+        outline: none !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+    }}
+
+    .stPasswordInput [data-baseweb="input"] > div:last-child button:hover,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child button:hover,
+    .stPasswordInput button[kind="secondary"]:hover,
+    .stPasswordInput button[title*="password" i]:hover,
+    .stPasswordInput button[aria-label*="password" i]:hover,
+    .stPasswordInput button[title*="contraseña" i]:hover,
+    .stPasswordInput button[aria-label*="contraseña" i]:hover,
+    .stPasswordInput [data-baseweb="input"] > div:last-child button:focus,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child button:focus {{
+        background: linear-gradient(135deg, #4895ff 0%, #1b67d9 100%) !important;
+        background-color: #1b67d9 !important;
+        border-color: #8fc9ff !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 14px 28px rgba(10,33,66,0.30), 0 0 0 1px rgba(143,201,255,0.24) inset !important;
+    }}
+
+    .stPasswordInput [data-baseweb="input"] > div:last-child button svg,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child button svg,
+    .stPasswordInput [data-baseweb="input"] > div:last-child button svg *,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child button svg *,
+    .stPasswordInput button[kind="secondary"] svg,
+    .stPasswordInput button[kind="secondary"] svg *,
+    .stPasswordInput button[title*="password" i] svg,
+    .stPasswordInput button[title*="password" i] svg *,
+    .stPasswordInput button[aria-label*="password" i] svg,
+    .stPasswordInput button[aria-label*="password" i] svg *,
+    .stPasswordInput button[title*="contraseña" i] svg,
+    .stPasswordInput button[title*="contraseña" i] svg *,
+    .stPasswordInput button[aria-label*="contraseña" i] svg,
+    .stPasswordInput button[aria-label*="contraseña" i] svg * {{
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+        opacity: 1 !important;
+        filter: none !important;
+        background: transparent !important;
+        mix-blend-mode: normal !important;
     }}
 
 
