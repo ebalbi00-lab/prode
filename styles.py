@@ -70,7 +70,9 @@ def inject_css():
     st.markdown(f"""
     <style>
     :root {{
-        color-scheme: {v['scheme']};
+        color-scheme: {v['scheme']} !important;
+        supported-color-schemes: dark !important;
+        accent-color: {v['accent']};
         --bg: {v['bg']};
         --bg2: {v['bg2']};
         --bg3: {v['bg3']};
@@ -131,6 +133,18 @@ def inject_css():
     html, body {{
         background: {v['bg_html']} !important;
         color: var(--text) !important;
+    }}
+
+    html {{
+        background-color: {v['bg_html']} !important;
+    }}
+
+    body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
+        overscroll-behavior-y: none;
+    }}
+
+    * {{
+        scrollbar-color: rgba(143,170,214,0.30) rgba(255,255,255,0.04);
     }}
 
     body {{
@@ -551,7 +565,36 @@ def inject_css():
 
 
 
-    /* Defensive contrast fixes for light-mode browsers / mobile webviews */
+    /* Native mobile controls forced to app palette */
+    input, textarea, select, button {{
+        appearance: none;
+        -webkit-appearance: none;
+        border-radius: 16px;
+    }}
+
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="week"] {{
+        color-scheme: dark !important;
+        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        color: var(--text) !important;
+        border: 1.5px solid var(--border2) !important;
+    }}
+
+    input[type="checkbox"],
+    input[type="radio"] {{
+        accent-color: var(--accent) !important;
+        color-scheme: dark !important;
+    }}
+
+    ::selection {{
+        background: rgba(110,231,255,0.28);
+        color: var(--text);
+    }}
+
+        /* Defensive contrast fixes for light-mode browsers / mobile webviews */
     input, textarea, select, button {{
         color: var(--text) !important;
         -webkit-text-fill-color: currentColor !important;
