@@ -239,9 +239,9 @@ def _render_header(nombre_display, usuarios_en_linea):
                 padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
         <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:40px; height:40px; border-radius:50%;
-                        background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 52%, var(--accent-3) 100%); box-shadow:0 12px 28px rgba(255,122,212,0.22); border:1.5px solid var(--blue-border);
+                        background:linear-gradient(135deg,#3beeff,#6d2cff);
                         display:flex; align-items:center; justify-content:center;
-                        font-size:1.1rem; font-weight:800; color:var(--bg); flex-shrink:0;">
+                        font-size:1.1rem; font-weight:800; color:var(--text); flex-shrink:0;">
                 {inicial}
             </div>
             <div>
@@ -524,7 +524,7 @@ def pantalla_usuario():
 
     # ── Validaciones ────────────────────────────────────────────────────────────
     if not fases.get(fase, False):
-        st.markdown("""<div style="background:rgba(255,180,0,0.08); border:1.5px solid rgba(255,180,0,0.25);
+        st.markdown("""<div style="background:rgba(255,180,56,0.12); border:1.5px solid rgba(255,180,56,0.28);
                     border-radius:12px; padding:14px 18px; margin:1rem 0;">
             <div style="color:var(--gold); font-weight:700; margin-bottom:4px;">⏳ Fase no habilitada</div>
             <div style="color:var(--text2); font-size:0.88rem;">Esta fase todavía no fue abierta por el admin.</div>

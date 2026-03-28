@@ -127,7 +127,7 @@ def pantalla_admin():
         ]
         if ctx["es_admin_total"] and _pend_count > 0:
             badges.append(
-                f'<span style="display:inline-flex;align-items:center;background:var(--red);color:var(--bg);font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</span>'
+                f'<span style="display:inline-flex;align-items:center;background:var(--red);color:var(--text);font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</span>'
             )
         st.markdown(
             '<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;padding:0.55rem 0 1rem 0;">' + ''.join(badges) + '</div>',
@@ -166,7 +166,7 @@ def pantalla_admin():
     if sec == "inicio":
         cols_menu = st.columns(2)
         for i, (key, icono, titulo, desc) in enumerate(secciones):
-            badge = f' <span style="background:var(--red);color:var(--bg);font-size:0.65rem;padding:1px 7px;border-radius:10px;font-family:Outfit,sans-serif;">{_pend_count}</span>' if key == "pendientes" and _pend_count > 0 else ""
+            badge = f' <span style="background:var(--red);color:var(--text);font-size:0.65rem;padding:1px 7px;border-radius:10px;font-family:Outfit,sans-serif;">{_pend_count}</span>' if key == "pendientes" and _pend_count > 0 else ""
             with cols_menu[i % 2]:
                 st.markdown(f"""<div style="background:var(--bg3);border:1px solid var(--border);
                     border-radius:12px;padding:14px 16px;margin-bottom:2px;">
@@ -540,8 +540,8 @@ def _tab_resultados():
         idx       = p["idx"]
         tiene_res = idx in resultados_actuales
         rl_prev, rv_prev = resultados_actuales.get(idx, (0, 0))
-        border    = "rgba(0,200,80,0.3)" if tiene_res else "var(--border2)"
-        bg        = "rgba(0,200,80,0.05)" if tiene_res else "var(--surface)"
+        border    = "rgba(69,255,162,0.30)" if tiene_res else "var(--border2)"
+        bg        = "rgba(69,255,162,0.09)" if tiene_res else "var(--surface)"
 
         activar = st.checkbox("Cargar resultado", value=tiene_res, key=f"chk_{fase_sel}_{idx}")
         if activar:

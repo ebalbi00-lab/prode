@@ -1,65 +1,64 @@
 """
-styles.py — Tema visual premium unificado para toda la app.
+Sistema visual reconstruido desde cero.
 """
 import streamlit as st
 
-PREMIUM_THEME = dict(
-    scheme="dark",
-    bg_html="#120a2a",
-    bg="#120a2a",
-    bg2="#1b0f3b",
-    bg3="#231452",
-    surface="rgba(36, 20, 82, 0.76)",
-    surface_elevated="rgba(46, 24, 102, 0.88)",
-    surface_soft="rgba(110, 72, 170, 0.14)",
-    surface2="rgba(65, 227, 217, 0.16)",
-    text="#ffe8ff",
-    text2="#f6c6ff",
-    text3="#cf9fff",
-    border="rgba(129, 92, 255, 0.24)",
-    border2="rgba(65, 227, 217, 0.34)",
-    hover_border="rgba(255, 122, 212, 0.54)",
-    shadow="rgba(33, 6, 72, 0.46)",
-    input_bg="rgba(28, 14, 58, 0.94)",
-    input_text="#ffe8ff",
-    table_bg="rgba(25, 12, 55, 0.95)",
-    table_head="rgba(255, 122, 212, 0.12)",
-    table_row="rgba(94, 43, 154, 0.18)",
-    accent="#ff7ad4",
-    accent_2="#815cff",
-    accent_3="#41e3d9",
-    gold="#ffb84d",
-    gold2="#ffd36f",
-    gold_dim="rgba(255, 184, 77, 0.16)",
-    gold_glow="rgba(255, 184, 77, 0.26)",
-    gold_border="rgba(255, 184, 77, 0.34)",
-    blue="#41e3d9",
-    blue2="#8ff7f2",
-    blue_dim="rgba(65, 227, 217, 0.16)",
-    blue_border="rgba(65, 227, 217, 0.32)",
-    cyan="#00d2ff",
-    cyan_dim="rgba(0, 210, 255, 0.14)",
-    cyan_border="rgba(0, 210, 255, 0.30)",
-    red="#ff5f9e",
-    red_dim="rgba(255, 95, 158, 0.16)",
-    red_border="rgba(255, 95, 158, 0.30)",
-    orange="#ff8a3d",
-    orange_dim="rgba(255, 138, 61, 0.18)",
-    orange_border="rgba(255, 138, 61, 0.30)",
-    green="#59f1b2",
-    green2="#22d98e",
-    green_dim="rgba(89, 241, 178, 0.16)",
-    green_border="rgba(89, 241, 178, 0.30)",
-    green_glow="rgba(89, 241, 178, 0.24)",
-    success="#59f1b2",
-    warning="#ffb84d",
-    danger="#ff5f9e",
-)
-
+ULTRA_THEME = {
+    "scheme": "dark",
+    "bg_html": "#130a2a",
+    "bg": "#130a2a",
+    "bg2": "#1a0f3d",
+    "bg3": "#24135c",
+    "surface": "rgba(48, 20, 110, 0.56)",
+    "surface_elevated": "rgba(63, 21, 138, 0.70)",
+    "surface_soft": "rgba(99, 44, 201, 0.20)",
+    "surface2": "rgba(135, 56, 255, 0.18)",
+    "text": "#f4dcff",
+    "text2": "#e4bbff",
+    "text3": "#b682ff",
+    "border": "rgba(160, 92, 255, 0.28)",
+    "border2": "rgba(61, 234, 255, 0.36)",
+    "hover_border": "rgba(255, 118, 224, 0.56)",
+    "shadow": "rgba(91, 24, 188, 0.34)",
+    "input_bg": "rgba(41, 13, 98, 0.82)",
+    "input_text": "#f7deff",
+    "table_bg": "rgba(31, 11, 79, 0.82)",
+    "table_head": "rgba(59, 238, 255, 0.16)",
+    "table_row": "rgba(255, 118, 224, 0.05)",
+    "accent": "#3beeff",
+    "accent_2": "#ff4fd8",
+    "accent_3": "#8cff62",
+    "gold": "#ffb438",
+    "gold2": "#ffd95f",
+    "gold_dim": "rgba(255, 180, 56, 0.16)",
+    "gold_glow": "rgba(255, 180, 56, 0.24)",
+    "gold_border": "rgba(255, 180, 56, 0.34)",
+    "blue": "#3beeff",
+    "blue2": "#7cf7ff",
+    "blue_dim": "rgba(59, 238, 255, 0.15)",
+    "blue_border": "rgba(59, 238, 255, 0.32)",
+    "cyan": "#00f0ff",
+    "cyan_dim": "rgba(0, 240, 255, 0.14)",
+    "cyan_border": "rgba(0, 240, 255, 0.30)",
+    "red": "#ff5c9f",
+    "red_dim": "rgba(255, 92, 159, 0.16)",
+    "red_border": "rgba(255, 92, 159, 0.34)",
+    "orange": "#ff8d3b",
+    "orange_dim": "rgba(255, 141, 59, 0.16)",
+    "orange_border": "rgba(255, 141, 59, 0.34)",
+    "green": "#8cff62",
+    "green2": "#45ffa2",
+    "green_dim": "rgba(140, 255, 98, 0.15)",
+    "green_border": "rgba(69, 255, 162, 0.34)",
+    "green_glow": "rgba(69, 255, 162, 0.26)",
+    "success": "#45ffa2",
+    "warning": "#ffb438",
+    "danger": "#ff5c9f",
+}
 
 
 def get_tema() -> str:
-    return "premium-dark"
+    return "ultra-neon-remix"
 
 
 def render_tema_boton():
@@ -67,9 +66,12 @@ def render_tema_boton():
 
 
 def inject_css():
-    v = PREMIUM_THEME
-    st.markdown(f"""
+    v = ULTRA_THEME
+    st.markdown(
+        f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700;800&family=Bebas+Neue&display=swap');
+
     :root {{
         color-scheme: {v['scheme']};
         --bg: {v['bg']};
@@ -120,36 +122,46 @@ def inject_css():
         --success: {v['success']};
         --warning: {v['warning']};
         --danger: {v['danger']};
-        --radius: 18px;
-        --radius-sm: 14px;
-        --radius-lg: 26px;
+        --radius: 24px;
+        --radius-sm: 18px;
+        --radius-lg: 34px;
     }}
 
-    html, body, [class*="css"] {{
-        font-family: 'Inter', sans-serif !important;
+    html, body, [class*="css"], .stApp, button, input, textarea, select {{
+        font-family: 'Space Grotesk', sans-serif !important;
+    }}
+
+    h1, h2, h3, h4, .app-title, .display-font {{
+        font-family: 'Sora', 'Space Grotesk', sans-serif !important;
+        letter-spacing: -0.03em;
     }}
 
     html, body {{
-        background: {v['bg_html']} !important;
+        background:
+            radial-gradient(circle at 8% 12%, rgba(255, 79, 216, 0.24), transparent 18%),
+            radial-gradient(circle at 88% 10%, rgba(59, 238, 255, 0.20), transparent 18%),
+            radial-gradient(circle at 22% 88%, rgba(140, 255, 98, 0.16), transparent 20%),
+            radial-gradient(circle at 82% 80%, rgba(255, 180, 56, 0.12), transparent 24%),
+            linear-gradient(135deg, #130a2a 0%, #240f55 34%, #3b1177 62%, #130a2a 100%) !important;
         color: var(--text) !important;
     }}
 
-    body {{
+    body::before {{
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
         background:
-            radial-gradient(circle at 0% 0%, rgba(255,122,212,0.22), transparent 26%),
-            radial-gradient(circle at 100% 0%, rgba(129,92,255,0.24), transparent 24%),
-            radial-gradient(circle at 50% 100%, rgba(65,227,217,0.16), transparent 28%),
-            linear-gradient(180deg, #120a2a 0%, #1a0d38 42%, #220f4c 100%) !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text);
+            linear-gradient(115deg, rgba(255,79,216,0.05), transparent 28%, rgba(59,238,255,0.06) 54%, transparent 78%),
+            repeating-linear-gradient(90deg, rgba(255,79,216,0.025) 0 1px, transparent 1px 84px),
+            repeating-linear-gradient(0deg, rgba(59,238,255,0.020) 0 1px, transparent 1px 84px);
+        mix-blend-mode: screen;
+        opacity: 0.85;
+        z-index: 0;
     }}
 
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
-        background:
-            radial-gradient(circle at top left, rgba(255,122,212,0.20), transparent 24%),
-            radial-gradient(circle at top right, rgba(129,92,255,0.24), transparent 22%),
-            radial-gradient(circle at bottom center, rgba(65,227,217,0.14), transparent 28%),
-            linear-gradient(180deg, #120a2a 0%, #1a0d38 42%, #220f4c 100%) !important;
+        background: transparent !important;
         color: var(--text) !important;
     }}
 
@@ -158,34 +170,50 @@ def inject_css():
         height: 0 !important;
     }}
 
-    html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
-    [data-testid="stAppViewBlockContainer"], section.main, section[data-testid="stSidebar"] {{
-        color: var(--text) !important;
-        background-color: var(--bg) !important;
-    }}
-
-    [data-testid="stAppViewContainer"] * ,
-    .stApp * ,
-    section[data-testid="stSidebar"] * {{
-        color: inherit;
-    }}
-
     .block-container {{
-        max-width: 1080px !important;
-        padding-top: 1.5rem !important;
+        max-width: 1180px !important;
+        padding-top: 1.25rem !important;
         padding-bottom: 3rem !important;
+        position: relative;
+        z-index: 1;
     }}
 
-    h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small {{
+    .block-container::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 38px;
+        background:
+            linear-gradient(145deg, rgba(88, 23, 180, 0.26), rgba(17, 189, 255, 0.08) 38%, rgba(255, 79, 216, 0.14) 72%, rgba(140, 255, 98, 0.08));
+        filter: blur(0px);
+        z-index: -2;
+    }}
+
+    .block-container::after {{
+        content: "";
+        position: absolute;
+        inset: 8px;
+        border-radius: 30px;
+        background: linear-gradient(180deg, rgba(24, 10, 57, 0.56), rgba(35, 12, 87, 0.36));
+        border: 1px solid rgba(173, 103, 255, 0.16);
+        box-shadow:
+            0 30px 80px rgba(78, 18, 181, 0.24),
+            0 0 0 1px rgba(59, 238, 255, 0.06) inset,
+            0 0 48px rgba(255, 79, 216, 0.10) inset;
+        z-index: -1;
+        backdrop-filter: blur(14px);
+    }}
+
+    h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small, code {{
         color: inherit;
     }}
 
     [data-testid="stMarkdownContainer"],
-    [data-testid="stMarkdownContainer"] p,
-    [data-testid="stMarkdownContainer"] li,
     [data-testid="stText"],
     .stCaption,
-    code {{
+    .stMarkdown,
+    .st-emotion-cache-10trblm,
+    .st-emotion-cache-16idsys p {{
         color: var(--text) !important;
     }}
 
@@ -194,34 +222,46 @@ def inject_css():
         text-decoration: none !important;
     }}
 
-    hr {{
-        border-color: rgba(129,92,255,0.18) !important;
+    hr, .stDivider {{
+        border-color: rgba(188, 105, 255, 0.18) !important;
     }}
 
-    /* Containers */
-    [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlockBorderWrapper"] > div,
-    div[data-testid="stExpander"],
+    section[data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, rgba(35, 12, 87, 0.92), rgba(22, 10, 53, 0.92)) !important;
+        border-right: 1px solid rgba(59, 238, 255, 0.12) !important;
+    }}
+
+    /* Cards / containers */
     .stForm,
-    div[data-testid="stMetric"] {{
+    div[data-testid="stMetric"],
+    div[data-testid="stAlert"],
+    div[data-testid="stExpander"],
+    div[data-testid="stVerticalBlockBorderWrapper"] > div:has(> div[data-testid="stMarkdownContainer"]),
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] > div {{
+        background:
+            linear-gradient(160deg, rgba(56, 18, 128, 0.72) 0%, rgba(34, 10, 84, 0.80) 48%, rgba(20, 67, 138, 0.38) 100%) !important;
+        border: 1px solid rgba(173, 103, 255, 0.28) !important;
         border-radius: var(--radius) !important;
+        box-shadow:
+            0 18px 48px rgba(81, 18, 190, 0.22),
+            0 0 0 1px rgba(59, 238, 255, 0.08) inset,
+            0 0 36px rgba(255, 79, 216, 0.08) inset !important;
+        backdrop-filter: blur(16px);
     }}
 
     .stForm {{
-        background: linear-gradient(180deg, rgba(43,22,91,0.92) 0%, rgba(28,14,58,0.96) 100%) !important;
-        border: 1px solid var(--border) !important;
-        box-shadow: 0 20px 48px var(--shadow-clr) !important;
-        padding: 1.05rem 1.05rem 0.8rem 1.05rem !important;
+        padding: 1.1rem 1.1rem 0.85rem 1.1rem !important;
         position: relative;
         overflow: hidden;
     }}
 
-    .stForm::before {{
+    .stForm::before,
+    div[data-testid="stMetric"]::before {{
         content: "";
         position: absolute;
         inset: 0 0 auto 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent 0%, rgba(255,122,212,0.68) 22%, rgba(129,92,255,0.62) 52%, rgba(65,227,217,0.58) 78%, transparent 100%);
-        pointer-events: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(59, 238, 255, 0.9), rgba(255, 79, 216, 0.8), rgba(140, 255, 98, 0.8), transparent);
     }}
 
     /* Inputs */
@@ -234,22 +274,15 @@ def inject_css():
     [data-baseweb="select"] > div,
     [data-baseweb="base-input"] > div,
     [data-testid="stFileUploaderDropzone"] {{
-        background: linear-gradient(180deg, rgba(33,16,68,0.98) 0%, rgba(24,12,52,0.98) 100%) !important;
+        background: linear-gradient(180deg, rgba(43, 14, 101, 0.92), rgba(31, 10, 76, 0.94)) !important;
         color: var(--input-text) !important;
-        border: 1.5px solid var(--border2) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 14px 34px rgba(62, 14, 122, 0.26) !important;
+        border: 1.5px solid rgba(59, 238, 255, 0.22) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 34px rgba(93, 22, 216, 0.16), 0 0 0 1px rgba(255, 79, 216, 0.10) inset !important;
     }}
 
-    .stTextInput > div > div > input,
-    .stPasswordInput > div > div > input,
-    .stNumberInput input,
-    .stDateInput input,
-    .stTextArea textarea,
-    textarea {{
-        padding: 0.82rem 0.95rem !important;
-        font-size: 0.98rem !important;
-        caret-color: var(--accent) !important;
+    input, textarea {{
+        caret-color: var(--accent-2) !important;
     }}
 
     .stTextInput input::placeholder,
@@ -263,496 +296,192 @@ def inject_css():
     .stTextInput > div > div > input:focus,
     .stPasswordInput > div > div > input:focus,
     .stNumberInput input:focus,
-    .stDateInput input:focus,
     .stTextArea textarea:focus,
     textarea:focus,
     [data-baseweb="select"] > div:focus-within,
     [data-baseweb="base-input"] > div:focus-within {{
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px rgba(255,122,212,0.14), 0 10px 30px rgba(255,122,212,0.12) !important;
-    }}
-
-    .stTextInput label,
-    .stPasswordInput label,
-    .stSelectbox label,
-    .stNumberInput label,
-    .stDateInput label,
-    .stFileUploader label,
-    .stTextArea label,
-    .stMultiSelect label,
-    .stRadio label,
-    .stCheckbox label,
-    [data-testid="stWidgetLabel"],
-    [data-testid="stWidgetLabel"] * {{
-        color: var(--text2) !important;
-        -webkit-text-fill-color: var(--text2) !important;
-        font-size: 0.73rem !important;
-        font-weight: 800 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1.2px !important;
-    }}
-
-    /* Dropdowns */
-    [data-baseweb="select"] > div,
-    [data-baseweb="select"] > div > div,
-    [data-baseweb="select"] [role="combobox"],
-    [data-baseweb="select"] [aria-haspopup="listbox"],
-    [data-baseweb="select"] [data-testid="stMarkdownContainer"],
-    [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
-        background: linear-gradient(180deg, rgba(33,16,68,0.98) 0%, rgba(24,12,52,0.98) 100%) !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    [data-baseweb="select"] svg,
-    [data-baseweb="popover"] svg,
-    [role="listbox"] svg {{
-        fill: var(--text2) !important;
-        color: var(--text2) !important;
-    }}
-
-    [data-baseweb="popover"],
-    [data-baseweb="popover"] > div,
-    [role="listbox"],
-    ul[role="listbox"],
-    div[role="listbox"] {{
-        background: rgba(31, 14, 66, 0.985) !important;
-        color: var(--text) !important;
-        border: 1px solid var(--border2) !important;
-        box-shadow: 0 22px 46px rgba(47, 10, 102, 0.34) !important;
-        border-radius: 16px !important;
-        backdrop-filter: blur(14px);
-    }}
-
-    [role="option"],
-    li[role="option"],
-    div[role="option"] {{
-        background: rgba(31, 14, 66, 0.985) !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    [role="option"] *,
-    li[role="option"] *,
-    div[role="option"] * {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-        background: transparent !important;
-    }}
-
-    [role="option"][aria-selected="true"],
-    li[role="option"][aria-selected="true"],
-    [role="option"]:hover,
-    li[role="option"]:hover,
-    div[role="option"]:hover {{
-        background: rgba(255,122,212,0.16) !important;
-        color: var(--text) !important;
-    }}
-
-    [data-baseweb="select"] input,
-    [data-baseweb="select"] span,
-    [data-baseweb="select"] div,
-    [data-baseweb="select"] p {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-
-
-    /* Icon / utility buttons */
-    .stNumberInput button,
-    .stPasswordInput button,
-    .stTextInput button,
-    [data-baseweb="input"] button,
-    [data-baseweb="base-input"] button {{
-        background: linear-gradient(135deg, rgba(255,122,212,0.96) 0%, rgba(129,92,255,0.94) 54%, rgba(65,227,217,0.92) 100%) !important;
-        color: #19092f !important;
-        border: 1px solid rgba(110,231,255,0.34) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 10px 22px rgba(255,122,212,0.18) !important;
-        transition: all 0.18s ease !important;
-    }}
-
-    .stNumberInput button:hover,
-    .stPasswordInput button:hover,
-    .stTextInput button:hover,
-    [data-baseweb="input"] button:hover,
-    [data-baseweb="base-input"] button:hover {{
-        border-color: var(--accent) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 14px 26px rgba(255,122,212,0.22), 0 0 0 1px rgba(255,122,212,0.14) inset !important;
-    }}
-
-    .stNumberInput button svg,
-    .stPasswordInput button svg,
-    .stTextInput button svg,
-    [data-baseweb="input"] button svg,
-    [data-baseweb="base-input"] button svg {{
-        fill: #04111f !important;
-        color: #19092f !important;
-    }}
-
-    .stNumberInput [data-testid="stWidgetLabel"] + div,
-    .stPasswordInput [data-testid="stWidgetLabel"] + div,
-    .stTextInput [data-testid="stWidgetLabel"] + div {{
-        box-shadow: 0 16px 30px rgba(58, 12, 118, 0.24) !important;
-        border-radius: 16px !important;
+        border-color: rgba(255, 79, 216, 0.54) !important;
+        box-shadow: 0 0 0 3px rgba(255, 79, 216, 0.13), 0 0 30px rgba(59, 238, 255, 0.12) !important;
     }}
 
     /* Buttons */
     .stButton > button,
-    .stDownloadButton > button {{
-        background: linear-gradient(135deg, rgba(255,122,212,0.18) 0%, rgba(129,92,255,0.20) 56%, rgba(65,227,217,0.18) 100%) !important;
-        color: var(--text) !important;
-        border: 1px solid rgba(110,231,255,0.22) !important;
-        border-radius: 16px !important;
-        padding: 0.72rem 1rem !important;
+    .stDownloadButton > button,
+    [data-testid="baseButton-secondary"],
+    [data-testid="baseButton-primary"] {{
+        border-radius: 999px !important;
+        border: 1px solid rgba(59, 238, 255, 0.26) !important;
+        background:
+            linear-gradient(135deg, rgba(255, 79, 216, 0.96) 0%, rgba(138, 70, 255, 0.94) 42%, rgba(59, 238, 255, 0.96) 100%) !important;
+        color: #250545 !important;
         font-weight: 800 !important;
-        letter-spacing: 0.2px !important;
-        box-shadow: 0 16px 34px rgba(58, 12, 118, 0.24) !important;
-        transition: all 0.2s ease !important;
+        letter-spacing: 0.02em !important;
+        min-height: 2.95rem !important;
+        box-shadow:
+            0 16px 34px rgba(255, 79, 216, 0.18),
+            0 10px 28px rgba(59, 238, 255, 0.16),
+            0 0 0 1px rgba(255, 209, 248, 0.20) inset !important;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
     }}
 
     .stButton > button:hover,
-    .stDownloadButton > button:hover {{
-        transform: translateY(-1px);
-        border-color: var(--accent) !important;
-        box-shadow: 0 18px 36px rgba(58, 12, 118, 0.28), 0 0 0 1px rgba(255,122,212,0.14) inset !important;
-    }}
-
-    .stButton > button[kind="primary"],
-    .stFormSubmitButton > button,
-    .stDownloadButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, #ff7ad4 0%, #815cff 56%, #41e3d9 100%) !important;
-        color: #19092f !important;
-        border: 0 !important;
-        box-shadow: 0 22px 42px rgba(255,122,212,0.20), 0 12px 28px rgba(129,92,255,0.18) !important;
+    .stDownloadButton > button:hover,
+    [data-testid="baseButton-secondary"]:hover,
+    [data-testid="baseButton-primary"]:hover {{
+        transform: translateY(-2px) scale(1.01) !important;
+        filter: saturate(1.12) brightness(1.05) !important;
+        box-shadow:
+            0 22px 44px rgba(255, 79, 216, 0.24),
+            0 16px 34px rgba(59, 238, 255, 0.18),
+            0 0 0 1px rgba(255, 222, 250, 0.24) inset !important;
     }}
 
     .stButton > button:focus,
-    .stFormSubmitButton > button:focus {{
-        box-shadow: 0 0 0 3px rgba(255,122,212,0.18) !important;
+    .stDownloadButton > button:focus {{
+        box-shadow: 0 0 0 3px rgba(59, 238, 255, 0.16), 0 0 0 7px rgba(255, 79, 216, 0.10) !important;
+    }}
+
+    .stButton > button[kind="secondary"],
+    .stButton > button:has(span:contains("Acerca")) {{
+        background: linear-gradient(135deg, rgba(59, 238, 255, 0.20), rgba(255, 79, 216, 0.18)) !important;
+    }}
+
+    /* Tabs */
+    [data-baseweb="tab-list"] {{
+        gap: 0.5rem !important;
+        background: rgba(60, 18, 139, 0.32) !important;
+        padding: 0.45rem !important;
+        border-radius: 999px !important;
+        border: 1px solid rgba(173, 103, 255, 0.18) !important;
+    }}
+
+    [data-baseweb="tab"] {{
+        border-radius: 999px !important;
+        color: var(--text2) !important;
+        background: transparent !important;
+        font-weight: 700 !important;
+    }}
+
+    [aria-selected="true"][data-baseweb="tab"] {{
+        background: linear-gradient(135deg, rgba(255, 79, 216, 0.95), rgba(59, 238, 255, 0.92)) !important;
+        color: #2d094d !important;
+        box-shadow: 0 10px 24px rgba(255, 79, 216, 0.18) !important;
     }}
 
     /* Alerts */
-    [data-testid="stSuccess"],
-    [data-testid="stInfo"],
-    [data-testid="stWarning"],
-    [data-testid="stError"] {{
-        border-radius: 18px !important;
-        border: 1px solid var(--border) !important;
-        box-shadow: 0 16px 30px rgba(58, 12, 118, 0.24) !important;
-        backdrop-filter: blur(10px);
+    [data-testid="stSuccess"] {{ background: linear-gradient(135deg, rgba(69,255,162,0.18), rgba(140,255,98,0.12)) !important; }}
+    [data-testid="stInfo"] {{ background: linear-gradient(135deg, rgba(59,238,255,0.16), rgba(110,102,255,0.12)) !important; }}
+    [data-testid="stWarning"] {{ background: linear-gradient(135deg, rgba(255,180,56,0.18), rgba(255,141,59,0.12)) !important; }}
+    [data-testid="stError"] {{ background: linear-gradient(135deg, rgba(255,92,159,0.18), rgba(255,79,216,0.12)) !important; }}
+
+    div[data-testid="stAlert"] {{
+        border-radius: 22px !important;
+        border-width: 1.5px !important;
     }}
 
-    [data-testid="stSuccess"] {{ background: rgba(16, 185, 129, 0.12) !important; }}
-    [data-testid="stInfo"] {{ background: rgba(34, 211, 238, 0.10) !important; }}
-    [data-testid="stWarning"] {{ background: rgba(245, 158, 11, 0.12) !important; }}
-    [data-testid="stError"] {{ background: rgba(251, 113, 133, 0.12) !important; }}
-
-    /* Tabs */
-    button[role="tab"] {{
-        background: rgba(129,92,255,0.12) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 14px !important;
-        color: var(--text2) !important;
-        padding: 0.72rem 1rem !important;
-        font-weight: 700 !important;
-        margin-right: 0.35rem !important;
-    }}
-
-    button[role="tab"][aria-selected="true"] {{
-        color: var(--text) !important;
-        border-color: var(--accent) !important;
-        background: linear-gradient(135deg, rgba(255,122,212,0.14) 0%, rgba(139,92,246,0.12) 100%) !important;
-        box-shadow: 0 12px 24px rgba(62, 14, 122, 0.22) !important;
-    }}
-
-    /* Radio / Checkbox */
-    .stRadio [role="radiogroup"] > label,
-    .stCheckbox > label {{
-        background: rgba(129,92,255,0.12);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 0.4rem 0.65rem;
-    }}
-
-    /* Tables / Dataframes */
-    .stDataFrame, div[data-testid="stTable"] {{
-        background: var(--table-bg) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 18px !important;
-        overflow: hidden !important;
-        box-shadow: 0 18px 36px rgba(58, 12, 118, 0.24) !important;
-    }}
-
+    /* Tables */
     table {{
-        border-collapse: collapse !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
     }}
 
     thead tr {{
-        background: var(--table-head) !important;
+        background: linear-gradient(90deg, rgba(59,238,255,0.18), rgba(255,79,216,0.16), rgba(255,180,56,0.14)) !important;
+    }}
+
+    tbody tr {{
+        background: rgba(255, 79, 216, 0.03) !important;
+        transition: transform 0.14s ease, background 0.14s ease;
     }}
 
     tbody tr:nth-child(even) {{
-        background: var(--table_row) !important;
+        background: rgba(59, 238, 255, 0.04) !important;
     }}
 
-    th, td {{
-        border-color: rgba(129,92,255,0.16) !important;
-    }}
-
-    /* Expanders */
-    details {{
-        background: rgba(12, 22, 40, 0.78) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 18px !important;
-        overflow: hidden !important;
-        box-shadow: 0 18px 32px rgba(58, 12, 118, 0.24) !important;
-    }}
-
-    details summary {{
-        background: rgba(129,92,255,0.10) !important;
+    tbody tr:hover {{
+        background: rgba(140, 255, 98, 0.08) !important;
     }}
 
     /* Metrics */
     div[data-testid="stMetric"] {{
-        background: linear-gradient(180deg, rgba(43,22,91,0.92) 0%, rgba(24,12,52,0.96) 100%) !important;
-        border: 1px solid var(--border) !important;
-        padding: 0.95rem 1rem !important;
-        box-shadow: 0 20px 40px rgba(58, 12, 118, 0.26) !important;
-        position: relative;
-        overflow: hidden;
+        padding: 1rem 1rem 0.85rem 1rem !important;
     }}
 
-    div[data-testid="stMetric"]::after {{
-        content: "";
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 3px;
-        background: linear-gradient(180deg, rgba(255,122,212,0.95) 0%, rgba(129,92,255,0.95) 58%, rgba(65,227,217,0.95) 100%);
-        opacity: 0.9;
-    }}
-
-    div[data-testid="stMetric"] label {{
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] [data-testid="stMetricLabel"] {{
         color: var(--text3) !important;
         text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+        letter-spacing: 0.16em !important;
         font-size: 0.68rem !important;
     }}
 
     div[data-testid="stMetricValue"] {{
         color: var(--text) !important;
+        font-family: 'Sora', sans-serif !important;
+        font-weight: 800 !important;
     }}
 
-    /* Progress */
+    /* Selects / radio / checkbox */
+    .stRadio > div,
+    .stCheckbox,
+    .stSelectbox > div > div,
+    .stMultiSelect > div > div {{
+        color: var(--text) !important;
+    }}
+
+    [data-baseweb="tag"] {{
+        background: linear-gradient(135deg, rgba(59,238,255,0.16), rgba(255,79,216,0.16)) !important;
+        border: 1px solid rgba(59, 238, 255, 0.20) !important;
+        color: var(--text) !important;
+    }}
+
     .stProgress > div > div > div > div {{
-        background: linear-gradient(90deg, #ff7ad4 0%, #815cff 58%, #41e3d9 100%) !important;
+        background: linear-gradient(90deg, rgba(59,238,255,1), rgba(255,79,216,1), rgba(255,180,56,1)) !important;
     }}
 
-
-
-    /* Defensive contrast fixes for light-mode browsers / mobile webviews */
-    input, textarea, select, button {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: currentColor !important;
+    [data-testid="stFileUploaderDropzone"] {{
+        border-style: dashed !important;
+        border-width: 2px !important;
     }}
 
-    input:-webkit-autofill,
-    input:-webkit-autofill:hover,
-    input:-webkit-autofill:focus,
-    textarea:-webkit-autofill {{
-        -webkit-text-fill-color: var(--text) !important;
-        -webkit-box-shadow: 0 0 0px 1000px rgba(33,16,68,0.98) inset !important;
-        transition: background-color 9999s ease-out 0s;
+    iframe {{
+        border-radius: 24px !important;
+        border: 1px solid rgba(173, 103, 255, 0.18) !important;
+        box-shadow: 0 20px 54px rgba(81, 18, 190, 0.20) !important;
     }}
 
-    .stButton > button p,
-    .stDownloadButton > button p,
-    .stFormSubmitButton > button p,
-    button[role="tab"] p,
-    [role="option"] *,
-    details summary *,
-    .stAlert *,
-    .stDataFrame *,
-    div[data-testid="stTable"] *,
-    [data-testid="stMarkdownContainer"] span,
-    [data-testid="stMarkdownContainer"] strong {{
-        color: inherit !important;
-        -webkit-text-fill-color: currentColor !important;
+    /* scrollbars */
+    ::-webkit-scrollbar {{ width: 12px; height: 12px; }}
+    ::-webkit-scrollbar-track {{ background: rgba(64, 18, 144, 0.34); border-radius: 999px; }}
+    ::-webkit-scrollbar-thumb {{ background: linear-gradient(180deg, rgba(59,238,255,0.78), rgba(255,79,216,0.78)); border-radius: 999px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: linear-gradient(180deg, rgba(140,255,98,0.84), rgba(255,180,56,0.84)); }}
+
+    /* small helper override for inline blocks */
+    [style*="box-shadow:0 18px 36px rgba(0,0,0,0.18)"],
+    [style*="box-shadow:0 16px 32px rgba(0,0,0,0.16)"],
+    [style*="box-shadow:0 10px 24px rgba(0,0,0,0.12)"],
+    [style*="box-shadow:0 18px 36px rgba(0,0,0,0.16)"] {{
+        box-shadow:
+            0 18px 42px rgba(97, 22, 226, 0.22),
+            0 0 0 1px rgba(59, 238, 255, 0.08) inset !important;
     }}
 
-    [data-testid="stSelectbox"] [data-baseweb="select"] * ,
-    [data-testid="stMultiSelect"] [data-baseweb="select"] * {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
+    [style*="background:var(--bg3)"] {{
+        background: linear-gradient(160deg, rgba(70, 21, 153, 0.64), rgba(37, 12, 87, 0.76)) !important;
     }}
 
-    /* Extra mobile/browser fixes for select menus */
-    select, option, optgroup {{
-        background-color: #24144c !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
+    [style*="background:var(--surface)"] {{
+        background: linear-gradient(160deg, rgba(60, 18, 139, 0.50), rgba(37, 12, 87, 0.54)) !important;
     }}
 
-    [role="listbox"] div,
-    [role="listbox"] span,
-    [role="listbox"] p,
-    [data-baseweb="popover"] div,
-    [data-baseweb="popover"] span,
-    [data-baseweb="popover"] p {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
+    [style*="background:var(--table-bg)"] {{
+        background: linear-gradient(180deg, rgba(36, 12, 89, 0.90), rgba(26, 10, 66, 0.94)) !important;
     }}
 
-    [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, rgba(22,10,48,0.97) 0%, rgba(33,16,68,0.97) 100%) !important;
-        border-right: 1px solid var(--border) !important;
+    .st-emotion-cache-1kyxreq, .st-emotion-cache-ocqkz7 {{
+        gap: 1rem !important;
     }}
-
-    @media (prefers-color-scheme: light) {{
-        html, body {{
-            color-scheme: dark !important;
-        }}
-    }}
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
-    ::-webkit-scrollbar-track {{ background: rgba(129,92,255,0.14); }}
-    ::-webkit-scrollbar-thumb {{ background: linear-gradient(180deg, rgba(255,122,212,0.62) 0%, rgba(129,92,255,0.72) 58%, rgba(65,227,217,0.62) 100%); border-radius: 999px; }}
-    ::-webkit-scrollbar-thumb:hover {{ background: linear-gradient(180deg, rgba(255,122,212,0.82) 0%, rgba(129,92,255,0.86) 58%, rgba(65,227,217,0.80) 100%); }}
-
-
-    /* Premium polish */
-    .block-container::before {{
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background:
-            linear-gradient(180deg, rgba(255,122,212,0.04), transparent 22%),
-            radial-gradient(circle at 20% 20%, rgba(255,122,212,0.08), transparent 18%),
-            radial-gradient(circle at 80% 10%, rgba(129,92,255,0.09), transparent 16%),
-            radial-gradient(circle at 50% 100%, rgba(65,227,217,0.07), transparent 20%);
-        mix-blend-mode: screen;
-    }}
-
-    .stButton > button,
-    .stDownloadButton > button,
-    .stFormSubmitButton > button {{
-        min-height: 46px !important;
-    }}
-
-    .stButton > button:active,
-    .stFormSubmitButton > button:active {{
-        transform: translateY(0) scale(0.99);
-    }}
-
-    .stTabs [data-baseweb="tab-list"] {{
-        gap: 0.4rem !important;
-        margin-bottom: 0.8rem !important;
-    }}
-
-    .stTabs [data-baseweb="tab-highlight"] {{
-        background: transparent !important;
-    }}
-
-    details summary {{
-        padding-top: 0.2rem !important;
-        padding-bottom: 0.2rem !important;
-    }}
-
-    details[open] {{
-        border-color: var(--hover-border) !important;
-        box-shadow: 0 22px 42px rgba(58, 12, 118, 0.28), 0 0 0 1px rgba(255,122,212,0.10) inset !important;
-    }}
-
-    div[data-testid="stMetric"]:hover,
-    .stForm:hover,
-    div[data-testid="stExpander"]:hover {{
-        border-color: var(--hover-border) !important;
-        box-shadow: 0 22px 44px rgba(58, 12, 118, 0.28) !important;
-    }}
-
-    [data-testid="stHorizontalBlock"] > div {{
-        gap: 0.9rem !important;
-    }}
-
-    .stApp [data-testid="stCaptionContainer"],
-    .stApp .stCaption {{
-        color: var(--text3) !important;
-    }}
-
-    @media (max-width: 768px) {{
-        .block-container {{
-            padding-top: 1rem !important;
-            padding-left: 0.8rem !important;
-            padding-right: 0.8rem !important;
-        }}
-
-        .stButton > button,
-        .stDownloadButton > button,
-        .stFormSubmitButton > button {{
-            border-radius: 14px !important;
-            padding: 0.78rem 0.95rem !important;
-        }}
-
-        button[role="tab"] {{
-            padding: 0.68rem 0.85rem !important;
-        }}
-    }}
-
-    /* ===== Ajustes puntuales sin romper la estética ===== */
-    /* Ojo de contraseña: sin círculo/fondo aparte */
-    .stPasswordInput button[kind="secondary"],
-    .stPasswordInput button[kind="secondary"]:hover,
-    .stPasswordInput button[kind="secondary"]:focus,
-    .stPasswordInput button[kind="secondary"]:active {{
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }}
-
-    .stPasswordInput button[kind="secondary"] svg {{
-        border-radius: 0 !important;
-        background: transparent !important;
-    }}
-
-    /* + y - del number input: integrados al campo */
-    .stNumberInput button,
-    .stNumberInput button:hover,
-    .stNumberInput button:focus,
-    .stNumberInput button:active {{
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }}
-
-    /* Spinner/status: sin caja blanca ni hueco raro */
-    [data-testid="stSpinner"],
-    [data-testid="stSpinner"] > div,
-    [data-testid="stSpinner"] > div > div,
-    [data-testid="stStatusWidget"],
-    [data-testid="stStatusWidget"] > div,
-    [data-testid="stStatusWidget"] > div > div {{
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-    }}
-
-    [data-testid="stSpinner"] {{
-        margin: 0 0 .25rem 0 !important;
-        padding: 0 !important;
-    }}
-
-    [data-testid="stSpinner"] p,
-    [data-testid="stSpinner"] span,
-    [data-testid="stStatusWidget"] p,
-    [data-testid="stStatusWidget"] span {{
-        margin: 0 !important;
-    }}
-
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )

@@ -36,10 +36,10 @@ def render_destacados_usuarios():
 
     stats = db_get_estadisticas_usuarios()
     categorias = [
-        ("top_resultados", "✅ Más resultados", "resultados acertados", "#3b82f6", "rgba(59,130,246,0.12)", "rgba(59,130,246,0.28)"),
-        ("top_exactos",    "🎯 Más exactos",    "scores exactos",       "#2563eb", "rgba(37,99,235,0.11)", "rgba(37,99,235,0.24)"),
-        ("top_grupos",     "⚽ Rey de grupos",   "pts en Grupos",        "#14b8a6", "rgba(20,184,166,0.11)", "rgba(20,184,166,0.24)"),
-        ("top_finales",    "🏆 Rey de finales",  "pts en Finales",       "#0ea5e9", "rgba(14,165,233,0.11)", "rgba(14,165,233,0.24)"),
+        ("top_resultados", "✅ Más resultados", "resultados acertados", "var(--blue)", "rgba(59,130,246,0.12)", "rgba(59,130,246,0.28)"),
+        ("top_exactos",    "🎯 Más exactos",    "scores exactos",       "#5a60ff", "rgba(37,99,235,0.11)", "rgba(37,99,235,0.24)"),
+        ("top_grupos",     "⚽ Rey de grupos",   "pts en Grupos",        "#45ffa2", "rgba(20,184,166,0.11)", "rgba(20,184,166,0.24)"),
+        ("top_finales",    "🏆 Rey de finales",  "pts en Finales",       "#3beeff", "rgba(14,165,233,0.11)", "rgba(14,165,233,0.24)"),
     ]
     col_a, col_b = st.columns(2)
     cols = [col_a, col_b, col_a, col_b]
@@ -87,7 +87,7 @@ def pantalla_ranking():
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
                     color:var(--text3); margin-bottom:0.3rem;">Il Baigo — Mundial 2026</div>
         <div style="font-family:Bebas Neue,sans-serif; font-size:3.2rem; letter-spacing:4px;
-                    background:linear-gradient(135deg,#ffc940 0%,#ffd86b 45%,#ffb300 100%);
+                    background:linear-gradient(135deg,#ffb438 0%,#ffd95f 45%,#ff8d3b 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                     background-clip:text; line-height:1.05; text-shadow:0 4px 18px rgba(255,200,40,0.35);">🏆 RANKING</div>
     </div>
@@ -130,15 +130,15 @@ def pantalla_ranking():
             pos = r["_pos"]
 
             if pos == 1:
-                pos_color = "#2563eb"; bg = "rgba(37,99,235,0.08)"; bl = "3px solid rgba(37,99,235,0.24)"
+                pos_color = "#5a60ff"; bg = "rgba(37,99,235,0.08)"; bl = "3px solid rgba(37,99,235,0.24)"
             elif pos == 2:
-                pos_color = "#4f86f7"; bg = "rgba(79,134,247,0.07)"; bl = "3px solid rgba(79,134,247,0.20)"
+                pos_color = "#7b61ff"; bg = "rgba(79,134,247,0.07)"; bl = "3px solid rgba(79,134,247,0.20)"
             elif pos == 3:
-                pos_color = "#14b8a6"; bg = "rgba(20,184,166,0.07)"; bl = "3px solid rgba(20,184,166,0.22)"
+                pos_color = "#45ffa2"; bg = "rgba(20,184,166,0.07)"; bl = "3px solid rgba(20,184,166,0.22)"
             elif es_yo:
-                pos_color = "#00e87a"; bg = "rgba(0,232,122,0.07)"; bl = "3px solid rgba(0,200,96,0.5)"
+                pos_color = "#45ffa2"; bg = "rgba(0,232,122,0.07)"; bl = "3px solid rgba(0,200,96,0.5)"
             else:
-                pos_color = "#525268"; bg = "transparent"; bl = "3px solid transparent"
+                pos_color = "var(--text3)"; bg = "transparent"; bl = "3px solid transparent"
 
             you_badge = (
                 '<span style="background:var(--green-dim);color:var(--green);font-size:0.6rem;font-weight:700;'
