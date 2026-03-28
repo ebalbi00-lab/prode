@@ -70,9 +70,7 @@ def inject_css():
     st.markdown(f"""
     <style>
     :root {{
-        color-scheme: {v['scheme']} !important;
-        supported-color-schemes: dark !important;
-        accent-color: {v['accent']};
+        color-scheme: {v['scheme']};
         --bg: {v['bg']};
         --bg2: {v['bg2']};
         --bg3: {v['bg3']};
@@ -133,18 +131,6 @@ def inject_css():
     html, body {{
         background: {v['bg_html']} !important;
         color: var(--text) !important;
-    }}
-
-    html {{
-        background-color: {v['bg_html']} !important;
-    }}
-
-    body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
-        overscroll-behavior-y: none;
-    }}
-
-    * {{
-        scrollbar-color: rgba(143,170,214,0.30) rgba(255,255,255,0.04);
     }}
 
     body {{
@@ -378,11 +364,12 @@ def inject_css():
     .stTextInput button,
     [data-baseweb="input"] button,
     [data-baseweb="base-input"] button {{
-        background: linear-gradient(135deg, rgba(34,211,238,0.96) 0%, rgba(59,130,246,0.92) 100%) !important;
-        color: #04111f !important;
-        border: 1px solid rgba(110,231,255,0.34) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 10px 22px rgba(34,211,238,0.18) !important;
+        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        color: var(--text2) !important;
+        border: 0 !important;
+        border-left: 1.5px solid rgba(143,170,214,0.18) !important;
+        border-radius: 0 16px 16px 0 !important;
+        box-shadow: none !important;
         transition: all 0.18s ease !important;
     }}
 
@@ -391,9 +378,11 @@ def inject_css():
     .stTextInput button:hover,
     [data-baseweb="input"] button:hover,
     [data-baseweb="base-input"] button:hover {{
-        border-color: var(--accent) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 14px 26px rgba(34,211,238,0.22), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
+        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        color: var(--text) !important;
+        border-left-color: var(--border2) !important;
+        transform: none !important;
+        box-shadow: none !important;
     }}
 
     .stNumberInput button svg,
@@ -401,15 +390,26 @@ def inject_css():
     .stTextInput button svg,
     [data-baseweb="input"] button svg,
     [data-baseweb="base-input"] button svg {{
-        fill: #04111f !important;
-        color: #04111f !important;
+        fill: var(--text2) !important;
+        color: var(--text2) !important;
+    }}
+
+    .stNumberInput button:hover svg,
+    .stPasswordInput button:hover svg,
+    .stTextInput button:hover svg,
+    [data-baseweb="input"] button:hover svg,
+    [data-baseweb="base-input"] button:hover svg {{
+        fill: var(--text) !important;
+        color: var(--text) !important;
     }}
 
     .stNumberInput [data-testid="stWidgetLabel"] + div,
     .stPasswordInput [data-testid="stWidgetLabel"] + div,
     .stTextInput [data-testid="stWidgetLabel"] + div {{
+        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
         box-shadow: 0 12px 28px rgba(0,0,0,0.16) !important;
         border-radius: 16px !important;
+        overflow: hidden !important;
     }}
 
     /* Buttons */
@@ -565,36 +565,7 @@ def inject_css():
 
 
 
-    /* Native mobile controls forced to app palette */
-    input, textarea, select, button {{
-        appearance: none;
-        -webkit-appearance: none;
-        border-radius: 16px;
-    }}
-
-    input[type="date"],
-    input[type="time"],
-    input[type="datetime-local"],
-    input[type="month"],
-    input[type="week"] {{
-        color-scheme: dark !important;
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
-        color: var(--text) !important;
-        border: 1.5px solid var(--border2) !important;
-    }}
-
-    input[type="checkbox"],
-    input[type="radio"] {{
-        accent-color: var(--accent) !important;
-        color-scheme: dark !important;
-    }}
-
-    ::selection {{
-        background: rgba(110,231,255,0.28);
-        color: var(--text);
-    }}
-
-        /* Defensive contrast fixes for light-mode browsers / mobile webviews */
+    /* Defensive contrast fixes for light-mode browsers / mobile webviews */
     input, textarea, select, button {{
         color: var(--text) !important;
         -webkit-text-fill-color: currentColor !important;
