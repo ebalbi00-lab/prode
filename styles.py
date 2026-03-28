@@ -1,109 +1,797 @@
+"""
+styles.py — Sistema visual premium azul, consistente en móvil y desktop.
+"""
 import streamlit as st
 
+PREMIUM_THEME = dict(
+    scheme="dark",
+    bg_html="#06101d",
+    bg="#06101d",
+    bg2="#0a1728",
+    bg3="#0e2036",
+    bg4="#102845",
+    surface="rgba(10, 23, 40, 0.82)",
+    surface_elevated="rgba(12, 28, 49, 0.94)",
+    surface_soft="rgba(102, 177, 255, 0.08)",
+    surface2="rgba(102, 177, 255, 0.12)",
+    text="#f5f9ff",
+    text2="#cad8ee",
+    text3="#8fa6c7",
+    border="rgba(128, 165, 214, 0.16)",
+    border2="rgba(128, 165, 214, 0.28)",
+    hover_border="rgba(103, 190, 255, 0.42)",
+    shadow="rgba(1, 8, 20, 0.52)",
+    input_bg="rgba(6, 17, 30, 0.96)",
+    input_text="#f5f9ff",
+    table_bg="rgba(7, 19, 34, 0.96)",
+    table_head="rgba(103, 190, 255, 0.10)",
+    table_row="rgba(255, 255, 255, 0.018)",
+    accent="#67beff",
+    accent_2="#2f7ef7",
+    accent_3="#38bdf8",
+    gold="#8fc9ff",
+    gold2="#dbeeff",
+    gold_dim="rgba(103, 190, 255, 0.12)",
+    gold_glow="rgba(103, 190, 255, 0.22)",
+    gold_border="rgba(103, 190, 255, 0.30)",
+    blue="#67beff",
+    blue2="#d8eeff",
+    blue_dim="rgba(103, 190, 255, 0.12)",
+    blue_border="rgba(103, 190, 255, 0.30)",
+    cyan="#38bdf8",
+    cyan_dim="rgba(56, 189, 248, 0.12)",
+    cyan_border="rgba(56, 189, 248, 0.28)",
+    red="#fb7185",
+    red_dim="rgba(251, 113, 133, 0.12)",
+    red_border="rgba(251, 113, 133, 0.28)",
+    orange="#7dd3fc",
+    orange_dim="rgba(125, 211, 252, 0.14)",
+    orange_border="rgba(125, 211, 252, 0.28)",
+    green="#60a5fa",
+    green2="#3b82f6",
+    green_dim="rgba(96, 165, 250, 0.14)",
+    green_border="rgba(96, 165, 250, 0.28)",
+    green_glow="rgba(96, 165, 250, 0.20)",
+    success="#60a5fa",
+    warning="#7dd3fc",
+    danger="#fb7185",
+)
+
+
+def get_tema() -> str:
+    return "premium-blue"
+
+
+def render_tema_boton():
+    return None
+
+
 def inject_css():
-    st.markdown("""
+    v = PREMIUM_THEME
+    st.markdown(f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap');
 
-    /* ===== TEMA GENERAL AZUL ===== */
-    .stApp {
-        background: linear-gradient(180deg, #0f2a44 0%, #163a5c 60%, #1b4b75 100%);
-    }
+    :root {{
+        color-scheme: {v['scheme']};
+        --bg: {v['bg']};
+        --bg2: {v['bg2']};
+        --bg3: {v['bg3']};
+        --bg4: {v['bg4']};
+        --surface: {v['surface']};
+        --surface-elevated: {v['surface_elevated']};
+        --surface-soft: {v['surface_soft']};
+        --surface2: {v['surface2']};
+        --text: {v['text']};
+        --text2: {v['text2']};
+        --text3: {v['text3']};
+        --border: {v['border']};
+        --border2: {v['border2']};
+        --hover-border: {v['hover_border']};
+        --shadow-clr: {v['shadow']};
+        --input-bg: {v['input_bg']};
+        --input-text: {v['input_text']};
+        --table-bg: {v['table_bg']};
+        --table-head: {v['table_head']};
+        --table-row: {v['table_row']};
+        --accent: {v['accent']};
+        --accent-2: {v['accent_2']};
+        --accent-3: {v['accent_3']};
+        --gold: {v['gold']};
+        --gold2: {v['gold2']};
+        --gold-dim: {v['gold_dim']};
+        --gold-glow: {v['gold_glow']};
+        --gold-border: {v['gold_border']};
+        --blue: {v['blue']};
+        --blue2: {v['blue2']};
+        --blue-dim: {v['blue_dim']};
+        --blue-border: {v['blue_border']};
+        --cyan: {v['cyan']};
+        --cyan-dim: {v['cyan_dim']};
+        --cyan-border: {v['cyan_border']};
+        --red: {v['red']};
+        --red-dim: {v['red_dim']};
+        --red-border: {v['red_border']};
+        --orange: {v['orange']};
+        --orange-dim: {v['orange_dim']};
+        --orange-border: {v['orange_border']};
+        --green: {v['green']};
+        --green2: {v['green2']};
+        --green-dim: {v['green_dim']};
+        --green-border: {v['green_border']};
+        --green-glow: {v['green_glow']};
+        --success: {v['success']};
+        --warning: {v['warning']};
+        --danger: {v['danger']};
+        --radius: 20px;
+        --radius-sm: 14px;
+        --radius-lg: 28px;
+    }}
 
-    /* ===== ESPACIO SUPERIOR ===== */
-    header {
-        visibility: hidden;
+    html, body, [class*="css"] {{
+        font-family: 'Inter', sans-serif !important;
+    }}
+
+    html, body {{
+        background: {v['bg_html']} !important;
+        color: var(--text) !important;
+        color-scheme: dark !important;
+        accent-color: {v['accent']};
+    }}
+
+    html {{
+        background-color: {v['bg_html']} !important;
+    }}
+
+    body {{
+        background:
+            radial-gradient(circle at 0% 0%, rgba(103,190,255,0.20), transparent 24%),
+            radial-gradient(circle at 100% 0%, rgba(47,126,247,0.22), transparent 20%),
+            radial-gradient(circle at 50% 100%, rgba(56,189,248,0.10), transparent 24%),
+            linear-gradient(180deg, #06101d 0%, #081625 35%, #0b1a2c 100%) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text);
+        overscroll-behavior-y: none;
+    }}
+
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
+        background:
+            radial-gradient(circle at top left, rgba(103,190,255,0.16), transparent 22%),
+            radial-gradient(circle at top right, rgba(47,126,247,0.16), transparent 20%),
+            radial-gradient(circle at bottom center, rgba(56,189,248,0.08), transparent 24%),
+            linear-gradient(180deg, #06101d 0%, #081625 35%, #0b1a2c 100%) !important;
+        color: var(--text) !important;
+    }}
+
+    [data-testid="stHeader"], header, #MainMenu, footer {{
+        visibility: hidden !important;
         height: 0 !important;
-    }
+    }}
 
-    .block-container {
-        padding-top: 0.6rem !important;
-        padding-bottom: 1rem !important;
-    }
+    html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+    [data-testid="stAppViewBlockContainer"], section.main, section[data-testid="stSidebar"] {{
+        color: var(--text) !important;
+        background-color: var(--bg) !important;
+    }}
 
-    /* ===== INPUTS ===== */
-    div[data-baseweb="input"] {
-        background-color: #1e4f7a !important;
-        border: 1px solid #4d8fcb !important;
-        border-radius: 10px !important;
-        overflow: hidden !important;
-    }
+    [data-testid="stAppViewContainer"] * ,
+    .stApp * ,
+    section[data-testid="stSidebar"] * {{
+        color: inherit;
+    }}
 
-    div[data-baseweb="input"] input {
-        background: transparent !important;
-        color: #ffffff !important;
-        caret-color: #ffffff !important;
-    }
+    .block-container {{
+        max-width: 1120px !important;
+        padding-top: 0.55rem !important;
+        padding-bottom: 2.2rem !important;
+        position: relative;
+    }}
 
-    /* PLACEHOLDER */
-    div[data-baseweb="input"] input::placeholder {
-        color: #dbeafe !important;
+    .block-container::before {{
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.016), transparent 20%),
+            radial-gradient(circle at 20% 18%, rgba(103,190,255,0.08), transparent 18%),
+            radial-gradient(circle at 78% 8%, rgba(47,126,247,0.08), transparent 18%);
+        mix-blend-mode: screen;
+    }}
+
+    h1, h2, h3, h4, h5, h6 {{
+        font-family: 'Outfit', 'Inter', sans-serif !important;
+        letter-spacing: -0.02em;
+    }}
+
+    h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small {{
+        color: inherit;
+    }}
+
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] li,
+    [data-testid="stText"],
+    .stCaption,
+    code {{
+        color: var(--text) !important;
+    }}
+
+    a {{
+        color: var(--accent) !important;
+        text-decoration: none !important;
+    }}
+
+    hr {{
+        border-color: rgba(128,165,214,0.12) !important;
+    }}
+
+    [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlockBorderWrapper"] > div,
+    div[data-testid="stExpander"],
+    .stForm,
+    div[data-testid="stMetric"] {{
+        border-radius: var(--radius) !important;
+    }}
+
+    .stForm {{
+        background: linear-gradient(180deg, rgba(15,32,54,0.88) 0%, rgba(7,18,31,0.96) 100%) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: 0 24px 60px var(--shadow-clr) !important;
+        padding: 1.1rem 1.1rem 0.85rem 1.1rem !important;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(14px);
+    }}
+
+    .stForm::before {{
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(103,190,255,0.7) 24%, rgba(47,126,247,0.58) 68%, transparent 100%);
+        pointer-events: none;
+    }}
+
+    .stTextInput > div > div > input,
+    .stPasswordInput > div > div > input,
+    .stNumberInput input,
+    .stDateInput input,
+    .stTextArea textarea,
+    textarea,
+    [data-baseweb="select"] > div,
+    [data-baseweb="base-input"] > div,
+    [data-testid="stFileUploaderDropzone"] {{
+        background: linear-gradient(180deg, rgba(6,16,29,0.98) 0%, rgba(10,22,38,0.98) 100%) !important;
+        color: var(--input-text) !important;
+        border: 1.5px solid var(--border2) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.20) !important;
+    }}
+
+    .stTextInput > div > div > input,
+    .stPasswordInput > div > div > input,
+    .stNumberInput input,
+    .stDateInput input,
+    .stTextArea textarea,
+    textarea {{
+        padding: 0.84rem 0.96rem !important;
+        font-size: 0.98rem !important;
+        caret-color: var(--accent) !important;
+    }}
+
+    .stTextInput input::placeholder,
+    .stPasswordInput input::placeholder,
+    .stTextArea textarea::placeholder,
+    textarea::placeholder {{
+        color: var(--text3) !important;
         opacity: 1 !important;
-    }
+    }}
 
-    /* OJO */
-    div[data-baseweb="input"] > div:last-child {
-        background-color: #1e4f7a !important;
-    }
+    .stTextInput > div > div > input:focus,
+    .stPasswordInput > div > div > input:focus,
+    .stNumberInput input:focus,
+    .stDateInput input:focus,
+    .stTextArea textarea:focus,
+    textarea:focus,
+    [data-baseweb="select"] > div:focus-within,
+    [data-baseweb="base-input"] > div:focus-within {{
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px rgba(103,190,255,0.12), 0 12px 32px rgba(47,126,247,0.10) !important;
+    }}
 
-    div[data-baseweb="input"] button {
-        background-color: #1e4f7a !important;
-        border: none !important;
-        padding: 6px !important;
-    }
+    .stTextInput label,
+    .stPasswordInput label,
+    .stSelectbox label,
+    .stNumberInput label,
+    .stDateInput label,
+    .stFileUploader label,
+    .stTextArea label,
+    .stMultiSelect label,
+    .stRadio label,
+    .stCheckbox label,
+    [data-testid="stWidgetLabel"],
+    [data-testid="stWidgetLabel"] * {{
+        color: var(--text2) !important;
+        -webkit-text-fill-color: var(--text2) !important;
+        font-size: 0.73rem !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1.2px !important;
+    }}
 
-    div[data-baseweb="input"] button:hover {
-        background-color: #25639a !important;
-    }
+    [data-baseweb="select"] > div,
+    [data-baseweb="select"] > div > div,
+    [data-baseweb="select"] [role="combobox"],
+    [data-baseweb="select"] [aria-haspopup="listbox"],
+    [data-baseweb="select"] [data-testid="stMarkdownContainer"],
+    [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
+        background: linear-gradient(180deg, rgba(6,16,29,0.98) 0%, rgba(10,22,38,0.98) 100%) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
 
-    div[data-baseweb="input"] button svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-    }
+    [data-baseweb="popover"],
+    [data-baseweb="popover"] > div,
+    [role="listbox"],
+    ul[role="listbox"],
+    div[role="listbox"] {{
+        background: rgba(7, 19, 34, 0.985) !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border2) !important;
+        box-shadow: 0 20px 44px rgba(0,0,0,0.36) !important;
+        border-radius: 16px !important;
+        backdrop-filter: blur(14px);
+    }}
 
-    div[data-baseweb="input"] button svg path {
-        fill: #ffffff !important;
-    }
+    [role="option"], li[role="option"], div[role="option"] {{
+        background: rgba(7, 19, 34, 0.985) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
 
-    /* ===== TEXTOS LOGIN ===== */
-    .login-title {
-        color: #22c55e;
-        font-size: 32px;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 0;
-    }
+    [role="option"]:hover,
+    [role="option"][aria-selected="true"],
+    li[role="option"]:hover,
+    div[role="option"]:hover {{
+        background: rgba(103,190,255,0.14) !important;
+        color: var(--text) !important;
+    }}
 
-    .login-subtitle {
-        text-align: center;
-        color: #ffffff !important;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 20px;
-    }
+    .stButton > button,
+    .stDownloadButton > button {{
+        background: linear-gradient(135deg, rgba(103,190,255,0.14) 0%, rgba(47,126,247,0.18) 100%) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(103,190,255,0.20) !important;
+        border-radius: 16px !important;
+        padding: 0.76rem 1rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.2px !important;
+        box-shadow: 0 14px 30px rgba(0,0,0,0.18) !important;
+        transition: all 0.2s ease !important;
+        min-height: 48px !important;
+    }}
 
-    .login-footer {
-        text-align: center;
-        color: #cbd5f5 !important;
-        font-size: 13px;
-        margin-top: 10px;
-    }
+    .stButton > button:hover,
+    .stDownloadButton > button:hover {{
+        transform: translateY(-1px);
+        border-color: var(--accent) !important;
+        box-shadow: 0 18px 36px rgba(0,0,0,0.24), 0 0 0 1px rgba(103,190,255,0.12) inset !important;
+    }}
 
-    /* LABELS */
-    label {
-        color: #e2ecff !important;
-    }
+    .stButton > button[kind="primary"],
+    .stFormSubmitButton > button,
+    .stDownloadButton > button[kind="primary"] {{
+        background: linear-gradient(135deg, #67beff 0%, #2f7ef7 100%) !important;
+        color: #04111f !important;
+        border: 0 !important;
+        box-shadow: 0 18px 38px rgba(47,126,247,0.26), 0 10px 24px rgba(103,190,255,0.16) !important;
+        min-height: 48px !important;
+    }}
 
-    /* BOTONES */
-    .stButton > button {
-        background: linear-gradient(180deg, #2f7ef7 0%, #1f68d9 100%);
-        color: #ffffff !important;
-        border: 1px solid #6fb1ff !important;
+    .stButton > button:focus,
+    .stFormSubmitButton > button:focus {{
+        box-shadow: 0 0 0 3px rgba(103,190,255,0.16) !important;
+    }}
+
+    [data-testid="stSuccess"],
+    [data-testid="stInfo"],
+    [data-testid="stWarning"],
+    [data-testid="stError"] {{
+        border-radius: 18px !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: 0 12px 26px rgba(0,0,0,0.18) !important;
+        backdrop-filter: blur(10px);
+    }}
+
+    [data-testid="stSuccess"] {{ background: rgba(59, 130, 246, 0.12) !important; }}
+    [data-testid="stInfo"] {{ background: rgba(56, 189, 248, 0.10) !important; }}
+    [data-testid="stWarning"] {{ background: rgba(125, 211, 252, 0.12) !important; }}
+    [data-testid="stError"] {{ background: rgba(251, 113, 133, 0.12) !important; }}
+
+    button[role="tab"] {{
+        background: rgba(255,255,255,0.03) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 14px !important;
+        color: var(--text2) !important;
+        padding: 0.72rem 1rem !important;
+        font-weight: 700 !important;
+        margin-right: 0.35rem !important;
+    }}
+
+    button[role="tab"][aria-selected="true"] {{
+        color: var(--text) !important;
+        border-color: var(--accent) !important;
+        background: linear-gradient(135deg, rgba(103,190,255,0.12) 0%, rgba(47,126,247,0.12) 100%) !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
+    }}
+
+    .stDataFrame, div[data-testid="stTable"] {{
+        background: var(--table-bg) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 18px !important;
+        overflow: hidden !important;
+        box-shadow: 0 16px 34px rgba(0,0,0,0.20) !important;
+    }}
+
+    thead tr {{ background: var(--table-head) !important; }}
+    tbody tr:nth-child(even) {{ background: var(--table-row) !important; }}
+    th, td {{ border-color: rgba(128,165,214,0.10) !important; }}
+
+    details {{
+        background: rgba(10, 23, 40, 0.78) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 18px !important;
+        overflow: hidden !important;
+        box-shadow: 0 14px 28px rgba(0,0,0,0.18) !important;
+    }}
+
+    div[data-testid="stMetric"] {{
+        background: linear-gradient(180deg, rgba(14,32,55,0.92) 0%, rgba(8,18,31,0.96) 100%) !important;
+        border: 1px solid var(--border) !important;
+        padding: 0.95rem 1rem !important;
+        box-shadow: 0 18px 38px rgba(0,0,0,0.20) !important;
+        position: relative;
+        overflow: hidden;
+    }}
+
+    div[data-testid="stMetric"]::after {{
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 3px;
+        background: linear-gradient(180deg, rgba(103,190,255,0.95) 0%, rgba(47,126,247,0.95) 100%);
+    }}
+
+    .stProgress > div > div > div > div {{
+        background: linear-gradient(90deg, #67beff 0%, #2f7ef7 100%) !important;
+    }}
+
+    input, textarea, select, button {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }}
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill {{
+        -webkit-text-fill-color: var(--text) !important;
+        -webkit-box-shadow: 0 0 0px 1000px rgba(6,16,29,0.98) inset !important;
+        transition: background-color 9999s ease-out 0s;
+    }}
+
+    [data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, rgba(6,16,29,0.98) 0%, rgba(10,23,40,0.98) 100%) !important;
+        border-right: 1px solid var(--border) !important;
+    }}
+
+    @media (prefers-color-scheme: light), (prefers-color-scheme: dark) {{
+        html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
+            color-scheme: dark !important;
+            background-color: {v['bg_html']} !important;
+        }}
+        input, textarea, select {{
+            background-color: rgba(6,16,29,0.98) !important;
+            color: var(--text) !important;
+        }}
+    }}
+
+    ::selection {{
+        background: rgba(103,190,255,0.28);
+        color: var(--text);
+    }}
+
+    ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
+    ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
+    ::-webkit-scrollbar-thumb {{ background: rgba(128,165,214,0.30); border-radius: 999px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: rgba(103,190,255,0.40); }}
+
+    .stPasswordInput button,
+    .stPasswordInput button[kind="secondary"],
+    .stPasswordInput button[kind="secondary"]:hover,
+    .stPasswordInput button[kind="secondary"]:focus,
+    .stPasswordInput button[kind="secondary"]:active,
+    .stPasswordInput [data-baseweb="input"] button,
+    .stPasswordInput [data-baseweb="base-input"] button,
+    .stPasswordInput [aria-label*="password" i],
+    .stPasswordInput [title*="password" i],
+    .stPasswordInput [aria-label*="contraseña" i],
+    .stPasswordInput [title*="contraseña" i],
+    .stNumberInput button,
+    .stNumberInput button:hover,
+    .stNumberInput button:focus,
+    .stNumberInput button:active,
+    .stNumberInput [data-baseweb="input"] button,
+    .stNumberInput [data-baseweb="base-input"] button {{
+        background: linear-gradient(135deg, rgba(103,190,255,0.22) 0%, rgba(47,126,247,0.30) 100%) !important;
+        background-color: rgba(47,126,247,0.26) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+        border: 1px solid rgba(103,190,255,0.28) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
+        outline: none !important;
+        min-height: 36px !important;
+        min-width: 36px !important;
+        padding: 0 !important;
+    }}
+
+    .stPasswordInput button svg,
+    .stPasswordInput button[kind="secondary"] svg,
+    .stPasswordInput [data-baseweb="input"] button svg,
+    .stPasswordInput [data-baseweb="base-input"] button svg,
+    .stNumberInput button svg,
+    .stNumberInput [data-baseweb="input"] button svg,
+    .stNumberInput [data-baseweb="base-input"] button svg {{
+        color: var(--blue2) !important;
+        fill: currentColor !important;
+        stroke: currentColor !important;
+    }}
+
+    .stNumberInput > div > div,
+    .stPasswordInput > div > div,
+    .stPasswordInput [data-baseweb="base-input"],
+    .stNumberInput [data-baseweb="base-input"] {{
+        gap: 0.35rem !important;
+    }}
+
+    .stNumberInput button:hover,
+    .stPasswordInput button:hover,
+    .stPasswordInput button[kind="secondary"]:hover {{
+        border-color: var(--accent) !important;
+        box-shadow: 0 14px 26px rgba(0,0,0,0.20), 0 0 0 1px rgba(103,190,255,0.10) inset !important;
+    }}
+
+    [data-testid="stSpinner"],
+    [data-testid="stSpinner"] > div,
+    [data-testid="stSpinner"] > div > div,
+    [data-testid="stStatusWidget"],
+    [data-testid="stStatusWidget"] > div,
+    [data-testid="stStatusWidget"] > div > div {{
+        background: linear-gradient(180deg, rgba(10,23,40,0.90) 0%, rgba(7,18,31,0.96) 100%) !important;
+        border: 1px solid var(--blue-border) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 16px 34px rgba(0,0,0,0.22) !important;
+        color: var(--text) !important;
+    }}
+
+    [data-testid="stSpinner"] *,
+    [data-testid="stStatusWidget"] * {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
+
+
+    [data-testid="stStatusWidget"] code,
+    [data-testid="stSpinner"] code,
+    .element-container code {{
+        background: rgba(103,190,255,0.10) !important;
+        color: var(--blue2) !important;
+        border: 1px solid rgba(103,190,255,0.16) !important;
         border-radius: 10px !important;
-    }
+        padding: 0.15rem 0.38rem !important;
+    }}
 
-    .stButton > button:hover {
-        border-color: #9ed0ff !important;
-    }
+    [data-testid="stHorizontalBlock"] > div {{ gap: 0.9rem !important; }}
+
+    @media (max-width: 768px) {{
+        .block-container {{
+            padding-top: 0.35rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }}
+        .stButton > button,
+        .stDownloadButton > button,
+        .stFormSubmitButton > button {{
+            border-radius: 14px !important;
+            padding: 0.82rem 0.95rem !important;
+            min-height: 50px !important;
+        }}
+        button[role="tab"] {{
+            padding: 0.7rem 0.85rem !important;
+        }}
+    }}
+
+    /* ===== LOGIN / AUTH REBUILD ===== */
+    .login-hero {{
+        text-align: center;
+        padding: 1.2rem 0 1.05rem 0;
+        position: relative;
+    }}
+
+    .login-hero::before {{
+        content: "";
+        position: absolute;
+        inset: -14px auto auto 50%;
+        transform: translateX(-50%);
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(103,190,255,0.22) 0%, rgba(47,126,247,0.10) 44%, transparent 72%);
+        filter: blur(12px);
+        pointer-events: none;
+    }}
+
+    .login-ball {{
+        position: relative;
+        z-index: 1;
+        font-size: 3.05rem;
+        margin-bottom: 0.45rem;
+        filter: drop-shadow(0 10px 26px rgba(47,126,247,0.24));
+    }}
+
+    .login-title {{
+        position: relative;
+        z-index: 1;
+        font-family: 'Outfit', 'Inter', sans-serif !important;
+        font-size: clamp(2.35rem, 6vw, 3.35rem);
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        line-height: 0.98;
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        color: #7df0a8 !important;
+        text-shadow: 0 0 18px rgba(64, 216, 127, 0.12);
+    }}
+
+    .login-subtitle {{
+        position: relative;
+        z-index: 1;
+        font-size: 0.98rem;
+        font-weight: 800;
+        letter-spacing: 0.20em;
+        text-transform: uppercase;
+        color: #dff3ff !important;
+        margin-bottom: 0;
+    }}
+
+    .login-footer-wrap {{
+        text-align: center;
+        margin-top: 0.8rem;
+    }}
+
+    .login-footer-link {{
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        text-decoration: none;
+        background: linear-gradient(180deg, rgba(15,32,54,0.86) 0%, rgba(8,18,31,0.94) 100%);
+        border: 1.5px solid var(--border2);
+        border-radius: 20px;
+        padding: 6px 16px;
+        transition: all 0.16s ease;
+        color: var(--text2) !important;
+    }}
+
+    .login-footer-link:hover {{
+        border-color: var(--accent) !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.18), 0 0 0 1px rgba(103,190,255,0.10) inset !important;
+        transform: translateY(-1px);
+    }}
+
+    .login-footer-link,
+    .login-footer-link span,
+    .login-footer-link svg,
+    .login-footer-link strong {{
+        color: var(--text2) !important;
+        fill: currentColor !important;
+        stroke: currentColor !important;
+    }}
+
+    .login-footer-link strong {{
+        color: var(--text) !important;
+    }}
+
+    /* ===== PASSWORD EYE FIX ===== */
+    .stPasswordInput [data-baseweb="base-input"],
+    .stPasswordInput [data-baseweb="input"] {{
+        background: linear-gradient(180deg, rgba(8,21,36,0.98) 0%, rgba(11,25,43,0.98) 100%) !important;
+        border: 1.5px solid var(--border2) !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.20) !important;
+    }}
+
+    .stPasswordInput [data-baseweb="base-input"] > div,
+    .stPasswordInput [data-baseweb="input"] > div {{
+        background: transparent !important;
+    }}
+
+    .stPasswordInput input {{
+        background: transparent !important;
+        color: var(--input-text) !important;
+    }}
+
+    .stPasswordInput input::placeholder {{
+        color: var(--text3) !important;
+        opacity: 1 !important;
+    }}
+
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child,
+    .stPasswordInput [data-baseweb="input"] > div:last-child {{
+        background: linear-gradient(180deg, rgba(8,21,36,0.98) 0%, rgba(11,25,43,0.98) 100%) !important;
+        border-left: 1px solid rgba(103,190,255,0.10) !important;
+        padding-right: 0.18rem !important;
+    }}
+
+    .stPasswordInput button,
+    .stPasswordInput button[kind="secondary"],
+    .stPasswordInput [data-baseweb="input"] button,
+    .stPasswordInput [data-baseweb="base-input"] button,
+    .stPasswordInput [aria-label*="password" i],
+    .stPasswordInput [title*="password" i],
+    .stPasswordInput [aria-label*="contraseña" i],
+    .stPasswordInput [title*="contraseña" i] {{
+        background: linear-gradient(135deg, rgba(103,190,255,0.16) 0%, rgba(47,126,247,0.18) 100%) !important;
+        background-color: transparent !important;
+        color: var(--blue2) !important;
+        -webkit-text-fill-color: var(--blue2) !important;
+        border: 1px solid rgba(103,190,255,0.16) !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+        min-height: 34px !important;
+        min-width: 34px !important;
+        width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        margin-right: 0.15rem !important;
+    }}
+
+    .stPasswordInput button:hover,
+    .stPasswordInput button[kind="secondary"]:hover,
+    .stPasswordInput [data-baseweb="input"] button:hover,
+    .stPasswordInput [data-baseweb="base-input"] button:hover {{
+        background: linear-gradient(135deg, rgba(103,190,255,0.22) 0%, rgba(47,126,247,0.30) 100%) !important;
+        border-color: rgba(103,190,255,0.28) !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
+    }}
+
+    .stPasswordInput button svg,
+    .stPasswordInput button[kind="secondary"] svg,
+    .stPasswordInput [data-baseweb="input"] button svg,
+    .stPasswordInput [data-baseweb="base-input"] button svg,
+    .stPasswordInput button svg path,
+    .stPasswordInput button[kind="secondary"] svg path,
+    .stPasswordInput [data-baseweb="input"] button svg path,
+    .stPasswordInput [data-baseweb="base-input"] button svg path {{
+        color: var(--blue2) !important;
+        fill: currentColor !important;
+        stroke: currentColor !important;
+    }}
+
+    @media (max-width: 768px) {{
+        .login-hero {{
+            padding-top: 0.65rem;
+            padding-bottom: 0.85rem;
+        }}
+        .login-ball {{
+            font-size: 2.8rem;
+        }}
+        .login-subtitle {{
+            font-size: 0.90rem;
+            letter-spacing: 0.16em;
+        }}
+    }}
 
     </style>
     """, unsafe_allow_html=True)

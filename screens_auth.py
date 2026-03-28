@@ -58,15 +58,10 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 
 def pantalla_login():
     st.markdown("""
-    <div style="text-align:center; padding: 2.7rem 0 1.6rem 0; position:relative;">
-        <div style="position:absolute; inset:-10px auto auto 50%; transform:translateX(-50%); width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(103,190,255,0.18) 0%, rgba(47,126,247,0.08) 42%, transparent 72%); filter:blur(10px);"></div>
-        <div style="position:relative; z-index:1; font-size:3.2rem; margin-bottom:0.75rem; filter:drop-shadow(0 10px 28px rgba(47,126,247,0.28));">⚽</div>
-        <div style="position:relative; z-index:1; font-family:Outfit,Inter,sans-serif; font-size:3.6rem; font-weight:800; letter-spacing:0.08em;
-                    background:linear-gradient(135deg,#dcfce7 0%,#4ade80 45%,#16a34a 100%);
-                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.0; margin-bottom:0.35rem; text-transform:uppercase;
-                    text-shadow:0 0 18px rgba(34,197,94,0.10);">PRODE IL BAIGO</div>
-        <div style="position:relative; z-index:1; color:var(--text2); font-size:1rem; font-weight:700; letter-spacing:0.24em; text-transform:uppercase;">Mundial 2026</div>
+    <div class="login-hero">
+        <div class="login-ball">⚽</div>
+        <div class="login-title">PRODE IL BAIGO</div>
+        <div class="login-subtitle">Mundial 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -90,18 +85,15 @@ def pantalla_login():
     st.divider()
     st.button("ℹ️ Acerca del prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
     st.markdown("""
-    <div style="text-align:center; margin-top:0.8rem;">
-        <a href="https://www.instagram.com/il_baigo" target="_blank"
-           style="display:inline-flex; align-items:center; gap:7px; text-decoration:none;
-                  background:var(--surface); border:1.5px solid var(--border2);
-                  border-radius:20px; padding:6px 16px; transition:all 0.16s ease;">
+    <div class="login-footer-wrap">
+        <a href="https://www.instagram.com/il_baigo" target="_blank" class="login-footer-link">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                <rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
-                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
-                <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" style="color:var(--text2);"/>
+                <rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/>
             </svg>
-            <span style="color:var(--text2); font-size:0.82rem; font-weight:600; letter-spacing:0.3px;">
-                Seguinos <strong style="color:var(--text);">@il_baigo</strong></span>
+            <span style="font-size:0.82rem; font-weight:600; letter-spacing:0.3px;">
+                Seguinos en <strong>Instagram</strong> @il_baigo</span>
         </a>
     </div>
     """, unsafe_allow_html=True)
