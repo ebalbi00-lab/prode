@@ -235,25 +235,26 @@ def _render_scroll_top():
 def _render_header(nombre_display, usuarios_en_linea):
     inicial = (str(nombre_display or "?").strip()[:1] or "?").upper()
     st.markdown(f"""
-    <div style="display:flex; align-items:center; justify-content:space-between;
-                padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
-        <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:40px; height:40px; border-radius:50%;
-                        background:linear-gradient(135deg,#3beeff,#6d2cff);
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;
+                padding:0.35rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+            <div style="width:46px; height:46px; border-radius:16px;
+                        background:linear-gradient(135deg,#dff1ff 0%, #67beff 42%, #2f7ef7 100%);
+                        box-shadow:0 14px 28px rgba(47,126,247,0.24);
                         display:flex; align-items:center; justify-content:center;
-                        font-size:1.1rem; font-weight:800; color:var(--text); flex-shrink:0;">
+                        font-size:1.05rem; font-weight:900; color:#04111f; flex-shrink:0;">
                 {inicial}
             </div>
-            <div>
-                <div style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text); line-height:1.1;">{nombre_display}</div>
-                <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px;">Mundial 2026</div>
+            <div style="min-width:0;">
+                <div style="font-family:Outfit,Inter,sans-serif; font-size:1.28rem; font-weight:800; letter-spacing:0.02em; color:var(--text); line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{nombre_display}</div>
+                <div style="font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.7px;">Panel de juego · Mundial 2026</div>
             </div>
         </div>
-        <div style="text-align:right;">
-            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Prode Il Baigo</div>
-            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-dim);border:1px solid var(--blue-border);
-                        color:var(--blue);padding:3px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;">
-                <span>🟢</span><span>{usuarios_en_linea} en línea</span>
+        <div style="text-align:right; flex-shrink:0;">
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:6px;">Prode Il Baigo</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg, rgba(103,190,255,0.14), rgba(47,126,247,0.12));border:1px solid var(--blue-border);
+                        color:var(--blue2);padding:4px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;box-shadow:0 10px 22px rgba(47,126,247,0.12);">
+                <span>●</span><span>{usuarios_en_linea} en línea</span>
             </div>
         </div>
     </div>
@@ -524,7 +525,7 @@ def pantalla_usuario():
 
     # ── Validaciones ────────────────────────────────────────────────────────────
     if not fases.get(fase, False):
-        st.markdown("""<div style="background:rgba(255,180,56,0.12); border:1.5px solid rgba(255,180,56,0.28);
+        st.markdown("""<div style="background:rgba(255,180,0,0.08); border:1.5px solid rgba(255,180,0,0.25);
                     border-radius:12px; padding:14px 18px; margin:1rem 0;">
             <div style="color:var(--gold); font-weight:700; margin-bottom:4px;">⏳ Fase no habilitada</div>
             <div style="color:var(--text2); font-size:0.88rem;">Esta fase todavía no fue abierta por el admin.</div>
