@@ -384,19 +384,19 @@ def inject_css():
     /* Status / skeleton / running init */
     [data-testid="stStatusWidget"],
     [data-testid="stSpinner"],
-    [data-testid="stSkeleton"] {
+    [data-testid="stSkeleton"] {{
         background: linear-gradient(180deg, rgba(15,29,51,0.88) 0%, rgba(10,20,36,0.92) 100%) !important;
         color: var(--text) !important;
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
-    }
+    }}
 
     /* Compact integrated controls */
     .stNumberInput button,
     .stTextInput button,
-    .stPasswordInput button {
+    .stPasswordInput button {{
         min-height: 48px !important;
-    }
+    }}
 
     /* Alerts */
     [data-testid="stSuccess"],
