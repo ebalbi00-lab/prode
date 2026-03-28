@@ -25,7 +25,7 @@ PREMIUM_THEME = dict(
     table_bg="rgba(9, 18, 33, 0.94)",
     table_head="rgba(110, 231, 255, 0.10)",
     table_row="rgba(255, 255, 255, 0.02)",
-    accent="#3b82f6",
+    accent="#6ee7ff",
     accent_2="#8b5cf6",
     accent_3="#22c55e",
     gold="#f5c76b",
@@ -33,13 +33,13 @@ PREMIUM_THEME = dict(
     gold_dim="rgba(245, 199, 107, 0.12)",
     gold_glow="rgba(245, 199, 107, 0.22)",
     gold_border="rgba(245, 199, 107, 0.32)",
-    blue="#3b82f6",
-    blue2="#93c5fd",
-    blue_dim="rgba(59, 130, 246, 0.16)",
-    blue_border="rgba(59, 130, 246, 0.34)",
-    cyan="#3b82f6",
-    cyan_dim="rgba(59, 130, 246, 0.16)",
-    cyan_border="rgba(59, 130, 246, 0.30)",
+    blue="#6ee7ff",
+    blue2="#bae6fd",
+    blue_dim="rgba(110, 231, 255, 0.12)",
+    blue_border="rgba(110, 231, 255, 0.28)",
+    cyan="#22d3ee",
+    cyan_dim="rgba(34, 211, 238, 0.12)",
+    cyan_border="rgba(34, 211, 238, 0.26)",
     red="#fb7185",
     red_dim="rgba(251, 113, 133, 0.12)",
     red_border="rgba(251, 113, 133, 0.28)",
@@ -206,10 +206,21 @@ def inject_css():
     }}
 
     .stForm {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.92) 100%) !important;
+        background: linear-gradient(180deg, rgba(15,29,51,0.92) 0%, rgba(10,20,36,0.95) 100%) !important;
         border: 1px solid var(--border) !important;
-        box-shadow: 0 16px 40px var(--shadow-clr) !important;
-        padding: 1rem 1rem 0.7rem 1rem !important;
+        box-shadow: 0 20px 48px var(--shadow-clr) !important;
+        padding: 1.05rem 1.05rem 0.8rem 1.05rem !important;
+        position: relative;
+        overflow: hidden;
+    }}
+
+    .stForm::before {{
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(110,231,255,0.65) 22%, rgba(139,92,246,0.55) 68%, transparent 100%);
+        pointer-events: none;
     }}
 
     /* Inputs */
@@ -345,60 +356,81 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
+
+
+    /* Icon / utility buttons */
+    .stNumberInput button,
+    .stPasswordInput button,
+    .stTextInput button,
+    [data-baseweb="input"] button,
+    [data-baseweb="base-input"] button {{
+        background: linear-gradient(135deg, rgba(34,211,238,0.96) 0%, rgba(59,130,246,0.92) 100%) !important;
+        color: #04111f !important;
+        border: 1px solid rgba(110,231,255,0.34) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 22px rgba(34,211,238,0.18) !important;
+        transition: all 0.18s ease !important;
+    }}
+
+    .stNumberInput button:hover,
+    .stPasswordInput button:hover,
+    .stTextInput button:hover,
+    [data-baseweb="input"] button:hover,
+    [data-baseweb="base-input"] button:hover {{
+        border-color: var(--accent) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px rgba(34,211,238,0.22), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
+    }}
+
+    .stNumberInput button svg,
+    .stPasswordInput button svg,
+    .stTextInput button svg,
+    [data-baseweb="input"] button svg,
+    [data-baseweb="base-input"] button svg {{
+        fill: #04111f !important;
+        color: #04111f !important;
+    }}
+
+    .stNumberInput [data-testid="stWidgetLabel"] + div,
+    .stPasswordInput [data-testid="stWidgetLabel"] + div,
+    .stTextInput [data-testid="stWidgetLabel"] + div {{
+        box-shadow: 0 12px 28px rgba(0,0,0,0.16) !important;
+        border-radius: 16px !important;
+    }}
+
     /* Buttons */
     .stButton > button,
-    .stDownloadButton > button,
-    .stFormSubmitButton > button,
-    button[kind="secondary"],
-    button[kind="tertiary"],
-    button[kind="primary"],
-    button[data-testid="baseButton-secondary"],
-    button[data-testid="baseButton-primary"],
-    [data-testid="stNumberInput"] button,
-    [data-testid="baseButton-icon"] {{
-        background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        border: 1px solid rgba(147,197,253,0.32) !important;
+    .stDownloadButton > button {{
+        background: linear-gradient(135deg, rgba(110,231,255,0.18) 0%, rgba(139,92,246,0.18) 100%) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(110,231,255,0.22) !important;
         border-radius: 16px !important;
         padding: 0.72rem 1rem !important;
         font-weight: 800 !important;
         letter-spacing: 0.2px !important;
-        box-shadow: 0 14px 30px rgba(37,99,235,0.28), 0 8px 20px rgba(2,8,20,0.22) !important;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important;
         transition: all 0.2s ease !important;
     }}
 
     .stButton > button:hover,
-    .stDownloadButton > button:hover,
-    .stFormSubmitButton > button:hover,
-    button[kind="secondary"]:hover,
-    button[kind="tertiary"]:hover,
-    button[kind="primary"]:hover,
-    button[data-testid="baseButton-secondary"]:hover,
-    button[data-testid="baseButton-primary"]:hover,
-    [data-testid="stNumberInput"] button:hover,
-    [data-testid="baseButton-icon"]:hover {{
+    .stDownloadButton > button:hover {{
         transform: translateY(-1px);
-        background: linear-gradient(180deg, #4d90ff 0%, #2563eb 100%) !important;
-        border-color: rgba(191,219,254,0.44) !important;
-        box-shadow: 0 18px 36px rgba(37,99,235,0.34), 0 0 0 1px rgba(191,219,254,0.12) inset !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 16px 34px rgba(0,0,0,0.24), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
     }}
 
     .stButton > button[kind="primary"],
     .stFormSubmitButton > button,
     .stDownloadButton > button[kind="primary"] {{
-        background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        border: 1px solid rgba(147,197,253,0.34) !important;
-        box-shadow: 0 18px 38px rgba(37,99,235,0.34), 0 10px 24px rgba(2,8,20,0.24) !important;
+        background: linear-gradient(135deg, #22d3ee 0%, #8b5cf6 100%) !important;
+        color: #04111f !important;
+        border: 0 !important;
+        box-shadow: 0 18px 38px rgba(34,211,238,0.18), 0 10px 24px rgba(139,92,246,0.14) !important;
     }}
 
     .stButton > button:focus,
-    .stFormSubmitButton > button:focus,
-    .stDownloadButton > button:focus,
-    [data-testid="stNumberInput"] button:focus {{
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.22), 0 16px 34px rgba(37,99,235,0.30) !important;
+    .stFormSubmitButton > button:focus {{
+        box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
     }}
 
     /* Alerts */
@@ -484,10 +516,21 @@ def inject_css():
 
     /* Metrics */
     div[data-testid="stMetric"] {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.88) 0%, rgba(10,20,36,0.92) 100%) !important;
+        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.95) 100%) !important;
         border: 1px solid var(--border) !important;
-        padding: 0.9rem 1rem !important;
-        box-shadow: 0 16px 32px rgba(0,0,0,0.18) !important;
+        padding: 0.95rem 1rem !important;
+        box-shadow: 0 18px 38px rgba(0,0,0,0.20) !important;
+        position: relative;
+        overflow: hidden;
+    }}
+
+    div[data-testid="stMetric"]::after {{
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 3px;
+        background: linear-gradient(180deg, rgba(34,211,238,0.95) 0%, rgba(139,92,246,0.95) 100%);
+        opacity: 0.9;
     }}
 
     div[data-testid="stMetric"] label {{
@@ -503,7 +546,7 @@ def inject_css():
 
     /* Progress */
     .stProgress > div > div > div > div {{
-        background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%) !important;
+        background: linear-gradient(90deg, #22d3ee 0%, #8b5cf6 100%) !important;
     }}
 
 
@@ -524,14 +567,8 @@ def inject_css():
     }}
 
     .stButton > button p,
-    .stButton > button span,
-    .stButton > button div,
     .stDownloadButton > button p,
-    .stDownloadButton > button span,
     .stFormSubmitButton > button p,
-    .stFormSubmitButton > button span,
-    [data-testid="stNumberInput"] button *,
-    button[data-testid^="baseButton"] *,
     button[role="tab"] p,
     [role="option"] *,
     details summary *,
