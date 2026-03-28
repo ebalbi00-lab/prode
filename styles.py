@@ -1,59 +1,59 @@
 """
-styles.py — Tema visual premium máximo para Prode Il Baigo.
+styles.py — Tema visual premium unificado para toda la app.
 """
 import streamlit as st
 
 PREMIUM_THEME = dict(
     scheme="dark",
-    bg_html="#05101e",
-    bg="#05101e",
-    bg2="#091628",
-    bg3="#0d1d35",
-    surface="rgba(10, 20, 38, 0.82)",
-    surface_elevated="rgba(14, 26, 48, 0.95)",
-    surface_soft="rgba(110, 140, 190, 0.07)",
-    surface2="rgba(110, 140, 190, 0.11)",
-    text="#f0f5fc",
-    text2="#b8cce0",
-    text3="#7a97bb",
-    border="rgba(130, 165, 220, 0.16)",
-    border2="rgba(130, 165, 220, 0.26)",
-    hover_border="rgba(100, 220, 255, 0.45)",
-    shadow="rgba(1, 6, 18, 0.52)",
-    input_bg="rgba(7, 16, 30, 0.97)",
-    input_text="#f0f5fc",
-    table_bg="rgba(7, 16, 30, 0.96)",
-    table_head="rgba(100, 220, 255, 0.09)",
-    table_row="rgba(255, 255, 255, 0.018)",
-    accent="#5ee8ff",
-    accent_2="#9b6df5",
-    accent_3="#1fd47a",
-    gold="#f7cc6a",
-    gold2="#ffe09a",
-    gold_dim="rgba(247, 204, 106, 0.11)",
-    gold_glow="rgba(247, 204, 106, 0.20)",
-    gold_border="rgba(247, 204, 106, 0.30)",
-    blue="#5ee8ff",
-    blue2="#b8f0ff",
-    blue_dim="rgba(94, 232, 255, 0.11)",
-    blue_border="rgba(94, 232, 255, 0.26)",
-    cyan="#1af0cc",
-    cyan_dim="rgba(26, 240, 204, 0.11)",
-    cyan_border="rgba(26, 240, 204, 0.24)",
-    red="#ff6b85",
-    red_dim="rgba(255, 107, 133, 0.11)",
-    red_border="rgba(255, 107, 133, 0.26)",
-    orange="#ff9a4a",
-    orange_dim="rgba(255, 154, 74, 0.13)",
-    orange_border="rgba(255, 154, 74, 0.26)",
-    green="#2ef890",
-    green2="#0fca72",
-    green_dim="rgba(46, 248, 144, 0.12)",
-    green_border="rgba(46, 248, 144, 0.26)",
-    green_glow="rgba(46, 248, 144, 0.18)",
-    success="#2ef890",
-    warning="#f5a623",
-    danger="#ff6b85",
+    bg_html="#07111f",
+    bg="#07111f",
+    bg2="#0b1729",
+    bg3="#0f1d33",
+    surface="rgba(12, 22, 40, 0.78)",
+    surface_elevated="rgba(16, 28, 50, 0.92)",
+    surface_soft="rgba(120, 140, 180, 0.08)",
+    surface2="rgba(120, 140, 180, 0.12)",
+    text="#f4f7fb",
+    text2="#c6d3e6",
+    text3="#8da2c0",
+    border="rgba(143, 170, 214, 0.18)",
+    border2="rgba(143, 170, 214, 0.28)",
+    hover_border="rgba(110, 231, 255, 0.42)",
+    shadow="rgba(2, 8, 20, 0.42)",
+    input_bg="rgba(9, 18, 33, 0.96)",
+    input_text="#f4f7fb",
+    table_bg="rgba(9, 18, 33, 0.94)",
+    table_head="rgba(110, 231, 255, 0.10)",
+    table_row="rgba(255, 255, 255, 0.02)",
+    accent="#6ee7ff",
+    accent_2="#8b5cf6",
+    accent_3="#22c55e",
+    gold="#f5c76b",
+    gold2="#ffd891",
+    gold_dim="rgba(245, 199, 107, 0.12)",
+    gold_glow="rgba(245, 199, 107, 0.22)",
+    gold_border="rgba(245, 199, 107, 0.32)",
+    blue="#6ee7ff",
+    blue2="#bae6fd",
+    blue_dim="rgba(110, 231, 255, 0.12)",
+    blue_border="rgba(110, 231, 255, 0.28)",
+    cyan="#22d3ee",
+    cyan_dim="rgba(34, 211, 238, 0.12)",
+    cyan_border="rgba(34, 211, 238, 0.26)",
+    red="#fb7185",
+    red_dim="rgba(251, 113, 133, 0.12)",
+    red_border="rgba(251, 113, 133, 0.28)",
+    orange="#fb923c",
+    orange_dim="rgba(251, 146, 60, 0.14)",
+    orange_border="rgba(251, 146, 60, 0.28)",
+    green="#34d399",
+    green2="#10b981",
+    green_dim="rgba(52, 211, 153, 0.14)",
+    green_border="rgba(52, 211, 153, 0.28)",
+    green_glow="rgba(52, 211, 153, 0.20)",
+    success="#34d399",
+    warning="#f59e0b",
+    danger="#fb7185",
 )
 
 
@@ -69,8 +69,6 @@ def inject_css():
     v = PREMIUM_THEME
     st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
-
     :root {{
         color-scheme: {v['scheme']};
         --bg: {v['bg']};
@@ -121,18 +119,13 @@ def inject_css():
         --success: {v['success']};
         --warning: {v['warning']};
         --danger: {v['danger']};
-        --radius: 20px;
+        --radius: 18px;
         --radius-sm: 14px;
-        --radius-lg: 28px;
-        --font-display: 'Bebas Neue', sans-serif;
-        --font-body: 'Outfit', sans-serif;
-        --font-mono: 'JetBrains Mono', monospace;
+        --radius-lg: 26px;
     }}
 
     html, body, [class*="css"] {{
-        font-family: 'Outfit', sans-serif !important;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        font-family: 'Inter', sans-serif !important;
     }}
 
     html, body {{
@@ -142,21 +135,20 @@ def inject_css():
 
     body {{
         background:
-            radial-gradient(ellipse 80% 60% at -10% -5%, rgba(94,232,255,0.14) 0%, transparent 55%),
-            radial-gradient(ellipse 60% 50% at 110% -5%, rgba(155,109,245,0.18) 0%, transparent 50%),
-            radial-gradient(ellipse 50% 40% at 50% 105%, rgba(46,248,144,0.09) 0%, transparent 55%),
-            radial-gradient(ellipse 30% 25% at 90% 60%, rgba(247,204,106,0.06) 0%, transparent 45%),
-            linear-gradient(170deg, #05101e 0%, #081525 35%, #070e1c 70%, #050e1a 100%) !important;
+            radial-gradient(circle at 0% 0%, rgba(110,231,255,0.18), transparent 28%),
+            radial-gradient(circle at 100% 0%, rgba(139,92,246,0.20), transparent 24%),
+            radial-gradient(circle at 50% 100%, rgba(52,211,153,0.10), transparent 26%),
+            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text);
     }}
 
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
         background:
-            radial-gradient(ellipse 80% 60% at -10% -5%, rgba(94,232,255,0.13) 0%, transparent 55%),
-            radial-gradient(ellipse 60% 50% at 110% -5%, rgba(155,109,245,0.16) 0%, transparent 50%),
-            radial-gradient(ellipse 50% 40% at 50% 105%, rgba(46,248,144,0.08) 0%, transparent 55%),
-            linear-gradient(170deg, #05101e 0%, #081525 35%, #070e1c 70%, #050e1a 100%) !important;
+            radial-gradient(circle at top left, rgba(110,231,255,0.16), transparent 24%),
+            radial-gradient(circle at top right, rgba(139,92,246,0.18), transparent 22%),
+            radial-gradient(circle at bottom center, rgba(52,211,153,0.08), transparent 26%),
+            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
         color: var(--text) !important;
     }}
 
@@ -179,8 +171,8 @@ def inject_css():
 
     .block-container {{
         max-width: 1080px !important;
-        padding-top: 1.8rem !important;
-        padding-bottom: 3.5rem !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
     }}
 
     h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small {{
@@ -199,17 +191,13 @@ def inject_css():
     a {{
         color: var(--accent) !important;
         text-decoration: none !important;
-        transition: color 0.18s ease;
     }}
-    a:hover {{ color: var(--blue2) !important; }}
 
     hr {{
-        border: none !important;
-        height: 1px !important;
-        background: linear-gradient(90deg, transparent, rgba(130,165,220,0.22) 20%, rgba(94,232,255,0.18) 50%, rgba(130,165,220,0.22) 80%, transparent) !important;
-        margin: 1.2rem 0 !important;
+        border-color: rgba(143,170,214,0.14) !important;
     }}
 
+    /* Containers */
     [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlockBorderWrapper"] > div,
     div[data-testid="stExpander"],
     .stForm,
@@ -218,18 +206,13 @@ def inject_css():
     }}
 
     .stForm {{
-        background: linear-gradient(160deg,
-            rgba(14,27,50,0.92) 0%,
-            rgba(9,18,34,0.95) 100%) !important;
-        border: 1px solid rgba(130,165,220,0.18) !important;
-        box-shadow:
-            0 24px 60px rgba(1,6,18,0.52),
-            0 0 0 1px rgba(255,255,255,0.03) inset,
-            0 1px 0 rgba(255,255,255,0.06) inset !important;
-        padding: 1.2rem 1.1rem 0.9rem 1.1rem !important;
-        backdrop-filter: blur(18px) !important;
+        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.92) 100%) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: 0 16px 40px var(--shadow-clr) !important;
+        padding: 1rem 1rem 0.7rem 1rem !important;
     }}
 
+    /* Inputs */
     .stTextInput > div > div > input,
     .stPasswordInput > div > div > input,
     .stNumberInput input,
@@ -239,16 +222,11 @@ def inject_css():
     [data-baseweb="select"] > div,
     [data-baseweb="base-input"] > div,
     [data-testid="stFileUploaderDropzone"] {{
-        background: linear-gradient(180deg,
-            rgba(6,14,28,0.98) 0%,
-            rgba(9,19,36,0.98) 100%) !important;
+        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
         color: var(--input-text) !important;
-        border: 1.5px solid rgba(130,165,220,0.22) !important;
+        border: 1.5px solid var(--border2) !important;
         border-radius: 16px !important;
-        box-shadow:
-            0 8px 24px rgba(0,0,0,0.22),
-            0 0 0 1px rgba(255,255,255,0.02) inset !important;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important;
     }}
 
     .stTextInput > div > div > input,
@@ -257,12 +235,9 @@ def inject_css():
     .stDateInput input,
     .stTextArea textarea,
     textarea {{
-        padding: 0.85rem 1rem !important;
-        font-size: 0.97rem !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 500 !important;
+        padding: 0.82rem 0.95rem !important;
+        font-size: 0.98rem !important;
         caret-color: var(--accent) !important;
-        letter-spacing: 0.1px !important;
     }}
 
     .stTextInput input::placeholder,
@@ -271,7 +246,6 @@ def inject_css():
     textarea::placeholder {{
         color: var(--text3) !important;
         opacity: 1 !important;
-        font-weight: 400 !important;
     }}
 
     .stTextInput > div > div > input:focus,
@@ -282,11 +256,8 @@ def inject_css():
     textarea:focus,
     [data-baseweb="select"] > div:focus-within,
     [data-baseweb="base-input"] > div:focus-within {{
-        border-color: rgba(94,232,255,0.55) !important;
-        box-shadow:
-            0 0 0 3px rgba(94,232,255,0.10),
-            0 8px 28px rgba(94,232,255,0.08),
-            0 0 0 1px rgba(255,255,255,0.03) inset !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px rgba(110,231,255,0.12), 0 10px 30px rgba(110,231,255,0.10) !important;
     }}
 
     .stTextInput label,
@@ -301,22 +272,22 @@ def inject_css():
     .stCheckbox label,
     [data-testid="stWidgetLabel"],
     [data-testid="stWidgetLabel"] * {{
-        color: var(--text3) !important;
-        -webkit-text-fill-color: var(--text3) !important;
-        font-size: 0.70rem !important;
-        font-weight: 700 !important;
-        font-family: 'Outfit', sans-serif !important;
+        color: var(--text2) !important;
+        -webkit-text-fill-color: var(--text2) !important;
+        font-size: 0.73rem !important;
+        font-weight: 800 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1.4px !important;
+        letter-spacing: 1.2px !important;
     }}
 
+    /* Dropdowns */
     [data-baseweb="select"] > div,
     [data-baseweb="select"] > div > div,
     [data-baseweb="select"] [role="combobox"],
     [data-baseweb="select"] [aria-haspopup="listbox"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
-        background: linear-gradient(180deg, rgba(6,14,28,0.98) 0%, rgba(9,19,36,0.98) 100%) !important;
+        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -324,8 +295,8 @@ def inject_css():
     [data-baseweb="select"] svg,
     [data-baseweb="popover"] svg,
     [role="listbox"] svg {{
-        fill: var(--text3) !important;
-        color: var(--text3) !important;
+        fill: var(--text2) !important;
+        color: var(--text2) !important;
     }}
 
     [data-baseweb="popover"],
@@ -333,23 +304,20 @@ def inject_css():
     [role="listbox"],
     ul[role="listbox"],
     div[role="listbox"] {{
-        background: rgba(8, 16, 32, 0.98) !important;
+        background: rgba(10, 19, 35, 0.985) !important;
         color: var(--text) !important;
-        border: 1px solid rgba(130,165,220,0.22) !important;
-        box-shadow:
-            0 24px 56px rgba(1,6,18,0.48),
-            0 0 0 1px rgba(255,255,255,0.03) inset !important;
-        border-radius: 18px !important;
-        backdrop-filter: blur(20px) !important;
+        border: 1px solid var(--border2) !important;
+        box-shadow: 0 20px 44px rgba(0,0,0,0.36) !important;
+        border-radius: 16px !important;
+        backdrop-filter: blur(14px);
     }}
 
     [role="option"],
     li[role="option"],
     div[role="option"] {{
-        background: transparent !important;
+        background: rgba(10, 19, 35, 0.985) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
-        transition: background 0.14s ease !important;
     }}
 
     [role="option"] *,
@@ -365,7 +333,7 @@ def inject_css():
     [role="option"]:hover,
     li[role="option"]:hover,
     div[role="option"]:hover {{
-        background: rgba(94,232,255,0.12) !important;
+        background: rgba(110,231,255,0.14) !important;
         color: var(--text) !important;
     }}
 
@@ -377,141 +345,91 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
+    /* Buttons */
     .stButton > button,
     .stDownloadButton > button {{
-        background: linear-gradient(135deg,
-            rgba(94,232,255,0.13) 0%,
-            rgba(155,109,245,0.13) 100%) !important;
+        background: linear-gradient(135deg, rgba(110,231,255,0.18) 0%, rgba(139,92,246,0.18) 100%) !important;
         color: var(--text) !important;
-        border: 1px solid rgba(94,232,255,0.20) !important;
+        border: 1px solid rgba(110,231,255,0.22) !important;
         border-radius: 16px !important;
-        padding: 0.75rem 1.1rem !important;
-        font-weight: 700 !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-size: 0.92rem !important;
-        letter-spacing: 0.3px !important;
-        box-shadow:
-            0 10px 28px rgba(0,0,0,0.22),
-            0 1px 0 rgba(255,255,255,0.05) inset !important;
-        transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        padding: 0.72rem 1rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.2px !important;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important;
+        transition: all 0.2s ease !important;
     }}
 
     .stButton > button:hover,
     .stDownloadButton > button:hover {{
-        transform: translateY(-2px) scale(1.01) !important;
-        border-color: rgba(94,232,255,0.45) !important;
-        box-shadow:
-            0 18px 40px rgba(0,0,0,0.28),
-            0 0 20px rgba(94,232,255,0.10),
-            0 1px 0 rgba(255,255,255,0.07) inset !important;
-    }}
-
-    .stButton > button:active,
-    .stDownloadButton > button:active {{
-        transform: translateY(0px) scale(0.99) !important;
+        transform: translateY(-1px);
+        border-color: var(--accent) !important;
+        box-shadow: 0 16px 34px rgba(0,0,0,0.24), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
     }}
 
     .stButton > button[kind="primary"],
     .stFormSubmitButton > button,
     .stDownloadButton > button[kind="primary"] {{
-        background: linear-gradient(135deg,
-            #1de8cc 0%,
-            #5ee8ff 40%,
-            #9b6df5 100%) !important;
-        color: #030d1a !important;
-        -webkit-text-fill-color: #030d1a !important;
+        background: linear-gradient(135deg, #22d3ee 0%, #8b5cf6 100%) !important;
+        color: #04111f !important;
         border: 0 !important;
-        font-weight: 900 !important;
-        letter-spacing: 0.4px !important;
-        box-shadow:
-            0 20px 44px rgba(30,232,204,0.18),
-            0 10px 26px rgba(155,109,245,0.16),
-            0 1px 0 rgba(255,255,255,0.20) inset !important;
-    }}
-
-    .stButton > button[kind="primary"]:hover,
-    .stFormSubmitButton > button:hover {{
-        transform: translateY(-2px) scale(1.015) !important;
-        box-shadow:
-            0 26px 52px rgba(30,232,204,0.24),
-            0 12px 32px rgba(155,109,245,0.20),
-            0 1px 0 rgba(255,255,255,0.22) inset !important;
+        box-shadow: 0 18px 38px rgba(34,211,238,0.18), 0 10px 24px rgba(139,92,246,0.14) !important;
     }}
 
     .stButton > button:focus,
     .stFormSubmitButton > button:focus {{
-        box-shadow: 0 0 0 3px rgba(94,232,255,0.20) !important;
+        box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
     }}
 
+    /* Alerts */
     [data-testid="stSuccess"],
     [data-testid="stInfo"],
     [data-testid="stWarning"],
     [data-testid="stError"] {{
         border-radius: 18px !important;
         border: 1px solid var(--border) !important;
-        box-shadow:
-            0 14px 32px rgba(0,0,0,0.22),
-            0 1px 0 rgba(255,255,255,0.04) inset !important;
-        backdrop-filter: blur(12px) !important;
+        box-shadow: 0 12px 26px rgba(0,0,0,0.18) !important;
+        backdrop-filter: blur(10px);
     }}
 
-    [data-testid="stSuccess"] {{ background: rgba(15, 202, 114, 0.10) !important; border-color: rgba(46,248,144,0.22) !important; }}
-    [data-testid="stInfo"] {{    background: rgba(94, 232, 255, 0.09) !important; border-color: rgba(94,232,255,0.22) !important; }}
-    [data-testid="stWarning"] {{ background: rgba(245, 166, 35, 0.10) !important; border-color: rgba(247,204,106,0.22) !important; }}
-    [data-testid="stError"] {{   background: rgba(255, 107, 133, 0.10) !important; border-color: rgba(255,107,133,0.22) !important; }}
+    [data-testid="stSuccess"] {{ background: rgba(16, 185, 129, 0.12) !important; }}
+    [data-testid="stInfo"] {{ background: rgba(34, 211, 238, 0.10) !important; }}
+    [data-testid="stWarning"] {{ background: rgba(245, 158, 11, 0.12) !important; }}
+    [data-testid="stError"] {{ background: rgba(251, 113, 133, 0.12) !important; }}
 
+    /* Tabs */
     button[role="tab"] {{
-        background: rgba(255,255,255,0.025) !important;
-        border: 1px solid rgba(130,165,220,0.15) !important;
+        background: rgba(255,255,255,0.03) !important;
+        border: 1px solid var(--border) !important;
         border-radius: 14px !important;
-        color: var(--text3) !important;
-        padding: 0.72rem 1.05rem !important;
-        font-weight: 700 !important;
-        font-family: 'Outfit', sans-serif !important;
-        margin-right: 0.35rem !important;
-        transition: all 0.2s ease !important;
-    }}
-
-    button[role="tab"]:hover {{
-        background: rgba(94,232,255,0.07) !important;
-        border-color: rgba(94,232,255,0.25) !important;
         color: var(--text2) !important;
+        padding: 0.72rem 1rem !important;
+        font-weight: 700 !important;
+        margin-right: 0.35rem !important;
     }}
 
     button[role="tab"][aria-selected="true"] {{
         color: var(--text) !important;
-        border-color: rgba(94,232,255,0.40) !important;
-        background: linear-gradient(135deg,
-            rgba(94,232,255,0.12) 0%,
-            rgba(155,109,245,0.10) 100%) !important;
-        box-shadow:
-            0 8px 20px rgba(0,0,0,0.18),
-            0 0 14px rgba(94,232,255,0.08) !important;
+        border-color: var(--accent) !important;
+        background: linear-gradient(135deg, rgba(110,231,255,0.12) 0%, rgba(139,92,246,0.12) 100%) !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
     }}
 
+    /* Radio / Checkbox */
     .stRadio [role="radiogroup"] > label,
     .stCheckbox > label {{
-        background: rgba(255,255,255,0.025);
-        border: 1px solid rgba(130,165,220,0.15);
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
         border-radius: 14px;
-        padding: 0.45rem 0.75rem;
-        transition: all 0.18s ease;
+        padding: 0.4rem 0.65rem;
     }}
 
-    .stRadio [role="radiogroup"] > label:hover,
-    .stCheckbox > label:hover {{
-        border-color: rgba(94,232,255,0.30);
-        background: rgba(94,232,255,0.06);
-    }}
-
+    /* Tables / Dataframes */
     .stDataFrame, div[data-testid="stTable"] {{
         background: var(--table-bg) !important;
-        border: 1px solid rgba(130,165,220,0.16) !important;
-        border-radius: 20px !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 18px !important;
         overflow: hidden !important;
-        box-shadow:
-            0 20px 44px rgba(0,0,0,0.26),
-            0 1px 0 rgba(255,255,255,0.04) inset !important;
+        box-shadow: 0 16px 34px rgba(0,0,0,0.20) !important;
     }}
 
     table {{
@@ -523,139 +441,53 @@ def inject_css():
     }}
 
     tbody tr:nth-child(even) {{
-        background: var(--table-row) !important;
+        background: var(--table_row) !important;
     }}
 
     th, td {{
-        border-color: rgba(130,165,220,0.10) !important;
+        border-color: rgba(143,170,214,0.12) !important;
     }}
 
+    /* Expanders */
     details {{
-        background: linear-gradient(160deg,
-            rgba(12,22,42,0.82) 0%,
-            rgba(8,16,30,0.88) 100%) !important;
-        border: 1px solid rgba(130,165,220,0.16) !important;
-        border-radius: 20px !important;
+        background: rgba(12, 22, 40, 0.78) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 18px !important;
         overflow: hidden !important;
-        box-shadow:
-            0 16px 36px rgba(0,0,0,0.22),
-            0 1px 0 rgba(255,255,255,0.04) inset !important;
-        backdrop-filter: blur(12px) !important;
-        transition: border-color 0.2s ease !important;
-    }}
-
-    details:hover {{
-        border-color: rgba(94,232,255,0.22) !important;
-    }}
-
-    details[open] {{
-        border-color: rgba(94,232,255,0.28) !important;
+        box-shadow: 0 14px 28px rgba(0,0,0,0.18) !important;
     }}
 
     details summary {{
         background: rgba(255,255,255,0.02) !important;
-        font-weight: 600 !important;
-        font-family: 'Outfit', sans-serif !important;
     }}
 
+    /* Metrics */
     div[data-testid="stMetric"] {{
-        background: linear-gradient(160deg,
-            rgba(14,27,52,0.90) 0%,
-            rgba(9,18,34,0.94) 100%) !important;
-        border: 1px solid rgba(130,165,220,0.18) !important;
-        padding: 1rem 1.1rem !important;
-        box-shadow:
-            0 18px 40px rgba(0,0,0,0.24),
-            0 1px 0 rgba(255,255,255,0.05) inset !important;
-        backdrop-filter: blur(14px) !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-    }}
-
-    div[data-testid="stMetric"]:hover {{
-        transform: translateY(-1px) !important;
-        box-shadow:
-            0 22px 48px rgba(0,0,0,0.28),
-            0 0 18px rgba(94,232,255,0.06),
-            0 1px 0 rgba(255,255,255,0.06) inset !important;
+        background: linear-gradient(180deg, rgba(15,29,51,0.88) 0%, rgba(10,20,36,0.92) 100%) !important;
+        border: 1px solid var(--border) !important;
+        padding: 0.9rem 1rem !important;
+        box-shadow: 0 16px 32px rgba(0,0,0,0.18) !important;
     }}
 
     div[data-testid="stMetric"] label {{
         color: var(--text3) !important;
         text-transform: uppercase !important;
-        letter-spacing: 1.2px !important;
-        font-size: 0.67rem !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 800 !important;
+        letter-spacing: 1px !important;
+        font-size: 0.68rem !important;
     }}
 
     div[data-testid="stMetricValue"] {{
         color: var(--text) !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 800 !important;
     }}
 
-    div[data-testid="stMetricDelta"] {{
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 600 !important;
-    }}
-
+    /* Progress */
     .stProgress > div > div > div > div {{
-        background: linear-gradient(90deg,
-            #1de8cc 0%,
-            #5ee8ff 50%,
-            #9b6df5 100%) !important;
-        border-radius: 999px !important;
-        box-shadow: 0 0 12px rgba(94,232,255,0.30) !important;
+        background: linear-gradient(90deg, #22d3ee 0%, #8b5cf6 100%) !important;
     }}
 
-    .stProgress > div > div > div {{
-        background: rgba(130,165,220,0.12) !important;
-        border-radius: 999px !important;
-    }}
 
-    .stNumberInput [data-testid="stNumberInputStepUp"],
-    .stNumberInput [data-testid="stNumberInputStepDown"] {{
-        background: rgba(94,232,255,0.10) !important;
-        border-color: rgba(94,232,255,0.22) !important;
-        color: var(--accent) !important;
-        transition: all 0.18s ease !important;
-        border-radius: 10px !important;
-    }}
 
-    .stNumberInput [data-testid="stNumberInputStepUp"]:hover,
-    .stNumberInput [data-testid="stNumberInputStepDown"]:hover {{
-        background: rgba(94,232,255,0.20) !important;
-        border-color: rgba(94,232,255,0.40) !important;
-    }}
-
-    [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg,
-            rgba(5,16,30,0.97) 0%,
-            rgba(9,22,42,0.97) 100%) !important;
-        border-right: 1px solid rgba(130,165,220,0.14) !important;
-        backdrop-filter: blur(20px) !important;
-    }}
-
-    .stCaption, [data-testid="stCaptionContainer"] {{
-        color: var(--text3) !important;
-        font-size: 0.80rem !important;
-        font-family: 'Outfit', sans-serif !important;
-    }}
-
-    [data-testid="column"] {{
-        padding: 0 0.35rem !important;
-    }}
-
-    [data-testid="stFileUploaderDropzone"] {{
-        border: 2px dashed rgba(130,165,220,0.22) !important;
-        border-radius: 18px !important;
-        transition: border-color 0.2s ease, background 0.2s ease !important;
-    }}
-    [data-testid="stFileUploaderDropzone"]:hover {{
-        border-color: rgba(94,232,255,0.40) !important;
-        background: rgba(94,232,255,0.04) !important;
-    }}
-
+    /* Defensive contrast fixes for light-mode browsers / mobile webviews */
     input, textarea, select, button {{
         color: var(--text) !important;
         -webkit-text-fill-color: currentColor !important;
@@ -666,7 +498,7 @@ def inject_css():
     input:-webkit-autofill:focus,
     textarea:-webkit-autofill {{
         -webkit-text-fill-color: var(--text) !important;
-        -webkit-box-shadow: 0 0 0px 1000px rgba(6,14,28,0.98) inset !important;
+        -webkit-box-shadow: 0 0 0px 1000px rgba(8,18,32,0.98) inset !important;
         transition: background-color 9999s ease-out 0s;
     }}
 
@@ -685,20 +517,15 @@ def inject_css():
         -webkit-text-fill-color: currentColor !important;
     }}
 
-    .stFormSubmitButton > button p,
-    .stButton > button[kind="primary"] p {{
-        color: #030d1a !important;
-        -webkit-text-fill-color: #030d1a !important;
-    }}
-
-    [data-testid="stSelectbox"] [data-baseweb="select"] *,
+    [data-testid="stSelectbox"] [data-baseweb="select"] * ,
     [data-testid="stMultiSelect"] [data-baseweb="select"] * {{
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
 
+    /* Extra mobile/browser fixes for select menus */
     select, option, optgroup {{
-        background-color: #080f1e !important;
+        background-color: #0a1323 !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -714,8 +541,8 @@ def inject_css():
     }}
 
     [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, rgba(5,16,30,0.97) 0%, rgba(9,22,42,0.97) 100%) !important;
-        border-right: 1px solid rgba(130,165,220,0.14) !important;
+        background: linear-gradient(180deg, rgba(7,17,31,0.96) 0%, rgba(11,23,41,0.96) 100%) !important;
+        border-right: 1px solid var(--border) !important;
     }}
 
     @media (prefers-color-scheme: light) {{
@@ -724,35 +551,89 @@ def inject_css():
         }}
     }}
 
-    ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
-    ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.03); border-radius: 999px; }}
-    ::-webkit-scrollbar-thumb {{
-        background: linear-gradient(180deg, rgba(94,232,255,0.35), rgba(155,109,245,0.30));
-        border-radius: 999px;
-    }}
-    ::-webkit-scrollbar-thumb:hover {{
-        background: linear-gradient(180deg, rgba(94,232,255,0.55), rgba(155,109,245,0.48));
+    /* Scrollbar */
+    ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
+    ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
+    ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
+
+
+    /* Premium polish */
+    .block-container::before {{
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.015), transparent 22%),
+            radial-gradient(circle at 20% 20%, rgba(110,231,255,0.06), transparent 18%),
+            radial-gradient(circle at 80% 10%, rgba(139,92,246,0.07), transparent 16%);
+        mix-blend-mode: screen;
     }}
 
-    [data-testid="stDivider"] hr {{
-        background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(94,232,255,0.15) 20%,
-            rgba(155,109,245,0.12) 50%,
-            rgba(94,232,255,0.15) 80%,
-            transparent 100%) !important;
-        height: 1px !important;
-        border: none !important;
+    .stButton > button,
+    .stDownloadButton > button,
+    .stFormSubmitButton > button {{
+        min-height: 46px !important;
     }}
 
-    [data-testid="toastContainer"] > div {{
-        background: rgba(10,20,38,0.96) !important;
-        border: 1px solid rgba(94,232,255,0.24) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 20px 44px rgba(0,0,0,0.38) !important;
-        backdrop-filter: blur(20px) !important;
-        color: var(--text) !important;
+    .stButton > button:active,
+    .stFormSubmitButton > button:active {{
+        transform: translateY(0) scale(0.99);
     }}
 
+    .stTabs [data-baseweb="tab-list"] {{
+        gap: 0.4rem !important;
+        margin-bottom: 0.8rem !important;
+    }}
+
+    .stTabs [data-baseweb="tab-highlight"] {{
+        background: transparent !important;
+    }}
+
+    details summary {{
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
+    }}
+
+    details[open] {{
+        border-color: var(--hover-border) !important;
+        box-shadow: 0 18px 40px rgba(0,0,0,0.22), 0 0 0 1px rgba(110,231,255,0.08) inset !important;
+    }}
+
+    div[data-testid="stMetric"]:hover,
+    .stForm:hover,
+    div[data-testid="stExpander"]:hover {{
+        border-color: var(--hover-border) !important;
+        box-shadow: 0 20px 42px rgba(0,0,0,0.24) !important;
+    }}
+
+    [data-testid="stHorizontalBlock"] > div {{
+        gap: 0.9rem !important;
+    }}
+
+    .stApp [data-testid="stCaptionContainer"],
+    .stApp .stCaption {{
+        color: var(--text3) !important;
+    }}
+
+    @media (max-width: 768px) {{
+        .block-container {{
+            padding-top: 1rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }}
+
+        .stButton > button,
+        .stDownloadButton > button,
+        .stFormSubmitButton > button {{
+            border-radius: 14px !important;
+            padding: 0.78rem 0.95rem !important;
+        }}
+
+        button[role="tab"] {{
+            padding: 0.68rem 0.85rem !important;
+        }}
+    }}
     </style>
     """, unsafe_allow_html=True)

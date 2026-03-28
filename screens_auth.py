@@ -259,7 +259,8 @@ def pantalla_en_revision():
 
 def pantalla_acerca():
     st.markdown("""
-    <div style="padding:0.5rem 0 1.2rem 0;">
+    <div style="padding:0.5rem 0 1.2rem 0; position:relative;">
+        <div style="position:absolute; inset:auto 0 -6px auto; width:120px; height:120px; background:radial-gradient(circle, rgba(110,231,255,0.18) 0%, transparent 70%); filter:blur(8px);"></div>
         <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
                     color:var(--text3); margin-bottom:0.3rem;">Guía del participante</div>
         <div style="font-family:Bebas Neue,sans-serif; font-size:2.8rem; letter-spacing:3px;
@@ -270,13 +271,22 @@ def pantalla_acerca():
     """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="background:var(--green-dim); border:1.5px solid var(--green-glow);
-                border-radius:12px; padding:14px 18px; margin-bottom:1rem;">
+    <div style="background:linear-gradient(135deg, rgba(52,211,153,0.16) 0%, rgba(34,211,238,0.12) 100%);
+                border:1.5px solid var(--green-glow); border-radius:18px; padding:18px 20px; margin-bottom:1rem;
+                box-shadow:0 18px 36px rgba(0,0,0,0.18);">
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
-                    color:var(--green); margin-bottom:6px;">⚽ ¿Cómo funciona?</div>
-        <div style="color:var(--text2); font-size:0.92rem; line-height:1.75;">
+                    color:var(--green); margin-bottom:8px;">⚽ ¿Cómo funciona?</div>
+        <div style="color:var(--text2); font-size:0.94rem; line-height:1.8;">
             Pronosticás el resultado de cada partido <strong>antes de que la fase cierre</strong>.<br>
-            Una vez que el admin cierra la fase, tu pronóstico queda bloqueado. Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
+            Habrá <strong style="color:var(--text);">premios para los primeros puestos</strong> y también
+            <strong style="color:var(--text);">premios durante el transcurso de la competencia</strong>.<br>
+            Cada pronóstico se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">⏳ Cierre por fase</span>
+            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🏆 Premios finales</span>
+            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🎁 Premios sorpresa</span>
+            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🇦🇷 Horario Argentina / Buenos Aires</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -296,26 +306,26 @@ def pantalla_acerca():
                       f'<td style="padding:10px 14px; color:var(--text); font-weight:600; font-size:0.92rem;">{fase}</td>'
                       f'<td style="padding:10px 14px; color:var(--blue); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{res_pts[i]}</td>'
                       f'<td style="padding:10px 14px; color:var(--green); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{exacto_pts[i]}</td></tr>')
-    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--border, unsafe_allow_html=True);margin-bottom:0.8rem;">
+    st.markdown(f"""<div style="border-radius:16px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:0.8rem; box-shadow:0 18px 36px rgba(0,0,0,0.16);">
         <table style="width:100%; border-collapse:collapse; background:var(--table-bg);">
         <thead><tr style="background:var(--table-head); border-bottom:1px solid var(--border);">
             <th style="padding:10px 14px; color:var(--text3); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:left;">Fase</th>
             <th style="padding:10px 14px; color:var(--blue); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">✅ Resultado</th>
             <th style="padding:10px 14px; color:var(--green); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">🎯 Exacto</th>
         </tr></thead><tbody>{filas_pts}</tbody></table></div>""", unsafe_allow_html=True)
-    st.caption("**Resultado** = acertás quién gana o si es empate. &nbsp;&nbsp;**Exacto** = acertás el marcador exacto (ambos goles).")
+    st.caption("**Resultado** = acertás quién gana o si es empate. **Exacto** = acertás el marcador exacto.")
 
     st.divider()
     col_info1, col_info2 = st.columns(2)
     with col_info1:
-        st.markdown("""<div style="background:var(--orange-dim); border:1.5px solid var(--orange-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
+        st.markdown("""<div style="background:linear-gradient(135deg, rgba(251,146,60,0.14) 0%, rgba(245,158,11,0.10) 100%); border:1.5px solid var(--orange-border); border-radius:16px; padding:16px 18px; box-shadow:0 16px 32px rgba(0,0,0,0.16);">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:6px;">💰 Puntos de consumo</div>
-            <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">El admin puede sumar puntos por consumo en el local o presencia en los partidos.</div>
+            <div style="color:var(--text2); font-size:0.88rem; line-height:1.7;">El admin puede sumar puntos por consumo en el local o presencia en los partidos.</div>
         </div>""", unsafe_allow_html=True)
     with col_info2:
-        st.markdown("""<div style="background:var(--blue-dim); border:1.5px solid var(--blue-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
+        st.markdown("""<div style="background:linear-gradient(135deg, rgba(110,231,255,0.14) 0%, rgba(59,130,246,0.10) 100%); border:1.5px solid var(--blue-border); border-radius:16px; padding:16px 18px; box-shadow:0 16px 32px rgba(0,0,0,0.16);">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--blue); margin-bottom:6px;">📊 Ranking</div>
-            <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">Se actualiza automáticamente. Total = resultados + goles + consumo + especiales.</div>
+            <div style="color:var(--text2); font-size:0.88rem; line-height:1.7;">Se actualiza automáticamente. Total = resultados + goles + consumo + especiales.</div>
         </div>""", unsafe_allow_html=True)
 
     st.divider()
@@ -333,7 +343,7 @@ def pantalla_acerca():
         cards_esp += f"""
         <div style="display:flex; justify-content:space-between; align-items:center;
                     background:var(--surface); border:1px solid var(--border);
-                    border-radius:10px; padding:10px 16px; margin-bottom:6px;">
+                    border-radius:14px; padding:12px 16px; margin-bottom:8px; box-shadow:0 10px 24px rgba(0,0,0,0.12);">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-size:1.2rem;">{icono}</span>
                 <span style="color:var(--text); font-weight:600; font-size:0.92rem;">{label}</span>
@@ -344,24 +354,17 @@ def pantalla_acerca():
 
     st.divider()
     st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🏅 Premios</div>""", unsafe_allow_html=True)
+                color:var(--text3); margin-bottom:0.7rem;">🎉 Premios durante la competencia</div>""", unsafe_allow_html=True)
     st.markdown("""
-    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
-                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🥇 Premios para los primeros puestos</div>
-        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            Al finalizar el torneo habrá <strong style="color:var(--gold);">premios para los primeros puestos</strong> del ranking general.<br>
-            Los premios son una <strong style="color:var(--gold);">sorpresa</strong> — se revelarán al finalizar la competencia.
-        </div>
-    </div>
-    <div style="background:var(--blue-dim); border:1.5px solid var(--blue-border);
-                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--blue); font-weight:700; font-size:0.88rem; margin-bottom:8px;">⚡ Premios durante la competencia</div>
-        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            A lo largo del torneo se irán otorgando <strong style="color:var(--text);">diversos premios sorpresa</strong>
-            en momentos especiales de la competencia — fase de grupos, octavos, cuartos, semifinales y más.<br><br>
-            Estar activo, consumir en el local y seguir de cerca cada partido puede sumar puntos
-            y acceso a premios exclusivos. <span style="color:var(--blue);">¡Seguí participando!</span>
+    <div style="background:linear-gradient(135deg, rgba(110,231,255,0.14) 0%, rgba(139,92,246,0.14) 100%);
+                border:1.5px solid var(--blue-border); border-radius:18px; padding:16px 20px; margin-bottom:0.8rem;
+                box-shadow:0 18px 36px rgba(0,0,0,0.18);">
+        <div style="color:var(--blue); font-weight:700; font-size:0.92rem; margin-bottom:8px;">🏆 Premios para los primeros puestos + premios sorpresa</div>
+        <div style="color:var(--text2); font-size:0.9rem; line-height:1.8;">
+            Durante la competencia habrá <strong style="color:var(--text);">premios para quienes terminen en los primeros puestos</strong>
+            del ranking general y también <strong style="color:var(--text);">premios sorpresa</strong> en distintas etapas del torneo.<br><br>
+            Estar activo, consumir en el local y seguir de cerca cada fase te puede dar más chances de sumar puntos y meterte en la pelea.
+            <span style="color:var(--blue);"> Todo se maneja con horario de Argentina / Buenos Aires.</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -374,7 +377,6 @@ def pantalla_acerca():
     with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
         st.write("El admin controla manualmente cuándo se cierra cada fase.")
     with st.expander("¿Olvidé mi contraseña, qué hago?"):
-        st.write("Contactá al administrador por fuera de la app para que te resetee la contraseña.")
+        st.write("Contactá al administrador para que te ayude a recuperar o cambiar el acceso.")
 
-    st.divider()
     st.button("← Volver", on_click=cambiar_pantalla, args=(0,), use_container_width=True)

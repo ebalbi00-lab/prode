@@ -5,7 +5,6 @@ Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 import datetime
 import hashlib
 import os
-import zoneinfo
 
 import psycopg2
 import psycopg2.extras
@@ -14,6 +13,12 @@ import streamlit as st
 from contextlib import contextmanager
 
 from constants import FASES, CATEGORIAS_ESPECIALES, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, GRUPOS_DEFAULT
+
+APP_TZ = datetime.timezone(datetime.timedelta(hours=-3))
+
+def ahora_argentina():
+    return datetime.datetime.now(APP_TZ)
+
 
 
 # ─── Conexión ────────────────────────────────────────────────────────────────
@@ -664,7 +669,7 @@ def db_sumar_consumo(username, puntos, descripcion=""):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE usuarios SET consumo=consumo+%s WHERE username=%s", (puntos, username))
-        fecha = datetime.datetime.now(zoneinfo.ZoneInfo("America/Argentina/Buenos_Aires")).strftime("%Y-%m-%d %H:%M")
+        fecha = ahora_argentina().strftime("%Y-%m-%d %H:%M")
         cur.execute(
             "INSERT INTO consumo_log (username, puntos, descripcion, fecha) VALUES (%s, %s, %s, %s)",
             (username, puntos, descripcion, fecha)
@@ -680,28 +685,32 @@ def db_sumar_consumo(username, puntos, descripcion=""):
 
 
 def db_eliminar_consumo_log(log_id):
-    username_borrado = None
-    puntos_borrados = 0
+    row = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM consumo_log WHERE id=%s", (log_id,))
         row = cur.fetchone()
         if row:
-            username_borrado = row["username"]
-            puntos_borrados = row["puntos"]
             cur.execute(
                 "UPDATE usuarios SET consumo=GREATEST(0, consumo-%s) WHERE username=%s",
                 (row["puntos"], row["username"])
             )
             cur.execute("DELETE FROM consumo_log WHERE id=%s", (log_id,))
     try:
-        db_get_todos_usuarios.clear()
-        db_get_consumo_log.clear()
+        if row:
+            db_get_usuario.clear(row["username"])
     except Exception:
         pass
-    if username_borrado:
-        db_feed_event(f"🗑️ Se eliminó registro de consumo de {username_borrado} ({puntos_borrados} pts)", "consumo")
-
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_consumo_log.clear()
+        if row:
+            db_get_consumo_log.clear(row["username"])
+    except Exception:
+        pass
+    if row:
+        detalle = f" ({row['descripcion']})" if row.get("descripcion") else ""
+        db_feed_event(f"🗑️ Se eliminó el consumo #{log_id} de {row['username']} por {row['puntos']} puntos{detalle}", "consumo")
 
 @st.cache_data(ttl=20)
 def db_get_consumo_log(username=None):
