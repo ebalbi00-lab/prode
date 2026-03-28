@@ -113,10 +113,10 @@ def pantalla_admin():
     header_left, header_right = st.columns([0.72, 0.28])
     with header_left:
         st.markdown(f"""
-        <div class="premium-hero" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:1rem 1.1rem; margin-bottom:0;">
-            <div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg, rgba(245,199,107,0.88), rgba(110,231,255,0.88));color:#07111f;border:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 14px 28px rgba(110,231,255,0.14);">{ctx['icono']}</div>
+        <div style="display:flex;align-items:center;gap:12px;padding:0.4rem 0 1rem 0;">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--gold-dim);border:1.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">{ctx['icono']}</div>
             <div>
-                <div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:2.3px;color:var(--text);line-height:1.0;">{ctx['titulo']}</div>
+                <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);line-height:1.05;">{ctx['titulo']}</div>
                 <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">{ctx['subtitulo']}</div>
             </div>
         </div>

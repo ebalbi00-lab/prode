@@ -2,7 +2,6 @@
 styles.py — Tema visual premium unificado para toda la app.
 """
 import streamlit as st
-from string import Template
 
 PREMIUM_THEME = dict(
     scheme="dark",
@@ -68,65 +67,61 @@ def render_tema_boton():
 
 def inject_css():
     v = PREMIUM_THEME
-    css = Template(r"""
+    st.markdown(f"""
     <style>
-    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Bebas+Neue&display=swap");
     :root {{
-        color-scheme: $scheme;
-        --bg: $bg;
-        --bg2: $bg2;
-        --bg3: $bg3;
-        --surface: $surface;
-        --surface-elevated: $surface_elevated;
-        --surface-soft: $surface_soft;
-        --surface2: $surface2;
-        --text: $text;
-        --text2: $text2;
-        --text3: $text3;
-        --border: $border;
-        --border2: $border2;
-        --hover-border: $hover_border;
-        --shadow-clr: $shadow;
-        --input-bg: $input_bg;
-        --input-text: $input_text;
-        --table-bg: $table_bg;
-        --table-head: $table_head;
-        --table-row: $table_row;
-        --accent: $accent;
-        --accent-2: $accent_2;
-        --accent-3: $accent_3;
-        --gold: $gold;
-        --gold2: $gold2;
-        --gold-dim: $gold_dim;
-        --gold-glow: $gold_glow;
-        --gold-border: $gold_border;
-        --blue: $blue;
-        --blue2: $blue2;
-        --blue-dim: $blue_dim;
-        --blue-border: $blue_border;
-        --cyan: $cyan;
-        --cyan-dim: $cyan_dim;
-        --cyan-border: $cyan_border;
-        --red: $red;
-        --red-dim: $red_dim;
-        --red-border: $red_border;
-        --orange: $orange;
-        --orange-dim: $orange_dim;
-        --orange-border: $orange_border;
-        --green: $green;
-        --green2: $green2;
-        --green-dim: $green_dim;
-        --green-border: $green_border;
-        --green-glow: $green_glow;
-        --success: $success;
-        --warning: $warning;
-        --danger: $danger;
+        color-scheme: {v['scheme']};
+        --bg: {v['bg']};
+        --bg2: {v['bg2']};
+        --bg3: {v['bg3']};
+        --surface: {v['surface']};
+        --surface-elevated: {v['surface_elevated']};
+        --surface-soft: {v['surface_soft']};
+        --surface2: {v['surface2']};
+        --text: {v['text']};
+        --text2: {v['text2']};
+        --text3: {v['text3']};
+        --border: {v['border']};
+        --border2: {v['border2']};
+        --hover-border: {v['hover_border']};
+        --shadow-clr: {v['shadow']};
+        --input-bg: {v['input_bg']};
+        --input-text: {v['input_text']};
+        --table-bg: {v['table_bg']};
+        --table-head: {v['table_head']};
+        --table-row: {v['table_row']};
+        --accent: {v['accent']};
+        --accent-2: {v['accent_2']};
+        --accent-3: {v['accent_3']};
+        --gold: {v['gold']};
+        --gold2: {v['gold2']};
+        --gold-dim: {v['gold_dim']};
+        --gold-glow: {v['gold_glow']};
+        --gold-border: {v['gold_border']};
+        --blue: {v['blue']};
+        --blue2: {v['blue2']};
+        --blue-dim: {v['blue_dim']};
+        --blue-border: {v['blue_border']};
+        --cyan: {v['cyan']};
+        --cyan-dim: {v['cyan_dim']};
+        --cyan-border: {v['cyan_border']};
+        --red: {v['red']};
+        --red-dim: {v['red_dim']};
+        --red-border: {v['red_border']};
+        --orange: {v['orange']};
+        --orange-dim: {v['orange_dim']};
+        --orange-border: {v['orange_border']};
+        --green: {v['green']};
+        --green2: {v['green2']};
+        --green-dim: {v['green_dim']};
+        --green-border: {v['green_border']};
+        --green-glow: {v['green_glow']};
+        --success: {v['success']};
+        --warning: {v['warning']};
+        --danger: {v['danger']};
         --radius: 18px;
         --radius-sm: 14px;
         --radius-lg: 26px;
-        --glass: linear-gradient(180deg, rgba(15,29,51,0.82) 0%, rgba(9,18,33,0.94) 100%);
-        --glass-strong: linear-gradient(180deg, rgba(18,33,58,0.95) 0%, rgba(8,18,33,0.98) 100%);
-        --hero-border: rgba(255,255,255,0.08);
     }}
 
     html, body, [class*="css"] {{
@@ -134,7 +129,7 @@ def inject_css():
     }}
 
     html, body {{
-        background: $bg_html !important;
+        background: {v['bg_html']} !important;
         color: var(--text) !important;
     }}
 
@@ -174,15 +169,11 @@ def inject_css():
         color: inherit;
     }}
 
-    .block-container {
-        max-width: 1180px !important;
-        padding-top: 1.2rem !important;
-        padding-bottom: 3.4rem !important;
-    }
-
-    .block-container > div:first-child {
-        animation: fadeInUp 0.45s ease-out;
-    }
+    .block-container {{
+        max-width: 1080px !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
+    }}
 
     h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small {{
         color: inherit;
@@ -549,155 +540,6 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
-
-
-    /* App shell */
-    [data-testid="stAppViewBlockContainer"] {{
-        position: relative;
-        z-index: 1;
-    }}
-
-    [data-testid="stAppViewBlockContainer"]::before {{
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background:
-            radial-gradient(circle at 12% 14%, rgba(110,231,255,0.10), transparent 18%),
-            radial-gradient(circle at 86% 10%, rgba(139,92,246,0.12), transparent 18%),
-            radial-gradient(circle at 50% 100%, rgba(245,199,107,0.06), transparent 22%);
-        mask-image: linear-gradient(180deg, rgba(0,0,0,0.95), rgba(0,0,0,0.75));
-    }}
-
-    [data-testid="stAppViewBlockContainer"]::after {{
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background-image: linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-        background-size: 34px 34px;
-        opacity: 0.16;
-        mix-blend-mode: soft-light;
-    }}
-
-    .stForm,
-    div[data-testid="stMetric"],
-    div[data-testid="stExpander"],
-    .stDataFrame,
-    div[data-testid="stTable"],
-    details {{
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-    }}
-
-    .stForm:hover,
-    details:hover,
-    div[data-testid="stMetric"]:hover {{
-        border-color: var(--hover-border) !important;
-        box-shadow: 0 20px 44px rgba(0,0,0,0.26), 0 0 0 1px rgba(110,231,255,0.05) inset !important;
-    }}
-
-    .stButton > button,
-    .stDownloadButton > button,
-    .stFormSubmitButton > button {{
-        min-height: 46px !important;
-        position: relative;
-        overflow: hidden;
-    }}
-
-    .stButton > button::before,
-    .stDownloadButton > button::before,
-    .stFormSubmitButton > button::before {{
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
-        transform: translateX(-120%);
-        transition: transform 0.55s ease;
-    }}
-
-    .stButton > button:hover::before,
-    .stDownloadButton > button:hover::before,
-    .stFormSubmitButton > button:hover::before {{
-        transform: translateX(120%);
-    }}
-
-    .stButton > button[kind="primary"],
-    .stFormSubmitButton > button,
-    .stDownloadButton > button[kind="primary"] {{
-        text-shadow: none !important;
-    }}
-
-    [data-testid="stHorizontalBlock"] > div:has(> div[data-testid="stMetric"]) {{
-        align-self: stretch;
-    }}
-
-    .premium-hero {{
-        position: relative;
-        overflow: hidden;
-        background: var(--glass-strong);
-        border: 1px solid var(--hero-border);
-        border-radius: 28px;
-        padding: 1.35rem 1.45rem;
-        box-shadow: 0 28px 60px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.05);
-        margin-bottom: 1.15rem;
-    }}
-
-    .premium-hero::before {{
-        content: "";
-        position: absolute;
-        inset: -30% auto auto -10%;
-        width: 240px;
-        height: 240px;
-        background: radial-gradient(circle, rgba(110,231,255,0.18), transparent 62%);
-        pointer-events: none;
-    }}
-
-    .premium-hero::after {{
-        content: "";
-        position: absolute;
-        inset: auto -6% -18% auto;
-        width: 260px;
-        height: 260px;
-        background: radial-gradient(circle, rgba(139,92,246,0.18), transparent 60%);
-        pointer-events: none;
-    }}
-
-    .premium-card {{
-        position: relative;
-        overflow: hidden;
-        background: var(--glass);
-        border: 1px solid var(--border);
-        border-radius: 22px;
-        box-shadow: 0 18px 44px rgba(0,0,0,0.22);
-    }}
-
-    .premium-chip {{
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.42rem 0.82rem;
-        border-radius: 999px;
-        border: 1px solid var(--border2);
-        background: rgba(255,255,255,0.04);
-        color: var(--text2);
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        backdrop-filter: blur(12px);
-    }}
-
-    @keyframes fadeInUp {{
-        from {{ opacity: 0; transform: translateY(10px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
-
-    @media (max-width: 900px) {{
-        .block-container {{ padding-top: 0.8rem !important; }}
-        .premium-hero {{ border-radius: 22px; padding: 1.1rem 1rem; }}
-    }}
-
     [data-testid="stSidebar"] {{
         background: linear-gradient(180deg, rgba(7,17,31,0.96) 0%, rgba(11,23,41,0.96) 100%) !important;
         border-right: 1px solid var(--border) !important;
@@ -715,6 +557,4 @@ def inject_css():
     ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
     </style>
-    """).safe_substitute(**v)
-    css = css.replace("{{", "{").replace("}}", "}")
-    st.markdown(css, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)

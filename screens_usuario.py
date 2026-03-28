@@ -235,24 +235,26 @@ def _render_scroll_top():
 def _render_header(nombre_display, usuarios_en_linea):
     inicial = (str(nombre_display or "?").strip()[:1] or "?").upper()
     st.markdown(f"""
-    <div class="premium-hero" style="display:flex; align-items:center; justify-content:space-between; gap:18px; padding:1.2rem 1.25rem;">
-        <div style="display:flex; align-items:center; gap:14px; position:relative; z-index:1;">
-            <div style="width:52px; height:52px; border-radius:18px;
-                        background:linear-gradient(135deg, rgba(110,231,255,0.95) 0%, rgba(139,92,246,0.92) 100%);
+    <div style="display:flex; align-items:center; justify-content:space-between;
+                padding:0.4rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:50%;
+                        background:linear-gradient(135deg,#00c860,#009944);
                         display:flex; align-items:center; justify-content:center;
-                        font-size:1.25rem; font-weight:900; color:#07111f; flex-shrink:0;
-                        box-shadow:0 16px 34px rgba(110,231,255,0.18);">
+                        font-size:1.1rem; font-weight:800; color:#fff; flex-shrink:0;">
                 {inicial}
             </div>
             <div>
-                <div style="font-size:0.72rem; color:var(--text3); text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">Tu panel</div>
-                <div style="font-family:Bebas Neue,sans-serif; font-size:1.9rem; letter-spacing:2.2px; color:var(--text); line-height:1;">{nombre_display}</div>
-                <div style="font-size:0.82rem; color:var(--text2); margin-top:5px;">Prode Il Baigo · Mundial 2026</div>
+                <div style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text); line-height:1.1;">{nombre_display}</div>
+                <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px;">Mundial 2026</div>
             </div>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px; position:relative; z-index:1;">
-            <span class="premium-chip" style="background:rgba(110,231,255,0.08); color:var(--blue2); border-color:rgba(110,231,255,0.18);">🟢 {usuarios_en_linea} en línea</span>
-            <span style="font-size:0.72rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.8px;">Experiencia premium</span>
+        <div style="text-align:right;">
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Prode Il Baigo</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-dim);border:1px solid var(--blue-border);
+                        color:var(--blue);padding:3px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;">
+                <span>🟢</span><span>{usuarios_en_linea} en línea</span>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -315,21 +317,14 @@ def pantalla_usuario():
         if sub == "inicio":
             # Card de posición grande
             st.markdown(f"""
-            <div class="premium-card" style="padding:1.15rem 1.2rem; margin-bottom:1.2rem; border-color:var(--gold-border);
-                        background:linear-gradient(135deg, rgba(245,199,107,0.14) 0%, rgba(12,22,40,0.88) 58%, rgba(139,92,246,0.12) 100%);
-                        display:flex; align-items:center; justify-content:space-between; gap:18px;">
-                <div style="display:flex; align-items:center; gap:14px;">
-                    <div style="width:58px; height:58px; border-radius:18px; display:flex; align-items:center; justify-content:center;
-                                background:rgba(245,199,107,0.12); border:1px solid rgba(245,199,107,0.24); font-size:2rem;">{resumen_usuario["emoji_pos"]}</div>
-                    <div>
-                        <div style="font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.7px;margin-bottom:3px;">Tu posición actual</div>
-                        <div style="font-family:Bebas Neue,sans-serif;font-size:2.25rem;color:var(--gold2);letter-spacing:2px;line-height:0.95;">{resumen_usuario["posicion"]}° de {resumen_usuario["total_ranking"]}</div>
-                        <div style="font-size:0.84rem;color:var(--text2);margin-top:5px;">{resumen_usuario["total"]} puntos totales</div>
-                    </div>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.6px;margin-bottom:4px;">Estado</div>
-                    <span class="premium-chip" style="background:rgba(245,199,107,0.10); color:var(--gold2); border-color:rgba(245,199,107,0.22);">Top competitivo</span>
+            <div style="background:var(--gold-dim);border:1.5px solid var(--gold-border);
+                        border-radius:16px;padding:20px 24px;margin-bottom:1.2rem;
+                        display:flex;align-items:center;gap:16px;">
+                <span style="font-size:2.5rem;">{resumen_usuario["emoji_pos"]}</span>
+                <div>
+                    <div style="font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;">Tu posición</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--gold);letter-spacing:2px;line-height:1;">{resumen_usuario["posicion"]}° de {resumen_usuario["total_ranking"]}</div>
+                    <div style="font-size:0.82rem;color:var(--text2);margin-top:2px;">{resumen_usuario["total"]} puntos totales</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -628,13 +623,6 @@ def pantalla_usuario():
             gv = col_gv.number_input("V", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
             col_visita.markdown(f"<div style='text-align:left;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
-            if "partidos_ok" not in st.session_state:
-                st.session_state["partidos_ok"] = {}
-            ok_key = f"ok_{fase}_{idx}"
-            actual = st.session_state["partidos_ok"].get(ok_key, False)
-            checked = st.checkbox("✔ Confirmo el pronóstico de este partido", value=actual, key=f"chk_{fase}_{idx}")
-            if checked != actual:
-                st.session_state["partidos_ok"][ok_key] = checked
             if gl != pred.get(idx, (0, 0))[0] or gv != pred.get(idx, (0, 0))[1]:
                 pred_buffer[idx] = (gl, gv)
             else:
@@ -759,32 +747,14 @@ def pantalla_usuario():
 
         if not confirmado:
             st.divider()
-            # Verificar checkboxes
-            if "partidos_ok" not in st.session_state:
-                st.session_state["partidos_ok"] = {}
-            partidos_ok = st.session_state["partidos_ok"]
-            total_partidos = [p["idx"] for p in partidos]
-            sin_confirmar = [idx for idx in total_partidos if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
-
-            if sin_confirmar:
-                st.warning(f"⚠️ Hay pronósticos sin confirmar.")
-
-            with st.form("form_confirmar"):
-                clave_confirm = st.text_input("Ingresá tu contraseña para confirmar", type="password")
-                confirmar_btn = st.form_submit_button("🔒 Confirmar prode", type="primary", use_container_width=True, disabled=bool(sin_confirmar))
-            if confirmar_btn:
-                if hash_clave(clave_confirm) != u["clave"]:
-                    st.error("Contraseña incorrecta")
-                else:
-                    with st.spinner("Confirmando..."):
-                        _flush_pred_buffer(username, fase)
-                        db_confirmar_prode(username, fase)
-                        db_calcular_puntos()
-                    st.session_state["wizard_grupos_completo"] = True
-                    st.success("¡Pronósticos confirmados!")
-                    st.rerun()
+            if st.button("💾 Guardar pronósticos", key=f"guardar_{fase}", type="primary", use_container_width=True):
+                with st.spinner("Guardando..."):
+                    _flush_pred_buffer(username, fase)
+                st.success("✅ Pronósticos guardados. Podés editarlos hasta que el admin cierre la fase.")
+                st.rerun()
+            st.caption("Los pronósticos quedan abiertos para edición hasta que el admin cierre la fase.")
         else:
-            st.success("✅ Pronósticos confirmados para esta fase.")
+            st.success("🔒 Esta fase ya fue cerrada por el admin.")
 
     if "msg_grupos" in st.session_state:
         st.success(st.session_state.pop("msg_grupos"))
@@ -945,86 +915,29 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
     if "msg_esp" in st.session_state:
         st.success(st.session_state.pop("msg_esp"))
 
-    # ── Diálogo de confirmación ──
-    if st.session_state.get("mostrar_dialogo_confirm_esp"):
-        st.warning("⚠️ ¿Querés continuar sin confirmar todos los pronósticos?")
-        c1, c2 = st.columns(2)
-        if c1.button("Sí, confirmar igual", key="btn_confirmar_sin_ok_esp"):
-            partidos_ok = st.session_state.get("partidos_ok", {})
-            partidos_indices = [p["idx"] for p in partidos if p["idx"] >= 0]
-            sin_confirmar = [idx for idx in partidos_indices if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
-            
-            esp_confirmados = especiales_usuario
-            sin_elegir = [
-                info["label"]
-                for cat, info in CATEGORIAS_ESPECIALES.items()
-                if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
-            ]
-            
-            if sin_elegir:
-                st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
-            else:
-                with st.spinner("Confirmando pronósticos..."):
-                    _flush_pred_buffer(username, fase)
-                    db_confirmar_prode(username, fase)
-                    for cat, elec in selecciones_esp.items():
-                        esp_cat = esp_confirmados.get(cat) or {}
-                        if elec and not esp_cat.get("confirmado"):
-                            db_guardar_especial(username, cat, elec)
-                            db_confirmar_especial(username, cat)
-                    _get_special_buffer(username).clear()
-                    db_calcular_puntos()
-                st.session_state["wizard_grupos_completo"] = True
-                st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
-                db_set_config(f"wizard_pos_{username}", "0")
-                st.session_state["mostrar_dialogo_confirm_esp"] = False
-                st.rerun()
-        
-        if c2.button("No, volver atrás", key="btn_cancelar_confirm_esp"):
-            st.session_state["mostrar_dialogo_confirm_esp"] = False
-            st.rerun()
-        return
-
-    # ── Formulario de confirmación ──
-    with st.form("form_confirmar_especiales"):
-        clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
-        confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
-
-    if confirmar_esp:
-        if hash_clave(clave_esp_final) != u["clave"]:
-            st.error("Contraseña incorrecta.")
+    if st.button("💾 Guardar grupos y especiales", key="guardar_grupos_especiales", type="primary", use_container_width=True):
+        esp_confirmados = especiales_usuario
+        sin_elegir = [
+            info["label"]
+            for cat, info in CATEGORIAS_ESPECIALES.items()
+            if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
+        ]
+        if sin_elegir:
+            st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
         else:
-            partidos_ok = st.session_state.get("partidos_ok", {})
-            partidos_indices = [p["idx"] for p in partidos if p["idx"] >= 0]
-            sin_confirmar = [idx for idx in partidos_indices if not partidos_ok.get(f"ok_{fase}_{idx}", False)]
-            
-            if sin_confirmar:
-                st.session_state["mostrar_dialogo_confirm_esp"] = True
-                st.rerun()
-            else:
-                esp_confirmados = especiales_usuario
-                sin_elegir = [
-                    info["label"]
-                    for cat, info in CATEGORIAS_ESPECIALES.items()
-                    if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
-                ]
-                if sin_elegir:
-                    st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
-                else:
-                    with st.spinner("Confirmando pronósticos..."):
-                        _flush_pred_buffer(username, fase)
-                        db_confirmar_prode(username, fase)
-                        for cat, elec in selecciones_esp.items():
-                            esp_cat = esp_confirmados.get(cat) or {}
-                            if elec and not esp_cat.get("confirmado"):
-                                db_guardar_especial(username, cat, elec)
-                                db_confirmar_especial(username, cat)
-                        _get_special_buffer(username).clear()
-                        db_calcular_puntos()
-                    st.session_state["wizard_grupos_completo"] = True
-                    st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
-                    db_set_config(f"wizard_pos_{username}", "0")
-                    st.rerun()
+            with st.spinner("Guardando pronósticos..."):
+                _flush_pred_buffer(username, fase)
+                for cat, elec in selecciones_esp.items():
+                    esp_cat = esp_confirmados.get(cat) or {}
+                    if elec and not esp_cat.get("confirmado"):
+                        db_guardar_especial(username, cat, elec)
+                _get_special_buffer(username).clear()
+            st.session_state["wizard_grupos_completo"] = True
+            st.session_state["msg_grupos"] = "✅ Grupos y especiales guardados. Podés editarlos hasta que el admin cierre la fase."
+            db_set_config(f"wizard_pos_{username}", "0")
+            st.rerun()
+
+    st.caption("No hace falta confirmación final. Podés volver a editar todo mientras la fase siga abierta.")
 
     esp_buffer = _get_special_buffer(username)
     for cat, elec in selecciones_esp.items():

@@ -332,7 +332,7 @@ def db_resetear_todos_puntajes():
         cur.execute("UPDATE usuarios SET puntos=0, goles=0, consumo=0 WHERE es_admin=0")
         cur.execute("DELETE FROM prodes")
         cur.execute("DELETE FROM resultados")
-        cur.execute("DELETE FROM consumo_log")
+        cur.execute("TRUNCATE TABLE consumo_log RESTART IDENTITY")
         cur.execute("DELETE FROM especiales")
         cur.execute("DELETE FROM especiales_resultados")
         cur.execute("DELETE FROM actividad_feed")
@@ -355,10 +355,27 @@ def db_toggle_fase(nombre, valor):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE fases SET habilitada=%s WHERE nombre=%s", (1 if valor else 0, nombre))
+        if valor:
+            cur.execute("UPDATE prodes SET confirmado=0 WHERE fase=%s", (nombre,))
+            if nombre == "Grupos":
+                cur.execute("UPDATE especiales SET confirmado=0")
+        else:
+            cur.execute("UPDATE prodes SET confirmado=1 WHERE fase=%s", (nombre,))
+            if nombre == "Grupos":
+                cur.execute("UPDATE especiales SET confirmado=1 WHERE COALESCE(eleccion, '') <> ''")
     try:
         db_get_fases.clear()
+        db_fase_confirmada.clear()
+        db_get_fases_confirmadas_usuario.clear()
+        db_get_resumen_fases_usuario.clear()
+        db_get_prode.clear()
+        db_get_especial.clear()
+        db_get_especiales_usuario.clear()
+        db_get_todos_usuarios.clear()
+        db_get_puntos_especiales_usuarios.clear()
     except Exception:
         st.cache_data.clear()
+    _invalidar_ranking()
     db_feed_event(f"{'🟢' if valor else '🔒'} La fase {nombre} fue {'abierta' if valor else 'cerrada'}", "fase")
 
 
@@ -688,10 +705,14 @@ def db_eliminar_consumo_log(log_id):
             )
             cur.execute("DELETE FROM consumo_log WHERE id=%s", (log_id,))
     try:
+        db_get_usuario.clear(row["username"])
         db_get_todos_usuarios.clear()
         db_get_consumo_log.clear()
+        db_get_consumo_log.clear(row["username"])
     except Exception:
         pass
+    if row:
+        db_feed_event(f"🗑️ Se eliminó el consumo #{log_id} de {row['username']} ({row['puntos']} pts)", "consumo")
 
 
 @st.cache_data(ttl=20)
