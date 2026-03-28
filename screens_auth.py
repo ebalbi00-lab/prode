@@ -10,7 +10,6 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
-from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -59,15 +58,24 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 
 def pantalla_login():
     st.markdown("""
-    <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
-        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:3.8rem; letter-spacing:5px;
-                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
+    <div class="premium-hero" style="padding:1.8rem 1.4rem; text-align:center;">
+        <div style="display:inline-flex; align-items:center; gap:10px; margin-bottom:0.95rem;" class="premium-chip">
+            <span style="font-size:0.95rem;">⚽</span>
+            <span>Mundial 2026</span>
+        </div>
+        <div style="font-size:3.4rem; margin-bottom:0.45rem; filter:drop-shadow(0 10px 30px rgba(110,231,255,0.18));">🏆</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:4.2rem; letter-spacing:6px;
+                    background:linear-gradient(135deg,#f8fbff 0%,#6ee7ff 38%,#8b5cf6 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
-        <div style="display:inline-block; background:linear-gradient(135deg,rgba(255,210,76,0.18),rgba(255,190,32,0.12)); border:1px solid rgba(228,175,33,0.35);
-                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#d49a00;
-                    font-weight:800; letter-spacing:3px; text-transform:uppercase; box-shadow:0 4px 14px rgba(212,154,0,0.10);">⚽ MUNDIAL 2026</div>
+                    background-clip:text; line-height:0.96; margin-bottom:0.55rem;">PRODE IL BAIGO</div>
+        <div style="max-width:520px; margin:0 auto 1.1rem auto; color:var(--text2); font-size:0.94rem; line-height:1.7;">
+            Una experiencia visual premium para seguir el torneo, cargar pronósticos y competir en tiempo real.
+        </div>
+        <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+            <span class="premium-chip" style="background:rgba(110,231,255,0.08); color:var(--blue2); border-color:rgba(110,231,255,0.18);">Ranking en vivo</span>
+            <span class="premium-chip" style="background:rgba(245,199,107,0.08); color:var(--gold2); border-color:rgba(245,199,107,0.18);">Pronósticos premium</span>
+            <span class="premium-chip" style="background:rgba(52,211,153,0.08); color:#b7f7da; border-color:rgba(52,211,153,0.18);">Experiencia hermosa</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -76,7 +84,7 @@ def pantalla_login():
 
     with st.form("form_login"):
         usuario = st.text_input("Usuario", placeholder="tu_usuario")
-        clave = password_input_with_toggle("Clave", key="login_clave", placeholder="••••••••")
+        clave = st.text_input("Clave", type="password", placeholder="••••••••")
         col1, col2 = st.columns(2)
         ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
         registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
@@ -172,8 +180,8 @@ def pantalla_registro_cuenta():
 
     with st.form("form_registro_cuenta"):
         usuario   = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
-        clave     = password_input_with_toggle("Clave (mínimo 4 caracteres)", key="registro_clave")
-        confirmar = password_input_with_toggle("Confirmar clave", key="registro_confirmar")
+        clave     = st.text_input("Clave (mínimo 4 caracteres)", type="password")
+        confirmar = st.text_input("Confirmar clave", type="password")
         st.markdown(f"""
         <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                     border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
@@ -345,29 +353,31 @@ def pantalla_acerca():
 
     st.divider()
     st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🏆 Premios</div>""", unsafe_allow_html=True)
+                color:var(--text3); margin-bottom:0.7rem;">🏅 Premios destacados</div>""", unsafe_allow_html=True)
     st.markdown("""
     <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                 border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🥇 Ranking general + premios sorpresa</div>
+        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🎁 Premio sorpresa para los destacados</div>
         <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            Los premios principales se entregan a los <strong style="color:var(--text);">primeros puestos del ranking general</strong>.<br><br>
-            Además, durante el transcurso de la competencia puede haber <strong style="color:var(--gold);">premios sorpresa</strong> en distintos momentos del torneo.
+            Al finalizar el torneo se premiarán los mejores en cada categoría del ranking de destacados:<br>
+            <span style="color:var(--text);">🥇 Más resultados acertados &nbsp;·&nbsp; 🎯 Más exactos &nbsp;·&nbsp; 👑 Rey de grupos &nbsp;·&nbsp; 🔥 Rey de finales</span><br><br>
+            Los premios son una <strong style="color:var(--gold);">sorpresa</strong> — se revelarán al finalizar la competencia.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.divider()
     st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🎉 Durante la competencia</div>""", unsafe_allow_html=True)
+                color:var(--text3); margin-bottom:0.7rem;">🎉 Premios durante la competencia</div>""", unsafe_allow_html=True)
     st.markdown("""
     <div style="background:var(--blue-dim); border:1.5px solid var(--blue-border);
                 border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
         <div style="color:var(--blue); font-weight:700; font-size:0.88rem; margin-bottom:8px;">⚡ Premios sorpresa en el camino</div>
         <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            A lo largo del torneo pueden aparecer <strong style="color:var(--text);">premios sorpresa</strong> 
-            en momentos especiales de la competencia.<br><br>
-            Seguí el torneo, cargá tus pronósticos y mantenete atento a las novedades del admin. <span style="color:var(--blue);">Todo sigue dentro de la misma competencia.</span>
+            A lo largo del torneo se irán otorgando <strong style="color:var(--text);">diversos premios sorpresa</strong> 
+            en momentos especiales de la competencia — fase de grupos, octavos, cuartos, semifinales y más.<br><br>
+            Estar activo, consumir en el local y seguir de cerca cada partido puede sumar puntos 
+            y acceso a premios exclusivos. <span style="color:var(--blue);">¡Seguí participando!</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -378,7 +388,7 @@ def pantalla_acerca():
     with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
         st.write("No sumás puntos para esa fase.")
     with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
-        st.write("Podés editar tu pronóstico hasta que el admin cierre esa fase.")
+        st.write("El admin controla manualmente cuándo se cierra cada fase.")
     with st.expander("¿Olvidé mi contraseña, qué hago?"):
         st.write("Contactá al administrador por fuera de la app para que te resetee la contraseña.")
 

@@ -36,7 +36,6 @@ from db import (
     db_get_lista_especiales, db_set_lista_especiales_desde_texto, db_reset_lista_especiales,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo
-from ui_helpers import password_input_with_toggle, integrated_stepper
 
 
 def cambiar_pantalla(step):
@@ -114,10 +113,10 @@ def pantalla_admin():
     header_left, header_right = st.columns([0.72, 0.28])
     with header_left:
         st.markdown(f"""
-        <div style="display:flex;align-items:center;gap:12px;padding:0.4rem 0 1rem 0;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--gold-dim);border:1.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">{ctx['icono']}</div>
+        <div class="premium-hero" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:1rem 1.1rem; margin-bottom:0;">
+            <div style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg, rgba(245,199,107,0.88), rgba(110,231,255,0.88));color:#07111f;border:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 14px 28px rgba(110,231,255,0.14);">{ctx['icono']}</div>
             <div>
-                <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);line-height:1.05;">{ctx['titulo']}</div>
+                <div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:2.3px;color:var(--text);line-height:1.0;">{ctx['titulo']}</div>
                 <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">{ctx['subtitulo']}</div>
             </div>
         </div>
@@ -579,7 +578,7 @@ def _tab_resultados():
 
         with st.form(f"form_limpiar_res_{fase_sel}"):
             st.warning(f"⚠️ Esto borrará los resultados de {label_limpiar} y recalculará los puntajes.")
-            pw_limpiar    = password_input_with_toggle("Tu contraseña de admin para confirmar", key=f"pw_limpiar_{fase_sel}")
+            pw_limpiar    = st.text_input("Tu contraseña de admin para confirmar", type="password", key=f"pw_limpiar_{fase_sel}")
             limpiar_btn   = st.form_submit_button(f"🗑️ Limpiar {label_limpiar}", type="primary")
 
         if limpiar_btn:
@@ -613,7 +612,7 @@ def _tab_consumo():
         if opts:
             with st.form("form_consumo"):
                 sel  = st.selectbox("Usuario", list(opts.keys()), format_func=lambda x: f"{opts[x]} ({x})")
-                pts  = integrated_stepper("Puntos a sumar", key="consumo_pts", value=0, min_value=0, max_value=500)
+                pts  = st.number_input("Puntos a sumar", 0, 500, 0)
                 desc = st.text_input("Descripción (opcional)", placeholder="Ej: consumo viernes 20/6")
                 sumar = st.form_submit_button("Sumar consumo", type="primary")
             if sumar:
@@ -674,7 +673,7 @@ def _tab_consumo():
     st.subheader("Eliminar registro de consumo")
     with st.form("form_eliminar_consumo"):
         id_eliminar    = st.number_input("ID del registro a eliminar", min_value=1, step=1)
-        clave_admin_el = password_input_with_toggle("Tu contraseña de admin para confirmar", key="clave_admin_confirm_generic")
+        clave_admin_el = st.text_input("Tu contraseña de admin para confirmar", type="password")
         eliminar_btn   = st.form_submit_button("🗑️ Eliminar registro", type="primary")
     if eliminar_btn:
         admin = db_get_usuario(st.session_state.usuario)
@@ -908,7 +907,7 @@ def _tab_especiales():
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
     st.divider()
-    pw_esp_adm = password_input_with_toggle("🔒 Tu contraseña de admin", key="pw_guardar_esp")
+    pw_esp_adm = st.text_input("🔒 Tu contraseña de admin", type="password", key="pw_guardar_esp")
     guardar_todos_esp = st.button("💾 Guardar todos y aplicar puntos", type="primary", use_container_width=True)
 
     if guardar_todos_esp:
@@ -933,7 +932,7 @@ def _tab_especiales():
     if any(v for v in resultados_esp_actuales.values()):
         with st.form("form_limpiar_especiales"):
             st.warning("⚠️ Esto borrará TODOS los resultados especiales y recalculará puntajes.")
-            pw_limp_esp   = password_input_with_toggle("Tu contraseña de admin", key="pw_limpiar_esp")
+            pw_limp_esp   = st.text_input("Tu contraseña de admin", type="password", key="pw_limpiar_esp")
             limpiar_esp   = st.form_submit_button("🗑️ Limpiar resultados especiales", type="primary")
         if limpiar_esp:
             admin_le = db_get_usuario(st.session_state.usuario)
@@ -957,8 +956,8 @@ def _tab_usuarios():
     if accion == "➕ Crear":
         with st.form("form_crear_usuario"):
             nu_user  = st.text_input("Username")
-            nu_pass  = password_input_with_toggle("Contraseña", key="nuevo_usuario_pass")
-            nu_pass2 = password_input_with_toggle("Confirmar contraseña", key="nuevo_usuario_pass2")
+            nu_pass  = st.text_input("Contraseña", type="password")
+            nu_pass2 = st.text_input("Confirmar contraseña", type="password")
             nu_nombre = st.text_input("Nombre y apellido")
             nu_mail   = st.text_input("Mail")
             nu_cel    = st.text_input("Celular")
@@ -1046,8 +1045,8 @@ def _tab_usuarios():
             opts_pw = {u["username"]: f"{u.get('nombre') or u['username']} (@{u['username']})" for u in todos_pw}
             sel_pw  = st.selectbox("Seleccioná", list(opts_pw.keys()), format_func=lambda x: opts_pw[x], key="sel_clave")
             with st.form("form_reset_clave"):
-                nueva_pw  = password_input_with_toggle("Nueva contraseña", key="reset_user_pw1")
-                nueva_pw2 = password_input_with_toggle("Confirmar nueva contraseña", key="reset_user_pw2")
+                nueva_pw  = st.text_input("Nueva contraseña", type="password")
+                nueva_pw2 = st.text_input("Confirmar nueva contraseña", type="password")
                 resetear  = st.form_submit_button("🔑 Cambiar contraseña", type="primary")
             if resetear:
                 if len(nueva_pw) < 4:    st.session_state["err_usuarios"] = "Mínimo 4 caracteres."
@@ -1069,7 +1068,7 @@ def _tab_usuarios():
             opts_del = {u["username"]: f"{u.get('nombre') or u['username']} (@{u['username']})" for u in todos_del}
             sel_del  = st.selectbox("Seleccioná el usuario a borrar", list(opts_del.keys()), format_func=lambda x: opts_del[x], key="sel_borrar")
             with st.form("form_borrar_usuario"):
-                clave_adm_del = password_input_with_toggle("Tu contraseña de admin", key="clave_admin_generic")
+                clave_adm_del = st.text_input("Tu contraseña de admin", type="password")
                 borrar_btn    = st.form_submit_button("🗑️ Borrar usuario", type="primary")
             if borrar_btn:
                 admin_u = db_get_usuario(st.session_state.usuario)
@@ -1107,7 +1106,7 @@ def _tab_reset():
     else:
         with st.form("form_reset_fase"):
             fase_reset = st.selectbox("Fase a resetear", fases_con_datos, key="fase_reset_sel")
-            pw_reset_f = password_input_with_toggle("Tu contraseña de admin", key="pw_reset_fase")
+            pw_reset_f = st.text_input("Tu contraseña de admin", type="password", key="pw_reset_fase")
             reset_fase_btn = st.form_submit_button(f"🗑️ Resetear fase", type="primary")
         if reset_fase_btn:
             admin_rf = db_get_usuario(st.session_state.usuario)
@@ -1129,7 +1128,7 @@ def _tab_reset():
     st.markdown("**Recalcular puntajes**")
     st.caption("Vuelve a calcular todos los puntos en base a los pronósticos y resultados actuales.")
     with st.form("form_recalcular"):
-        pw_recalc = password_input_with_toggle("Tu contraseña de admin", key="pw_recalcular")
+        pw_recalc = st.text_input("Tu contraseña de admin", type="password", key="pw_recalcular")
         recalc_btn = st.form_submit_button("🔄 Recalcular puntajes", type="primary")
     if recalc_btn:
         admin_rc = db_get_usuario(st.session_state.usuario)
@@ -1147,7 +1146,7 @@ def _tab_reset():
     st.markdown("**Resetear todo**")
     st.error("Esta acción borrará TODOS los pronósticos, resultados y puntajes. No se puede deshacer.")
     with st.form("form_reset_general"):
-        clave_admin_r = password_input_with_toggle("Tu contraseña de admin para confirmar", key="clave_admin_confirm_generic")
+        clave_admin_r = st.text_input("Tu contraseña de admin para confirmar", type="password")
         confirmar_r   = st.text_input("Escribí CONFIRMAR para continuar")
         resetear_todo = st.form_submit_button("⚠️ Resetear todo", type="primary")
     if resetear_todo:

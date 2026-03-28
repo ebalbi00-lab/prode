@@ -83,13 +83,15 @@ def pantalla_ranking():
         st_autorefresh(interval=60 * 1000, key="ranking_refresh")
 
     st.markdown("""
-    <div style="text-align:center; padding:1.2rem 0 1rem 0;">
-        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
-                    color:var(--text3); margin-bottom:0.3rem;">Il Baigo — Mundial 2026</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:3.2rem; letter-spacing:4px;
-                    background:linear-gradient(135deg,#ffc940 0%,#ffd86b 45%,#ffb300 100%);
+    <div class="premium-hero" style="text-align:center; padding:1.55rem 1.25rem;">
+        <div class="premium-chip" style="margin-bottom:0.8rem; background:rgba(245,199,107,0.08); color:var(--gold2); border-color:rgba(245,199,107,0.18);">🏆 Il Baigo · Mundial 2026</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:3.6rem; letter-spacing:4px;
+                    background:linear-gradient(135deg,#ffffff 0%,#ffd86b 35%,#6ee7ff 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.05; text-shadow:0 4px 18px rgba(255,200,40,0.35);">🏆 RANKING</div>
+                    background-clip:text; line-height:1.0; text-shadow:0 8px 26px rgba(255,200,40,0.18);">RANKING EN VIVO</div>
+        <div style="max-width:540px; margin:0.55rem auto 0 auto; color:var(--text2); font-size:0.92rem; line-height:1.7;">
+            Tabla general con lectura más clara, foco en jerarquía visual y mejor contraste para móviles y desktop.
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -167,7 +169,7 @@ def pantalla_ranking():
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Resultados">R</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Goles exactos">G</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Consumo">C</th>'
-            '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">E</th>'
+            '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">ESP</th>'
             '<th style="padding:10px 10px;color:var(--green);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">Total</th>'
             '</tr></thead>'
             f'<tbody>{filas_html}</tbody>'

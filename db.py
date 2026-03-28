@@ -332,10 +332,10 @@ def db_resetear_todos_puntajes():
         cur.execute("UPDATE usuarios SET puntos=0, goles=0, consumo=0 WHERE es_admin=0")
         cur.execute("DELETE FROM prodes")
         cur.execute("DELETE FROM resultados")
-        cur.execute("TRUNCATE TABLE consumo_log RESTART IDENTITY")
+        cur.execute("DELETE FROM consumo_log")
         cur.execute("DELETE FROM especiales")
         cur.execute("DELETE FROM especiales_resultados")
-        cur.execute("TRUNCATE TABLE actividad_feed RESTART IDENTITY")
+        cur.execute("DELETE FROM actividad_feed")
         cur.execute("DELETE FROM actividad_usuarios")
         cur.execute("DELETE FROM config WHERE clave LIKE 'wizard_pos_%'")
     st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
@@ -690,11 +690,8 @@ def db_eliminar_consumo_log(log_id):
     try:
         db_get_todos_usuarios.clear()
         db_get_consumo_log.clear()
-        db_get_usuario.clear(row["username"] if row else None)
     except Exception:
         pass
-    if row:
-        db_feed_event(f"🗑️ Se eliminó un consumo de {row['puntos']} puntos para {row['username']}", "consumo")
 
 
 @st.cache_data(ttl=20)
