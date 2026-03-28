@@ -4,6 +4,10 @@ def inject_css():
     st.markdown("""
     <style>
 
+    /* ===== NO TOCAR FONDO GENERAL ===== */
+    /* (respeta el tema azul original de la app) */
+
+
     /* ===== INPUT BASE (MISMO FONDO PARA TODO) ===== */
 
     div[data-baseweb="input"] {
@@ -24,7 +28,7 @@ def inject_css():
         background-color: #e6f0ff !important;
     }
 
-    /* BOTÓN DEL OJO (MISMO COLOR QUE INPUT) */
+    /* BOTÓN DEL OJO */
     div[data-baseweb="input"] button {
         background-color: #e6f0ff !important;
         border: none !important;
@@ -32,12 +36,12 @@ def inject_css():
         padding: 6px !important;
     }
 
-    /* HOVER SUAVE (MISMO ESTILO) */
+    /* HOVER */
     div[data-baseweb="input"] button:hover {
         background-color: #d6e6ff !important;
     }
 
-    /* ICONO DEL OJO */
+    /* ICONO */
     div[data-baseweb="input"] button svg {
         color: #2f7ef7 !important;
         fill: #2f7ef7 !important;
