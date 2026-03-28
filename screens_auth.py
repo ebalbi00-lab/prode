@@ -64,8 +64,9 @@ def pantalla_login():
         <div style="position:relative; z-index:1; font-family:Outfit,Inter,sans-serif; font-size:3.6rem; font-weight:800; letter-spacing:0.08em;
                     background:linear-gradient(135deg,#dcfce7 0%,#4ade80 45%,#16a34a 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.0; margin-bottom:0.45rem; text-transform:uppercase;
+                    background-clip:text; line-height:1.0; margin-bottom:0.35rem; text-transform:uppercase;
                     text-shadow:0 0 18px rgba(34,197,94,0.10);">PRODE IL BAIGO</div>
+        <div style="position:relative; z-index:1; color:var(--text2); font-size:1rem; font-weight:700; letter-spacing:0.24em; text-transform:uppercase;">Mundial 2026</div>
     </div>
     """, unsafe_allow_html=True)
 

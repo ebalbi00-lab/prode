@@ -539,6 +539,41 @@ def inject_css():
     .stPasswordInput [data-baseweb="input"] > div:last-child,
     .stPasswordInput [data-baseweb="base-input"] > div:last-child {{
         background: transparent !important;
+        margin-right: 0.2rem !important;
+    }}
+
+    .stPasswordInput [data-baseweb="input"] button,
+    .stPasswordInput [data-baseweb="base-input"] button,
+    .stPasswordInput button,
+    .stPasswordInput button[kind="secondary"] {{
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 40px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, rgba(219,238,255,0.98) 0%, rgba(175,218,255,0.98) 52%, rgba(103,190,255,0.98) 100%) !important;
+        background-color: rgba(175,218,255,0.98) !important;
+        border: 1px solid rgba(47,126,247,0.34) !important;
+        box-shadow: 0 10px 22px rgba(10,33,66,0.18) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        outline: none !important;
+    }}
+
+    .stPasswordInput [data-baseweb="input"] button:hover,
+    .stPasswordInput [data-baseweb="base-input"] button:hover,
+    .stPasswordInput button:hover,
+    .stPasswordInput button[kind="secondary"]:hover,
+    .stPasswordInput [data-baseweb="input"] button:focus,
+    .stPasswordInput [data-baseweb="base-input"] button:focus,
+    .stPasswordInput button:focus,
+    .stPasswordInput button[kind="secondary"]:focus {{
+        background: linear-gradient(135deg, rgba(233,244,255,0.99) 0%, rgba(196,226,255,0.99) 50%, rgba(124,186,255,0.98) 100%) !important;
+        border-color: #2f7ef7 !important;
+        box-shadow: 0 14px 26px rgba(10,33,66,0.22), 0 0 0 1px rgba(47,126,247,0.16) inset !important;
     }}
 
     .stPasswordInput button svg,
