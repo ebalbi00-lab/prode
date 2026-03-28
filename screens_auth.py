@@ -286,7 +286,7 @@ def pantalla_acerca():
             <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">⏳ Cierre por fase</span>
             <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🏆 Premios finales</span>
             <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🎁 Premios sorpresa</span>
-        </div>
+                    </div>
     </div>
     """, unsafe_allow_html=True)
 
