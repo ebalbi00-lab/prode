@@ -351,24 +351,24 @@ def inject_css():
     .stPasswordInput [data-baseweb="base-input"],
     .stPasswordInput [data-baseweb="input"],
     .stNumberInput [data-baseweb="base-input"],
-    .stNumberInput [data-baseweb="input"] {
+    .stNumberInput [data-baseweb="input"] {{
         position: relative !important;
-    }
+    }}
 
     .stPasswordInput input,
-    .stNumberInput input {
+    .stNumberInput input {{
         padding-right: 3.1rem !important;
-    }
+    }}
 
     .stPasswordInput button,
-    .stNumberInput button {
+    .stNumberInput button {{
         border: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
-    }
+    }}
 
     .stPasswordInput [data-baseweb="base-input"] button,
-    .stPasswordInput [data-baseweb="input"] button {
+    .stPasswordInput [data-baseweb="input"] button {{
         position: absolute !important;
         right: 0.55rem !important;
         top: 50% !important;
@@ -378,22 +378,22 @@ def inject_css():
         border-radius: 999px !important;
         color: var(--text3) !important;
         z-index: 2 !important;
-    }
+    }}
 
     .stPasswordInput [data-baseweb="base-input"] button:hover,
-    .stPasswordInput [data-baseweb="input"] button:hover {
+    .stPasswordInput [data-baseweb="input"] button:hover {{
         background: rgba(255,255,255,0.05) !important;
         color: var(--accent) !important;
-    }
+    }}
 
     .stPasswordInput svg,
-    .stNumberInput svg {
+    .stNumberInput svg {{
         color: inherit !important;
         fill: currentColor !important;
-    }
+    }}
 
     .stNumberInput [data-baseweb="base-input"] button,
-    .stNumberInput [data-baseweb="input"] button {
+    .stNumberInput [data-baseweb="input"] button {{
         position: absolute !important;
         right: 0.4rem !important;
         width: 1.55rem !important;
@@ -403,45 +403,45 @@ def inject_css():
         color: var(--text3) !important;
         z-index: 2 !important;
         opacity: 0.95 !important;
-    }
+    }}
 
     .stNumberInput [data-baseweb="base-input"] button:first-of-type,
-    .stNumberInput [data-baseweb="input"] button:first-of-type {
+    .stNumberInput [data-baseweb="input"] button:first-of-type {{
         top: 0.38rem !important;
-    }
+    }}
 
     .stNumberInput [data-baseweb="base-input"] button:last-of-type,
-    .stNumberInput [data-baseweb="input"] button:last-of-type {
+    .stNumberInput [data-baseweb="input"] button:last-of-type {{
         bottom: 0.38rem !important;
-    }
+    }}
 
     .stNumberInput [data-baseweb="base-input"] button:hover,
-    .stNumberInput [data-baseweb="input"] button:hover {
+    .stNumberInput [data-baseweb="input"] button:hover {{
         background: rgba(255,255,255,0.05) !important;
         color: var(--accent) !important;
-    }
+    }}
 
     /* Spinner / status / init blocks themed */
     div[data-testid="stSpinner"],
     div[data-testid="stStatusWidget"],
     div[data-testid="stStatus"],
     div[data-testid="stSkeleton"],
-    div[data-testid="stNotification"] {
+    div[data-testid="stNotification"] {{
         background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.92) 100%) !important;
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         color: var(--text) !important;
         box-shadow: 0 16px 34px rgba(0,0,0,0.20) !important;
-    }
+    }}
 
     div[data-testid="stSpinner"] *,
     div[data-testid="stStatusWidget"] *,
     div[data-testid="stStatus"] *,
     div[data-testid="stSkeleton"] *,
-    div[data-testid="stNotification"] * {
+    div[data-testid="stNotification"] * {{
         color: var(--text) !important;
         -webkit-text-fill-color: currentColor !important;
-    }
+    }}
 
     /* Buttons */
     .stButton > button,
