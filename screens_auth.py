@@ -62,9 +62,10 @@ def pantalla_login():
         <div style="position:absolute; inset:-10px auto auto 50%; transform:translateX(-50%); width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(103,190,255,0.18) 0%, rgba(47,126,247,0.08) 42%, transparent 72%); filter:blur(10px);"></div>
         <div style="position:relative; z-index:1; font-size:3.2rem; margin-bottom:0.75rem; filter:drop-shadow(0 10px 28px rgba(47,126,247,0.28));">⚽</div>
         <div style="position:relative; z-index:1; font-family:Outfit,Inter,sans-serif; font-size:3.6rem; font-weight:800; letter-spacing:0.08em;
-                    background:linear-gradient(135deg,#dff1ff 0%,#67beff 42%,#2f7ef7 100%);
+                    background:linear-gradient(135deg,#dcfce7 0%,#4ade80 45%,#16a34a 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.0; margin-bottom:0.45rem; text-transform:uppercase;">PRODE IL BAIGO</div>
+                    background-clip:text; line-height:1.0; margin-bottom:0.45rem; text-transform:uppercase;
+                    text-shadow:0 0 18px rgba(34,197,94,0.10);">PRODE IL BAIGO</div>
     </div>
     """, unsafe_allow_html=True)
 

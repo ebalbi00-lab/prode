@@ -523,17 +523,22 @@ def inject_css():
     .stNumberInput button:active,
     .stNumberInput [data-baseweb="input"] button,
     .stNumberInput [data-baseweb="base-input"] button {{
-        background: linear-gradient(135deg, rgba(103,190,255,0.22) 0%, rgba(47,126,247,0.30) 100%) !important;
-        background-color: rgba(47,126,247,0.26) !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-        border: 1px solid rgba(103,190,255,0.28) !important;
+        background: linear-gradient(135deg, rgba(219,238,255,0.92) 0%, rgba(167,211,255,0.96) 36%, rgba(103,190,255,0.92) 100%) !important;
+        background-color: rgba(167,211,255,0.95) !important;
+        color: #0b2545 !important;
+        -webkit-text-fill-color: #0b2545 !important;
+        border: 1px solid rgba(47,126,247,0.30) !important;
         border-radius: 12px !important;
-        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
+        box-shadow: 0 10px 22px rgba(10,33,66,0.18) !important;
         outline: none !important;
         min-height: 36px !important;
         min-width: 36px !important;
         padding: 0 !important;
+    }}
+
+    .stPasswordInput [data-baseweb="input"] > div:last-child,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child {{
+        background: transparent !important;
     }}
 
     .stPasswordInput button svg,
@@ -543,7 +548,7 @@ def inject_css():
     .stNumberInput button svg,
     .stNumberInput [data-baseweb="input"] button svg,
     .stNumberInput [data-baseweb="base-input"] button svg {{
-        color: var(--blue2) !important;
+        color: #1459c7 !important;
         fill: currentColor !important;
         stroke: currentColor !important;
     }}
@@ -558,8 +563,9 @@ def inject_css():
     .stNumberInput button:hover,
     .stPasswordInput button:hover,
     .stPasswordInput button[kind="secondary"]:hover {{
-        border-color: var(--accent) !important;
-        box-shadow: 0 14px 26px rgba(0,0,0,0.20), 0 0 0 1px rgba(103,190,255,0.10) inset !important;
+        border-color: #2f7ef7 !important;
+        box-shadow: 0 14px 26px rgba(10,33,66,0.22), 0 0 0 1px rgba(47,126,247,0.16) inset !important;
+        background: linear-gradient(135deg, rgba(233,244,255,0.98) 0%, rgba(191,223,255,0.98) 48%, rgba(124,186,255,0.95) 100%) !important;
     }}
 
     [data-testid="stSpinner"],
