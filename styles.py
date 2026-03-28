@@ -24,7 +24,7 @@ PREMIUM_THEME = dict(
     input_text="#f4f7fb",
     table_bg="rgba(9, 18, 33, 0.94)",
     table_head="rgba(110, 231, 255, 0.10)",
-    table_row="rgba(110, 231, 255, 0.04)",
+    table_row="rgba(255, 255, 255, 0.02)",
     accent="#6ee7ff",
     accent_2="#8b5cf6",
     accent_3="#22c55e",
@@ -398,7 +398,7 @@ def inject_css():
 
     /* Tabs */
     button[role="tab"] {{
-        background: rgba(11, 23, 41, 0.92) !important;
+        background: rgba(255,255,255,0.03) !important;
         border: 1px solid var(--border) !important;
         border-radius: 14px !important;
         color: var(--text2) !important;
@@ -417,7 +417,7 @@ def inject_css():
     /* Radio / Checkbox */
     .stRadio [role="radiogroup"] > label,
     .stCheckbox > label {{
-        background: rgba(11, 23, 41, 0.88);
+        background: rgba(255,255,255,0.03);
         border: 1px solid var(--border);
         border-radius: 14px;
         padding: 0.4rem 0.65rem;
@@ -458,7 +458,7 @@ def inject_css():
     }}
 
     details summary {{
-        background: rgba(11, 23, 41, 0.76) !important;
+        background: rgba(255,255,255,0.02) !important;
     }}
 
     /* Metrics */
@@ -540,87 +540,6 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
-
-
-    /* Remove white surfaces / borders / glows that some Streamlit widgets inject */
-    [data-testid="stBaseButton-secondary"],
-    [data-testid="stBaseButton-secondary"] * ,
-    button[kind="secondary"],
-    button[kind="secondary"] * ,
-    [data-testid="baseButton-headerNoPadding"],
-    [data-testid="baseButton-headerNoPadding"] * ,
-    .stNumberInput button,
-    .stNumberInput button * ,
-    .stPasswordInput button,
-    .stPasswordInput button * ,
-    [data-testid="stStatusWidget"],
-    [data-testid="stStatusWidget"] * ,
-    [data-testid="stCodeBlock"],
-    [data-testid="stCodeBlock"] * ,
-    pre, code, kbd, samp {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: currentColor !important;
-    }}
-
-    [data-testid="stBaseButton-secondary"],
-    button[kind="secondary"],
-    [data-testid="baseButton-headerNoPadding"],
-    .stNumberInput button,
-    .stPasswordInput button {{
-        background: linear-gradient(180deg, rgba(10,20,36,0.96) 0%, rgba(14,27,47,0.96) 100%) !important;
-        border: 1px solid var(--border2) !important;
-        box-shadow: none !important;
-    }}
-
-    [data-testid="stBaseButton-secondary"]:hover,
-    button[kind="secondary"]:hover,
-    [data-testid="baseButton-headerNoPadding"]:hover,
-    .stNumberInput button:hover,
-    .stPasswordInput button:hover {{
-        background: linear-gradient(180deg, rgba(14,27,47,0.98) 0%, rgba(18,34,58,0.98) 100%) !important;
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 1px rgba(110,231,255,0.10) inset !important;
-    }}
-
-    .stNumberInput button svg,
-    .stPasswordInput button svg,
-    [data-testid="stBaseButton-secondary"] svg,
-    button[kind="secondary"] svg,
-    [data-testid="baseButton-headerNoPadding"] svg {{
-        fill: var(--text2) !important;
-        color: var(--text2) !important;
-        stroke: var(--text2) !important;
-    }}
-
-    [data-testid="stStatusWidget"],
-    [data-testid="stStatusWidget"] > div,
-    [data-testid="stStatusWidget"] [data-testid="stMarkdownContainer"],
-    [data-testid="stStatusWidget"] pre,
-    [data-testid="stStatusWidget"] code {{
-        background: linear-gradient(180deg, rgba(10,20,36,0.96) 0%, rgba(13,24,44,0.96) 100%) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 16px !important;
-        box-shadow: none !important;
-        color: var(--text) !important;
-    }}
-
-    [data-testid="stCodeBlock"],
-    [data-testid="stCode"],
-    [data-testid="stCodeBlock"] pre,
-    [data-testid="stCode"] pre,
-    pre {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 16px !important;
-        color: var(--text) !important;
-        box-shadow: none !important;
-    }}
-
-    *:focus,
-    *:focus-visible {{
-        outline-color: rgba(110,231,255,0.30) !important;
-    }}
-
     [data-testid="stSidebar"] {{
         background: linear-gradient(180deg, rgba(7,17,31,0.96) 0%, rgba(11,23,41,0.96) 100%) !important;
         border-right: 1px solid var(--border) !important;
@@ -634,7 +553,7 @@ def inject_css():
 
     /* Scrollbar */
     ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
-    ::-webkit-scrollbar-track {{ background: rgba(11,23,41,0.58); }}
+    ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
     ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
     </style>
