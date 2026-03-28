@@ -579,24 +579,55 @@ def inject_css():
     .stPasswordInput button svg,
     .stPasswordInput button[kind="secondary"] svg,
     .stPasswordInput [data-baseweb="input"] button svg,
-    .stPasswordInput [data-baseweb="base-input"] button svg {{
+    .stPasswordInput [data-baseweb="base-input"] button svg,
+    .stPasswordInput button [data-testid="stIconMaterial"],
+    .stPasswordInput [aria-label*="password" i] svg,
+    .stPasswordInput [title*="password" i] svg,
+    .stPasswordInput [aria-label*="contraseña" i] svg,
+    .stPasswordInput [title*="contraseña" i] svg {{
         width: 20px !important;
         height: 20px !important;
-        color: #ffffff !important;
-        fill: #ffffff !important;
-        stroke: #ffffff !important;
+        color: #0b2545 !important;
+        fill: #0b2545 !important;
+        stroke: #0b2545 !important;
         opacity: 1 !important;
-        filter: drop-shadow(0 1px 1px rgba(4,17,31,0.25)) !important;
+        filter: drop-shadow(0 1px 1px rgba(255,255,255,0.22)) !important;
     }}
 
     .stPasswordInput button svg *,
     .stPasswordInput button[kind="secondary"] svg *,
     .stPasswordInput [data-baseweb="input"] button svg *,
-    .stPasswordInput [data-baseweb="base-input"] button svg * {{
-        color: #ffffff !important;
-        fill: #ffffff !important;
-        stroke: #ffffff !important;
+    .stPasswordInput [data-baseweb="base-input"] button svg *,
+    .stPasswordInput button [data-testid="stIconMaterial"] *,
+    .stPasswordInput [aria-label*="password" i] svg *,
+    .stPasswordInput [title*="password" i] svg *,
+    .stPasswordInput [aria-label*="contraseña" i] svg *,
+    .stPasswordInput [title*="contraseña" i] svg * {{
+        color: #0b2545 !important;
+        fill: #0b2545 !important;
+        stroke: #0b2545 !important;
         opacity: 1 !important;
+    }}
+
+    .stPasswordInput [data-baseweb="input"] > div:last-child,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child,
+    .stPasswordInput [data-baseweb="input"] > div:last-child > div,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child > div,
+    .stPasswordInput [data-baseweb="input"] > div:last-child > button,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child > button,
+    .stPasswordInput [data-baseweb="input"] > div:last-child > button *,
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child > button *,
+    .stPasswordInput [data-baseweb="input"] > div:last-child [role="button"],
+    .stPasswordInput [data-baseweb="base-input"] > div:last-child [role="button"] {{
+        background-color: #7db8ff !important;
+        background-image: linear-gradient(135deg, #bfe0ff 0%, #7db8ff 46%, #4f93ff 100%) !important;
+        color: #0b2545 !important;
+        border-color: rgba(11,37,69,0.12) !important;
+    }}
+
+    .stPasswordInput input[type="password"]::-ms-reveal,
+    .stPasswordInput input[type="password"]::-ms-clear {{
+        display: none !important;
     }}
 
     .stNumberInput button svg,
@@ -662,6 +693,14 @@ def inject_css():
     .stPasswordInput [data-baseweb="base-input"] > div:last-child button:hover {{
         background: linear-gradient(135deg, #2f7ef7 0%, #1459c7 100%) !important;
         color: #ffffff !important;
+    }}
+
+
+    .stPasswordInput [data-testid="stTextInputRootElement"],
+    .stPasswordInput [data-testid="stTextInputRootElement"] > div,
+    .stPasswordInput [data-baseweb="base-input"],
+    .stPasswordInput [data-baseweb="input"] {{
+        background: var(--input-bg) !important;
     }}
 
     @media (max-width: 768px) {{
