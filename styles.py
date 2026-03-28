@@ -514,10 +514,31 @@ def inject_css():
     .stNumberInput button:hover,
     .stNumberInput button:focus,
     .stNumberInput button:active {{
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
+        background: linear-gradient(135deg, rgba(103,190,255,0.18) 0%, rgba(47,126,247,0.22) 100%) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(103,190,255,0.22) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
         outline: none !important;
+        min-height: 36px !important;
+        min-width: 36px !important;
+    }}
+
+    .stPasswordInput button[kind="secondary"] svg,
+    .stNumberInput button svg {{
+        color: var(--blue2) !important;
+        fill: currentColor !important;
+    }}
+
+    .stNumberInput > div > div,
+    .stPasswordInput > div > div {{
+        gap: 0.35rem !important;
+    }}
+
+    .stNumberInput button:hover,
+    .stPasswordInput button[kind="secondary"]:hover {{
+        border-color: var(--accent) !important;
+        box-shadow: 0 14px 26px rgba(0,0,0,0.20), 0 0 0 1px rgba(103,190,255,0.10) inset !important;
     }}
 
     [data-testid="stSpinner"],
@@ -526,9 +547,28 @@ def inject_css():
     [data-testid="stStatusWidget"],
     [data-testid="stStatusWidget"] > div,
     [data-testid="stStatusWidget"] > div > div {{
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
+        background: linear-gradient(180deg, rgba(10,23,40,0.90) 0%, rgba(7,18,31,0.96) 100%) !important;
+        border: 1px solid var(--blue-border) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 16px 34px rgba(0,0,0,0.22) !important;
+        color: var(--text) !important;
+    }}
+
+    [data-testid="stSpinner"] *,
+    [data-testid="stStatusWidget"] * {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }}
+
+
+    [data-testid="stStatusWidget"] code,
+    [data-testid="stSpinner"] code,
+    .element-container code {{
+        background: rgba(103,190,255,0.10) !important;
+        color: var(--blue2) !important;
+        border: 1px solid rgba(103,190,255,0.16) !important;
+        border-radius: 10px !important;
+        padding: 0.15rem 0.38rem !important;
     }}
 
     [data-testid="stHorizontalBlock"] > div {{ gap: 0.9rem !important; }}
