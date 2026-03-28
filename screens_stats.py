@@ -26,10 +26,11 @@ def _destino_panel():
 
 def render_destacados_usuarios():
     st.markdown("""
-    <div class="premium-hero section-shell">
-        <div class="eyebrow">Estadísticas</div>
-        <div class="title-gradient" style="font-size:2.4rem;">🏅 DESTACADOS</div>
-        <div class="subtle-copy" style="margin-top:0.55rem;max-width:620px;">Los líderes del torneo por categorías clave, presentados con una jerarquía visual mucho más fuerte.</div>
+    <div style="margin-bottom:1rem;">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                    color:var(--text3); margin-bottom:0.4rem;">Estadísticas</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:1.8rem; letter-spacing:3px; color:var(--text);">
+            🏅 DESTACADOS</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -82,10 +83,11 @@ def pantalla_ranking():
         st_autorefresh(interval=60 * 1000, key="ranking_refresh")
 
     st.markdown("""
-    <div class="premium-hero section-shell" style="text-align:center;">
-        <div class="eyebrow">Il Baigo · Mundial 2026</div>
-        <div class="title-gold">🏆 RANKING</div>
-        <div class="subtle-copy" style="max-width:620px;margin:0.6rem auto 0 auto;">Posiciones, puntos y estadísticas en una vista más limpia, más contundente y mucho más premium.</div>
+    <div style="text-align:center; padding:1rem 0 1rem 0;">
+        <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:2px;
+                    color:var(--blue); margin-bottom:0.45rem;">Il Baigo · Mundial 2026</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2.8rem; font-weight:800; letter-spacing:-1px;
+                    color:var(--text); line-height:1.05;">Ranking general</div>
     </div>
     """, unsafe_allow_html=True)
 

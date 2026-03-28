@@ -235,19 +235,25 @@ def _render_scroll_top():
 def _render_header(nombre_display, usuarios_en_linea):
     inicial = (str(nombre_display or "?").strip()[:1] or "?").upper()
     st.markdown(f"""
-    <div class="premium-hero section-shell">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; position:relative; z-index:1;">
-            <div style="display:flex; align-items:center; gap:14px; min-width:0;">
-                <div style="width:54px; height:54px; border-radius:18px; background:linear-gradient(135deg,var(--green2),var(--accent)); display:flex; align-items:center; justify-content:center; font-size:1.25rem; font-weight:800; color:#05101b; flex-shrink:0; box-shadow:0 12px 28px rgba(52,211,153,0.18);">{inicial}</div>
-                <div>
-                    <div class="eyebrow">Panel de jugador</div>
-                    <div style="font-family:Bebas Neue,sans-serif; font-size:2rem; letter-spacing:2px; color:var(--text); line-height:1;">{nombre_display}</div>
-                    <div class="subtle-copy" style="font-size:0.84rem;">Prode Il Baigo · Mundial 2026</div>
-                </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;
+                padding:0.2rem 0 1rem 0; border-bottom:1px solid var(--border); margin-bottom:1rem; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <div style="width:48px; height:48px; border-radius:16px;
+                        background:linear-gradient(135deg, rgba(96,165,250,0.95), rgba(167,139,250,0.95));
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:1rem; font-weight:800; color:#fff; flex-shrink:0; box-shadow:0 14px 30px rgba(2,6,23,0.24);">
+                {inicial}
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                <span class="pill">🟢 {usuarios_en_linea} en línea</span>
-                <span class="pill">⚽ Tu panel</span>
+            <div>
+                <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:1.35rem; font-weight:800; letter-spacing:-0.6px; color:var(--text); line-height:1.1;">{nombre_display}</div>
+                <div style="font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px;">Panel de usuario</div>
+            </div>
+        </div>
+        <div style="text-align:right; margin-left:auto;">
+            <div style="font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:6px;">Prode Il Baigo</div>
+            <div style="display:inline-flex;align-items:center;gap:7px;background:var(--blue-dim);border:1px solid var(--blue-border);
+                        color:var(--blue);padding:5px 12px;border-radius:999px;font-size:0.74rem;font-weight:800;">
+                <span>●</span><span>{usuarios_en_linea} en línea</span>
             </div>
         </div>
     </div>
@@ -332,23 +338,17 @@ def pantalla_usuario():
                     unsafe_allow_html=True
                 )
 
-            st.markdown('<div class="eyebrow" style="margin:0.2rem 0 0.6rem 0;">Accesos rápidos</div>', unsafe_allow_html=True)
+            # Menú principal — grilla 2x3
             c1, c2 = st.columns(2)
             with c1:
-                st.markdown('<div class="menu-tile"><div class="menu-icon">⚽</div><div class="menu-title">Mis pronósticos</div><div class="menu-desc">Cargá, revisá y confirmá cada fase desde una vista más clara.</div></div>', unsafe_allow_html=True)
-                if st.button("Abrir mis pronósticos", use_container_width=True, key="menu_prode"):
+                if st.button("⚽  Mis pronósticos", use_container_width=True, key="menu_prode"):
                     st.session_state["sub_pantalla"] = "pronosticos"; st.rerun()
-                st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
-                st.markdown('<div class="menu-tile"><div class="menu-icon">🏆</div><div class="menu-title">Ranking</div><div class="menu-desc">Mirá posiciones, puntajes y evolución del torneo.</div></div>', unsafe_allow_html=True)
-                if st.button("Ver ranking", use_container_width=True, key="menu_ranking"):
+                if st.button("🏆  Ranking", use_container_width=True, key="menu_ranking"):
                     cambiar_pantalla(6); st.rerun()
             with c2:
-                st.markdown('<div class="menu-tile"><div class="menu-icon">📊</div><div class="menu-title">Mis puntos</div><div class="menu-desc">Desglose completo de resultados, exactos, consumo y especiales.</div></div>', unsafe_allow_html=True)
-                if st.button("Ver mis puntos", use_container_width=True, key="menu_puntos"):
+                if st.button("📊  Mis puntos", use_container_width=True, key="menu_puntos"):
                     st.session_state["sub_pantalla"] = "puntos"; st.rerun()
-                st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
-                st.markdown('<div class="menu-tile"><div class="menu-icon">🏅</div><div class="menu-title">Destacados</div><div class="menu-desc">Consultá líderes por categoría y estadísticas del torneo.</div></div>', unsafe_allow_html=True)
-                if st.button("Ver destacados", use_container_width=True, key="menu_dest"):
+                if st.button("🏅  Destacados", use_container_width=True, key="menu_dest"):
                     cambiar_pantalla(12); st.rerun()
 
             st.markdown("""

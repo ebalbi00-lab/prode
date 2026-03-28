@@ -5,41 +5,41 @@ import streamlit as st
 
 PREMIUM_THEME = dict(
     scheme="dark",
-    bg_html="#07111f",
-    bg="#07111f",
-    bg2="#0b1729",
-    bg3="#0f1d33",
-    surface="rgba(12, 22, 40, 0.78)",
-    surface_elevated="rgba(16, 28, 50, 0.92)",
-    surface_soft="rgba(120, 140, 180, 0.08)",
-    surface2="rgba(120, 140, 180, 0.12)",
-    text="#f4f7fb",
-    text2="#c6d3e6",
-    text3="#8da2c0",
-    border="rgba(143, 170, 214, 0.18)",
-    border2="rgba(143, 170, 214, 0.28)",
-    hover_border="rgba(110, 231, 255, 0.42)",
-    shadow="rgba(2, 8, 20, 0.42)",
-    input_bg="rgba(9, 18, 33, 0.96)",
-    input_text="#f4f7fb",
-    table_bg="rgba(9, 18, 33, 0.94)",
-    table_head="rgba(110, 231, 255, 0.10)",
+    bg_html="#0b1020",
+    bg="#0f172a",
+    bg2="#131d34",
+    bg3="#18233d",
+    surface="rgba(18, 28, 50, 0.78)",
+    surface_elevated="rgba(22, 34, 58, 0.94)",
+    surface_soft="rgba(148, 163, 184, 0.08)",
+    surface2="rgba(148, 163, 184, 0.12)",
+    text="#f8fafc",
+    text2="#cbd5e1",
+    text3="#94a3b8",
+    border="rgba(148, 163, 184, 0.16)",
+    border2="rgba(148, 163, 184, 0.26)",
+    hover_border="rgba(96, 165, 250, 0.44)",
+    shadow="rgba(2, 6, 23, 0.50)",
+    input_bg="rgba(10, 18, 34, 0.96)",
+    input_text="#f8fafc",
+    table_bg="rgba(10, 18, 34, 0.94)",
+    table_head="rgba(96, 165, 250, 0.10)",
     table_row="rgba(255, 255, 255, 0.02)",
-    accent="#6ee7ff",
-    accent_2="#8b5cf6",
-    accent_3="#22c55e",
-    gold="#f5c76b",
-    gold2="#ffd891",
-    gold_dim="rgba(245, 199, 107, 0.12)",
-    gold_glow="rgba(245, 199, 107, 0.22)",
-    gold_border="rgba(245, 199, 107, 0.32)",
-    blue="#6ee7ff",
-    blue2="#bae6fd",
-    blue_dim="rgba(110, 231, 255, 0.12)",
-    blue_border="rgba(110, 231, 255, 0.28)",
-    cyan="#22d3ee",
-    cyan_dim="rgba(34, 211, 238, 0.12)",
-    cyan_border="rgba(34, 211, 238, 0.26)",
+    accent="#60a5fa",
+    accent_2="#a78bfa",
+    accent_3="#2dd4bf",
+    gold="#f8d38b",
+    gold2="#fde7b0",
+    gold_dim="rgba(248, 211, 139, 0.12)",
+    gold_glow="rgba(248, 211, 139, 0.24)",
+    gold_border="rgba(248, 211, 139, 0.30)",
+    blue="#60a5fa",
+    blue2="#bfdbfe",
+    blue_dim="rgba(96, 165, 250, 0.12)",
+    blue_border="rgba(96, 165, 250, 0.28)",
+    cyan="#38bdf8",
+    cyan_dim="rgba(56, 189, 248, 0.12)",
+    cyan_border="rgba(56, 189, 248, 0.26)",
     red="#fb7185",
     red_dim="rgba(251, 113, 133, 0.12)",
     red_border="rgba(251, 113, 133, 0.28)",
@@ -47,7 +47,7 @@ PREMIUM_THEME = dict(
     orange_dim="rgba(251, 146, 60, 0.14)",
     orange_border="rgba(251, 146, 60, 0.28)",
     green="#34d399",
-    green2="#10b981",
+    green2="#2dd4bf",
     green_dim="rgba(52, 211, 153, 0.14)",
     green_border="rgba(52, 211, 153, 0.28)",
     green_glow="rgba(52, 211, 153, 0.20)",
@@ -58,7 +58,7 @@ PREMIUM_THEME = dict(
 
 
 def get_tema() -> str:
-    return "premium-dark"
+    return "executive-night"
 
 
 def render_tema_boton():
@@ -69,6 +69,8 @@ def inject_css():
     v = PREMIUM_THEME
     st.markdown(f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
     :root {{
         color-scheme: {v['scheme']};
         --bg: {v['bg']};
@@ -119,9 +121,11 @@ def inject_css():
         --success: {v['success']};
         --warning: {v['warning']};
         --danger: {v['danger']};
-        --radius: 18px;
-        --radius-sm: 14px;
-        --radius-lg: 26px;
+        --radius: 22px;
+        --radius-sm: 16px;
+        --radius-lg: 30px;
+        --panel-bg: linear-gradient(180deg, rgba(20, 30, 52, 0.82) 0%, rgba(12, 19, 35, 0.94) 100%);
+        --panel-stroke: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 100%);
     }}
 
     html, body, [class*="css"] {{
@@ -135,20 +139,20 @@ def inject_css():
 
     body {{
         background:
-            radial-gradient(circle at 0% 0%, rgba(110,231,255,0.18), transparent 28%),
-            radial-gradient(circle at 100% 0%, rgba(139,92,246,0.20), transparent 24%),
-            radial-gradient(circle at 50% 100%, rgba(52,211,153,0.10), transparent 26%),
-            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
+            radial-gradient(circle at 0% 0%, rgba(96,165,250,0.16), transparent 26%),
+            radial-gradient(circle at 100% 0%, rgba(167,139,250,0.14), transparent 22%),
+            radial-gradient(circle at 50% 100%, rgba(45,212,191,0.10), transparent 24%),
+            linear-gradient(180deg, #0b1020 0%, #10192c 38%, #0f172a 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text);
     }}
 
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
         background:
-            radial-gradient(circle at top left, rgba(110,231,255,0.16), transparent 24%),
-            radial-gradient(circle at top right, rgba(139,92,246,0.18), transparent 22%),
-            radial-gradient(circle at bottom center, rgba(52,211,153,0.08), transparent 26%),
-            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
+            radial-gradient(circle at top left, rgba(96,165,250,0.12), transparent 24%),
+            radial-gradient(circle at top right, rgba(167,139,250,0.10), transparent 20%),
+            radial-gradient(circle at bottom center, rgba(45,212,191,0.07), transparent 24%),
+            linear-gradient(180deg, #0b1020 0%, #10192c 38%, #0f172a 100%) !important;
         color: var(--text) !important;
     }}
 
@@ -160,7 +164,7 @@ def inject_css():
     html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
     [data-testid="stAppViewBlockContainer"], section.main, section[data-testid="stSidebar"] {{
         color: var(--text) !important;
-        background-color: var(--bg) !important;
+        background-color: transparent !important;
     }}
 
     [data-testid="stAppViewContainer"] * ,
@@ -170,9 +174,19 @@ def inject_css():
     }}
 
     .block-container {{
-        max-width: 1080px !important;
-        padding-top: 1.5rem !important;
+        max-width: 1180px !important;
+        padding-top: 1.25rem !important;
         padding-bottom: 3rem !important;
+    }}
+
+    .block-container > div {{
+        position: relative;
+        z-index: 1;
+    }}
+
+    h1, h2, h3, h4, h5, h6 {{
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
+        letter-spacing: -0.02em;
     }}
 
     h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small {{
@@ -194,10 +208,13 @@ def inject_css():
     }}
 
     hr {{
-        border-color: rgba(143,170,214,0.14) !important;
+        border-color: rgba(148,163,184,0.14) !important;
     }}
 
-    /* Containers */
+    [data-testid="stHorizontalBlock"] > div {{
+        gap: 0.9rem !important;
+    }}
+
     [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlockBorderWrapper"] > div,
     div[data-testid="stExpander"],
     .stForm,
@@ -205,14 +222,21 @@ def inject_css():
         border-radius: var(--radius) !important;
     }}
 
-    .stForm {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.92) 100%) !important;
+    .stForm,
+    div[data-testid="stMetric"],
+    details,
+    .stDataFrame,
+    div[data-testid="stTable"] {{
+        background: var(--panel-bg) !important;
         border: 1px solid var(--border) !important;
-        box-shadow: 0 16px 40px var(--shadow-clr) !important;
-        padding: 1rem 1rem 0.7rem 1rem !important;
+        box-shadow: 0 20px 50px var(--shadow-clr) !important;
+        backdrop-filter: blur(18px);
     }}
 
-    /* Inputs */
+    .stForm {{
+        padding: 1.15rem 1.15rem 0.8rem 1.15rem !important;
+    }}
+
     .stTextInput > div > div > input,
     .stPasswordInput > div > div > input,
     .stNumberInput input,
@@ -222,11 +246,11 @@ def inject_css():
     [data-baseweb="select"] > div,
     [data-baseweb="base-input"] > div,
     [data-testid="stFileUploaderDropzone"] {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        background: linear-gradient(180deg, rgba(8, 14, 28, 0.98) 0%, rgba(13, 22, 39, 0.98) 100%) !important;
         color: var(--input-text) !important;
-        border: 1.5px solid var(--border2) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important;
+        border: 1px solid rgba(148,163,184,0.20) !important;
+        border-radius: 18px !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.20) !important;
     }}
 
     .stTextInput > div > div > input,
@@ -235,7 +259,7 @@ def inject_css():
     .stDateInput input,
     .stTextArea textarea,
     textarea {{
-        padding: 0.82rem 0.95rem !important;
+        padding: 0.88rem 0.98rem !important;
         font-size: 0.98rem !important;
         caret-color: var(--accent) !important;
     }}
@@ -256,8 +280,8 @@ def inject_css():
     textarea:focus,
     [data-baseweb="select"] > div:focus-within,
     [data-baseweb="base-input"] > div:focus-within {{
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px rgba(110,231,255,0.12), 0 10px 30px rgba(110,231,255,0.10) !important;
+        border-color: rgba(96,165,250,0.72) !important;
+        box-shadow: 0 0 0 3px rgba(96,165,250,0.14), 0 10px 26px rgba(96,165,250,0.10) !important;
     }}
 
     .stTextInput label,
@@ -272,22 +296,21 @@ def inject_css():
     .stCheckbox label,
     [data-testid="stWidgetLabel"],
     [data-testid="stWidgetLabel"] * {{
-        color: var(--text2) !important;
-        -webkit-text-fill-color: var(--text2) !important;
-        font-size: 0.73rem !important;
+        color: var(--text3) !important;
+        -webkit-text-fill-color: var(--text3) !important;
+        font-size: 0.72rem !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1.2px !important;
+        letter-spacing: 1.3px !important;
     }}
 
-    /* Dropdowns */
     [data-baseweb="select"] > div,
     [data-baseweb="select"] > div > div,
     [data-baseweb="select"] [role="combobox"],
     [data-baseweb="select"] [aria-haspopup="listbox"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        background: linear-gradient(180deg, rgba(8,14,28,0.98) 0%, rgba(13,22,39,0.98) 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -304,18 +327,18 @@ def inject_css():
     [role="listbox"],
     ul[role="listbox"],
     div[role="listbox"] {{
-        background: rgba(10, 19, 35, 0.985) !important;
+        background: rgba(9, 15, 29, 0.985) !important;
         color: var(--text) !important;
-        border: 1px solid var(--border2) !important;
+        border: 1px solid rgba(148,163,184,0.22) !important;
         box-shadow: 0 20px 44px rgba(0,0,0,0.36) !important;
-        border-radius: 16px !important;
-        backdrop-filter: blur(14px);
+        border-radius: 18px !important;
+        backdrop-filter: blur(16px);
     }}
 
     [role="option"],
     li[role="option"],
     div[role="option"] {{
-        background: rgba(10, 19, 35, 0.985) !important;
+        background: rgba(9, 15, 29, 0.985) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -333,7 +356,7 @@ def inject_css():
     [role="option"]:hover,
     li[role="option"]:hover,
     div[role="option"]:hover {{
-        background: rgba(110,231,255,0.14) !important;
+        background: rgba(96,165,250,0.14) !important;
         color: var(--text) !important;
     }}
 
@@ -345,42 +368,46 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
-    /* Buttons */
     .stButton > button,
-    .stDownloadButton > button {{
-        background: linear-gradient(135deg, rgba(110,231,255,0.18) 0%, rgba(139,92,246,0.18) 100%) !important;
-        color: var(--text) !important;
-        border: 1px solid rgba(110,231,255,0.22) !important;
+    .stDownloadButton > button,
+    .stFormSubmitButton > button {{
+        min-height: 46px !important;
         border-radius: 16px !important;
-        padding: 0.72rem 1rem !important;
         font-weight: 800 !important;
         letter-spacing: 0.2px !important;
+        transition: all 0.18s ease !important;
+    }}
+
+    .stButton > button,
+    .stDownloadButton > button {{
+        background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(148,163,184,0.20) !important;
         box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important;
-        transition: all 0.2s ease !important;
     }}
 
     .stButton > button:hover,
-    .stDownloadButton > button:hover {{
+    .stDownloadButton > button:hover,
+    .stFormSubmitButton > button:hover {{
         transform: translateY(-1px);
-        border-color: var(--accent) !important;
-        box-shadow: 0 16px 34px rgba(0,0,0,0.24), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
+        border-color: rgba(96,165,250,0.45) !important;
+        box-shadow: 0 16px 34px rgba(0,0,0,0.24), 0 0 0 1px rgba(96,165,250,0.10) inset !important;
     }}
 
     .stButton > button[kind="primary"],
     .stFormSubmitButton > button,
     .stDownloadButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, #22d3ee 0%, #8b5cf6 100%) !important;
-        color: #04111f !important;
+        background: linear-gradient(135deg, #60a5fa 0%, #818cf8 52%, #2dd4bf 100%) !important;
+        color: #07111f !important;
         border: 0 !important;
-        box-shadow: 0 18px 38px rgba(34,211,238,0.18), 0 10px 24px rgba(139,92,246,0.14) !important;
+        box-shadow: 0 18px 38px rgba(96,165,250,0.18), 0 10px 24px rgba(45,212,191,0.12) !important;
     }}
 
     .stButton > button:focus,
     .stFormSubmitButton > button:focus {{
-        box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
+        box-shadow: 0 0 0 3px rgba(96,165,250,0.16) !important;
     }}
 
-    /* Alerts */
     [data-testid="stSuccess"],
     [data-testid="stInfo"],
     [data-testid="stWarning"],
@@ -392,17 +419,16 @@ def inject_css():
     }}
 
     [data-testid="stSuccess"] {{ background: rgba(16, 185, 129, 0.12) !important; }}
-    [data-testid="stInfo"] {{ background: rgba(34, 211, 238, 0.10) !important; }}
+    [data-testid="stInfo"] {{ background: rgba(96, 165, 250, 0.10) !important; }}
     [data-testid="stWarning"] {{ background: rgba(245, 158, 11, 0.12) !important; }}
     [data-testid="stError"] {{ background: rgba(251, 113, 133, 0.12) !important; }}
 
-    /* Tabs */
     button[role="tab"] {{
         background: rgba(255,255,255,0.03) !important;
         border: 1px solid var(--border) !important;
-        border-radius: 14px !important;
+        border-radius: 16px !important;
         color: var(--text2) !important;
-        padding: 0.72rem 1rem !important;
+        padding: 0.76rem 1rem !important;
         font-weight: 700 !important;
         margin-right: 0.35rem !important;
     }}
@@ -410,11 +436,10 @@ def inject_css():
     button[role="tab"][aria-selected="true"] {{
         color: var(--text) !important;
         border-color: var(--accent) !important;
-        background: linear-gradient(135deg, rgba(110,231,255,0.12) 0%, rgba(139,92,246,0.12) 100%) !important;
+        background: linear-gradient(135deg, rgba(96,165,250,0.14) 0%, rgba(167,139,250,0.12) 100%) !important;
         box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
     }}
 
-    /* Radio / Checkbox */
     .stRadio [role="radiogroup"] > label,
     .stCheckbox > label {{
         background: rgba(255,255,255,0.03);
@@ -423,13 +448,9 @@ def inject_css():
         padding: 0.4rem 0.65rem;
     }}
 
-    /* Tables / Dataframes */
     .stDataFrame, div[data-testid="stTable"] {{
-        background: var(--table-bg) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 18px !important;
+        border-radius: 20px !important;
         overflow: hidden !important;
-        box-shadow: 0 16px 34px rgba(0,0,0,0.20) !important;
     }}
 
     table {{
@@ -441,32 +462,24 @@ def inject_css():
     }}
 
     tbody tr:nth-child(even) {{
-        background: var(--table_row) !important;
+        background: var(--table-row) !important;
     }}
 
     th, td {{
-        border-color: rgba(143,170,214,0.12) !important;
+        border-color: rgba(148,163,184,0.10) !important;
     }}
 
-    /* Expanders */
     details {{
-        background: rgba(12, 22, 40, 0.78) !important;
-        border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         overflow: hidden !important;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.18) !important;
     }}
 
     details summary {{
         background: rgba(255,255,255,0.02) !important;
     }}
 
-    /* Metrics */
     div[data-testid="stMetric"] {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.88) 0%, rgba(10,20,36,0.92) 100%) !important;
-        border: 1px solid var(--border) !important;
-        padding: 0.9rem 1rem !important;
-        box-shadow: 0 16px 32px rgba(0,0,0,0.18) !important;
+        padding: 0.95rem 1rem !important;
     }}
 
     div[data-testid="stMetric"] label {{
@@ -480,14 +493,10 @@ def inject_css():
         color: var(--text) !important;
     }}
 
-    /* Progress */
     .stProgress > div > div > div > div {{
-        background: linear-gradient(90deg, #22d3ee 0%, #8b5cf6 100%) !important;
+        background: linear-gradient(90deg, #60a5fa 0%, #818cf8 60%, #2dd4bf 100%) !important;
     }}
 
-
-
-    /* Defensive contrast fixes for light-mode browsers / mobile webviews */
     input, textarea, select, button {{
         color: var(--text) !important;
         -webkit-text-fill-color: currentColor !important;
@@ -498,7 +507,7 @@ def inject_css():
     input:-webkit-autofill:focus,
     textarea:-webkit-autofill {{
         -webkit-text-fill-color: var(--text) !important;
-        -webkit-box-shadow: 0 0 0px 1000px rgba(8,18,32,0.98) inset !important;
+        -webkit-box-shadow: 0 0 0px 1000px rgba(8,14,28,0.98) inset !important;
         transition: background-color 9999s ease-out 0s;
     }}
 
@@ -523,7 +532,6 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
-    /* Extra mobile/browser fixes for select menus */
     select, option, optgroup {{
         background-color: #0a1323 !important;
         color: var(--text) !important;
@@ -541,8 +549,24 @@ def inject_css():
     }}
 
     [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, rgba(7,17,31,0.96) 0%, rgba(11,23,41,0.96) 100%) !important;
+        background: linear-gradient(180deg, rgba(10,16,31,0.96) 0%, rgba(14,22,39,0.96) 100%) !important;
         border-right: 1px solid var(--border) !important;
+    }}
+
+    [data-testid="stDivider"] {{
+        margin: 1rem 0 !important;
+    }}
+
+    @media (max-width: 900px) {{
+        .block-container {{
+            padding-top: 0.9rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }}
+
+        .stForm {{
+            padding: 0.95rem 0.95rem 0.7rem 0.95rem !important;
+        }}
     }}
 
     @media (prefers-color-scheme: light) {{
@@ -551,150 +575,9 @@ def inject_css():
         }}
     }}
 
-    /* Scrollbar */
     ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
     ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
-    ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
-    ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
-
-
-    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&family=JetBrains+Mono:wght@500;700&display=swap");
-
-    .premium-hero {{
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, rgba(12,22,40,0.90) 0%, rgba(16,28,50,0.94) 55%, rgba(10,20,36,0.96) 100%);
-        border: 1px solid var(--border2);
-        border-radius: 28px;
-        padding: 1.35rem 1.4rem;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.04);
-        backdrop-filter: blur(10px);
-    }}
-    .premium-hero::before {{
-        content: "";
-        position: absolute;
-        inset: -30% auto auto -5%;
-        width: 240px;
-        height: 240px;
-        background: radial-gradient(circle, rgba(110,231,255,0.24) 0%, rgba(110,231,255,0.06) 38%, transparent 68%);
-        pointer-events: none;
-    }}
-    .premium-hero::after {{
-        content: "";
-        position: absolute;
-        inset: auto -5% -55% auto;
-        width: 260px;
-        height: 260px;
-        background: radial-gradient(circle, rgba(139,92,246,0.22) 0%, rgba(139,92,246,0.07) 40%, transparent 70%);
-        pointer-events: none;
-    }}
-    .glass-card {{
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(180deg, rgba(15,29,51,0.86) 0%, rgba(9,18,33,0.96) 100%);
-        border: 1px solid var(--border);
-        border-radius: 22px;
-        padding: 1rem 1.05rem;
-        box-shadow: 0 14px 40px rgba(0,0,0,0.18);
-    }}
-    .glass-card.soft {{ background: linear-gradient(180deg, rgba(15,29,51,0.70) 0%, rgba(9,18,33,0.92) 100%); }}
-    .eyebrow {{
-        font-size: 0.7rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--text3);
-        margin-bottom: 0.32rem;
-    }}
-    .title-gradient {{
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(2rem, 5vw, 3.8rem);
-        letter-spacing: 3px;
-        line-height: 0.98;
-        background: linear-gradient(135deg, #f8fbff 0%, #6ee7ff 45%, #8b5cf6 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 0;
-    }}
-    .title-gold {{
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(2rem, 5vw, 3.6rem);
-        letter-spacing: 3px;
-        line-height: 1;
-        background: linear-gradient(135deg, #ffe29a 0%, #f5c76b 45%, #ffb300 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 0;
-    }}
-    .subtle-copy {{ color: var(--text2); font-size: 0.92rem; line-height: 1.7; }}
-    .pill {{
-        display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
-        background: rgba(255,255,255,0.04); border:1px solid var(--border2);
-        color: var(--text2); font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-    }}
-    .metric-grid {{
-        display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0.75rem 0 1rem 0;
-    }}
-    .metric-card {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.84) 0%, rgba(9,18,33,0.96) 100%);
-        border:1px solid var(--border);border-radius:20px;padding:1rem;text-align:left;box-shadow:0 10px 28px rgba(0,0,0,0.16);
-    }}
-    .metric-label {{ font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.45rem;font-weight:800; }}
-    .metric-value {{ font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:1px;line-height:1;color:var(--text); }}
-    .metric-foot {{ color:var(--text2); font-size:0.8rem; margin-top:0.25rem; }}
-    .menu-tile {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.84) 0%, rgba(9,18,33,0.98) 100%);
-        border:1px solid var(--border);border-radius:22px;padding:1rem 1rem 0.95rem 1rem;min-height:132px;
-        box-shadow:0 12px 32px rgba(0,0,0,0.16); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    }}
-    .menu-tile:hover {{ transform: translateY(-2px); border-color: var(--hover-border); box-shadow:0 16px 34px rgba(0,0,0,0.22); }}
-    .menu-icon {{ font-size:1.25rem; margin-bottom:0.35rem; }}
-    .menu-title {{ color:var(--text);font-weight:800;font-size:0.98rem; }}
-    .menu-desc {{ color:var(--text3);font-size:0.76rem;line-height:1.55;margin-top:0.24rem; }}
-    .section-shell {{ margin-bottom: 1rem; }}
-
-    .stButton > button, .stDownloadButton > button {{
-        border: 1px solid rgba(110,231,255,0.18) !important;
-        border-radius: 16px !important;
-        background: linear-gradient(135deg, rgba(110,231,255,0.16) 0%, rgba(139,92,246,0.20) 100%) !important;
-        color: var(--text) !important;
-        font-weight: 800 !important;
-        letter-spacing: 0.3px;
-        min-height: 44px;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.14) !important;
-        transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease !important;
-    }}
-    .stButton > button:hover, .stDownloadButton > button:hover {{
-        transform: translateY(-1px);
-        border-color: var(--hover-border) !important;
-        box-shadow: 0 16px 30px rgba(0,0,0,0.20) !important;
-    }}
-    .stButton > button[kind="primary"], button[kind="primary"] {{
-        background: linear-gradient(135deg, rgba(110,231,255,0.95) 0%, rgba(139,92,246,0.92) 100%) !important;
-        color: #08101d !important;
-        border: none !important;
-    }}
-    .stAlert {{
-        border-radius: 18px !important;
-        border: 1px solid var(--border2) !important;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.14) !important;
-    }}
-    [data-testid="stExpander"] {{
-        border:1px solid var(--border) !important;
-        background: linear-gradient(180deg, rgba(15,29,51,0.74) 0%, rgba(9,18,33,0.96) 100%) !important;
-        box-shadow: 0 10px 24px rgba(0,0,0,0.12) !important;
-    }}
-    @media (max-width: 900px) {{
-        .metric-grid {{ grid-template-columns:repeat(2,minmax(0,1fr)); }}
-        .premium-hero {{ border-radius: 22px; padding: 1.1rem 1rem; }}
-    }}
-    @media (max-width: 640px) {{
-        .metric-grid {{ grid-template-columns:1fr; }}
-        .title-gradient, .title-gold {{ letter-spacing: 2px; }}
-        .block-container {{ padding-top: 1rem !important; }}
-    }}
-
+    ::-webkit-scrollbar-thumb {{ background: rgba(148,163,184,0.30); border-radius: 999px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: rgba(96,165,250,0.42); }}
     </style>
     """, unsafe_allow_html=True)

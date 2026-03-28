@@ -10,7 +10,6 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
-from styles import PREMIUM_THEME
 
 
 def cambiar_pantalla(step):
@@ -59,48 +58,27 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 
 def pantalla_login():
     st.markdown("""
-    <div class="premium-hero section-shell">
-        <div class="eyebrow">Prode Il Baigo · Mundial 2026</div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;">
-            <div style="max-width:620px;position:relative;z-index:1;">
-                <div style="font-size:3rem; margin-bottom:0.35rem;">⚽</div>
-                <div class="title-gradient">PRODE IL BAIGO</div>
-                <div class="subtle-copy" style="max-width:560px;margin-top:0.65rem;">
-                    Una experiencia de prode mucho más premium, clara y competitiva. Entrá, cargá tus pronósticos y seguí el ranking en tiempo real.
-                </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:0.9rem;">
-                    <span class="pill">🏆 Ranking en vivo</span>
-                    <span class="pill">⚡ Confirmación por fase</span>
-                    <span class="pill">⭐ Especiales</span>
-                </div>
-            </div>
-            <div class="glass-card soft" style="min-width:240px;max-width:280px;position:relative;z-index:1;">
-                <div class="eyebrow" style="margin-bottom:0.45rem;color:var(--gold);">Estado del torneo</div>
-                <div style="font-family:Bebas Neue,sans-serif;font-size:2.1rem;letter-spacing:2px;color:var(--gold);line-height:1;">MUNDIAL 2026</div>
-                <div class="subtle-copy" style="font-size:0.84rem;margin-top:0.55rem;">Viví cada partido con una interfaz más limpia, más moderna y más contundente visualmente.</div>
-            </div>
-        </div>
+    <div style="text-align:center; padding: 1.8rem 0 1.6rem 0;">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:70px; height:70px; border-radius:22px;
+                    background:linear-gradient(135deg, rgba(96,165,250,0.22), rgba(167,139,250,0.18));
+                    border:1px solid rgba(148,163,184,0.18); box-shadow:0 18px 40px rgba(2,6,23,0.28); font-size:2rem; margin-bottom:0.9rem;">⚽</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:3rem; font-weight:800; letter-spacing:-1.5px;
+                    color:var(--text); line-height:1.0; margin-bottom:0.55rem;">Prode Il Baigo</div>
+        <div style="display:inline-block; background:rgba(96,165,250,0.10); border:1px solid rgba(96,165,250,0.22);
+                    border-radius:999px; padding:7px 16px; font-size:0.72rem; color:var(--blue);
+                    font-weight:800; letter-spacing:1.8px; text-transform:uppercase; box-shadow:0 10px 24px rgba(2,6,23,0.14);">Edición Mundial 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
     if "login_error" in st.session_state:
         st.error(st.session_state.pop("login_error"))
 
-    col_l, col_c, col_r = st.columns([0.16, 0.68, 0.16])
-    with col_c:
-        st.markdown("""
-        <div class="glass-card section-shell" style="padding:1.15rem 1.15rem 0.4rem 1.15rem;">
-            <div class="eyebrow">Acceso</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;letter-spacing:2px;color:var(--text);margin-bottom:0.25rem;">Ingresá a tu cuenta</div>
-            <div class="subtle-copy" style="font-size:0.86rem;margin-bottom:0.8rem;">Usá tu usuario y clave para entrar al panel.</div>
-        </div>
-        """, unsafe_allow_html=True)
-        with st.form("form_login"):
-            usuario = st.text_input("Usuario", placeholder="tu_usuario")
-            clave = st.text_input("Clave", type="password", placeholder="••••••••")
-            col1, col2 = st.columns(2)
-            ingresar = col1.form_submit_button("Ingresar", type="primary", use_container_width=True)
-            registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
+    with st.form("form_login"):
+        usuario = st.text_input("Usuario", placeholder="tu_usuario")
+        clave = st.text_input("Clave", type="password", placeholder="••••••••")
+        col1, col2 = st.columns(2)
+        ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
+        registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
 
     if ingresar:
         with st.spinner("Ingresando..."):
@@ -109,25 +87,20 @@ def pantalla_login():
         cambiar_pantalla(1)
         st.rerun()
 
-    st.markdown("""
-    <div class="glass-card soft" style="text-align:center;">
-        <div class="eyebrow">Info rápida</div>
-        <div class="subtle-copy" style="margin-bottom:0.8rem;">Conocé cómo funciona el sistema de puntos, especiales y premios.</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.divider()
     st.button("ℹ️ Acerca del prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
     st.markdown("""
     <div style="text-align:center; margin-top:0.8rem;">
         <a href="https://www.instagram.com/il_baigo" target="_blank"
            style="display:inline-flex; align-items:center; gap:7px; text-decoration:none;
                   background:var(--surface); border:1.5px solid var(--border2);
-                  border-radius:20px; padding:8px 16px; transition:all 0.16s ease; box-shadow:0 10px 24px rgba(0,0,0,0.12);">
+                  border-radius:20px; padding:6px 16px; transition:all 0.16s ease;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
                 <rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
                 <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
                 <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" style="color:var(--text2);"/>
             </svg>
-            <span style="color:var(--text2); font-size:0.82rem; font-weight:700; letter-spacing:0.3px;">
+            <span style="color:var(--text2); font-size:0.82rem; font-weight:600; letter-spacing:0.3px;">
                 Seguinos <strong style="color:var(--text);">@il_baigo</strong></span>
         </a>
     </div>
@@ -136,10 +109,11 @@ def pantalla_login():
 
 def pantalla_registro_datos():
     st.markdown("""
-    <div class="premium-hero section-shell">
-        <div class="eyebrow">Paso 1 de 2</div>
-        <div class="title-gradient" style="font-size:2.7rem;">Datos personales</div>
-        <div class="subtle-copy" style="max-width:620px;margin-top:0.55rem;">Completá tus datos para iniciar la inscripción. Todo quedó más ordenado, claro y visualmente más sólido.</div>
+    <div style="padding:0.3rem 0 1rem 0;">
+        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1.8px;
+                    color:var(--blue); margin-bottom:0.35rem;">Paso 1 de 2</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2rem; font-weight:800; letter-spacing:-0.8px; color:var(--text);">
+            Datos personales</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -187,10 +161,11 @@ def pantalla_registro_cuenta():
     instrucciones_pago = pago.get("instrucciones", "")
 
     st.markdown("""
-    <div class="premium-hero section-shell">
-        <div class="eyebrow">Paso 2 de 2</div>
-        <div class="title-gradient" style="font-size:2.7rem;">Cuenta y pago</div>
-        <div class="subtle-copy" style="max-width:620px;margin-top:0.55rem;">Definí tu acceso y cargá el comprobante desde una interfaz más limpia y premium.</div>
+    <div style="padding:0.3rem 0 1rem 0;">
+        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1.8px;
+                    color:var(--blue); margin-bottom:0.35rem;">Paso 2 de 2</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2rem; font-weight:800; letter-spacing:-0.8px; color:var(--text);">
+            Cuenta y pago</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -287,10 +262,10 @@ def pantalla_acerca():
     <div style="padding:0.5rem 0 1.2rem 0;">
         <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
                     color:var(--text3); margin-bottom:0.3rem;">Guía del participante</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:2.8rem; letter-spacing:3px;
-                    color:var(--text); line-height:1.05;">ℹ️ PRODE IL BAIGO</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:1.3rem; letter-spacing:2px;
-                    color:var(--text3);">MUNDIAL 2026</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:2.4rem; font-weight:800; letter-spacing:-1px;
+                    color:var(--text); line-height:1.05;">Guía Prode Il Baigo</div>
+        <div style="font-size:0.85rem; font-weight:700; letter-spacing:1.6px;
+                    text-transform:uppercase; color:var(--text3);">Mundial 2026</div>
     </div>
     """, unsafe_allow_html=True)
 
