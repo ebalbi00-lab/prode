@@ -358,42 +358,28 @@ def inject_css():
 
 
 
-    /* Icon / utility buttons — integrados al fondo del input */
+    /* Icon / utility buttons */
     .stNumberInput button,
     .stPasswordInput button,
     .stTextInput button,
     [data-baseweb="input"] button,
     [data-baseweb="base-input"] button {{
-        background: transparent !important;
-        background-color: transparent !important;
-        color: var(--text2) !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        transition: none !important;
+        background: linear-gradient(135deg, rgba(34,211,238,0.96) 0%, rgba(59,130,246,0.92) 100%) !important;
+        color: #04111f !important;
+        border: 1px solid rgba(110,231,255,0.34) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 22px rgba(34,211,238,0.18) !important;
+        transition: all 0.18s ease !important;
     }}
 
     .stNumberInput button:hover,
     .stPasswordInput button:hover,
     .stTextInput button:hover,
     [data-baseweb="input"] button:hover,
-    [data-baseweb="base-input"] button:hover,
-    .stNumberInput button:focus,
-    .stPasswordInput button:focus,
-    .stTextInput button:focus,
-    [data-baseweb="input"] button:focus,
-    [data-baseweb="base-input"] button:focus,
-    .stNumberInput button:active,
-    .stPasswordInput button:active,
-    .stTextInput button:active,
-    [data-baseweb="input"] button:active,
-    [data-baseweb="base-input"] button:active {{
-        background: transparent !important;
-        background-color: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        outline: none !important;
-        transform: none !important;
+    [data-baseweb="base-input"] button:hover {{
+        border-color: var(--accent) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px rgba(34,211,238,0.22), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
     }}
 
     .stNumberInput button svg,
@@ -401,8 +387,8 @@ def inject_css():
     .stTextInput button svg,
     [data-baseweb="input"] button svg,
     [data-baseweb="base-input"] button svg {{
-        fill: var(--text2) !important;
-        color: var(--text2) !important;
+        fill: #04111f !important;
+        color: #04111f !important;
     }}
 
     .stNumberInput [data-testid="stWidgetLabel"] + div,
@@ -410,46 +396,6 @@ def inject_css():
     .stTextInput [data-testid="stWidgetLabel"] + div {{
         box-shadow: 0 12px 28px rgba(0,0,0,0.16) !important;
         border-radius: 16px !important;
-        overflow: hidden !important;
-    }}
-
-    .stNumberInput [data-testid="stWidgetLabel"] + div > div,
-    .stPasswordInput [data-testid="stWidgetLabel"] + div > div,
-    .stTextInput [data-testid="stWidgetLabel"] + div > div {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
-        border-radius: 16px !important;
-    }}
-
-    /* Spinner / running */
-    [data-testid="stSpinner"],
-    [data-testid="stSpinner"] > div,
-    [data-testid="stSpinner"] > div > div,
-    [data-testid="stStatusWidget"],
-    [data-testid="stStatusWidget"] > div,
-    [data-testid="stStatusWidget"] > div > div {{
-        background: transparent !important;
-        background-color: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        min-height: 0 !important;
-        gap: 0.35rem !important;
-    }}
-
-    [data-testid="stSpinner"] p,
-    [data-testid="stStatusWidget"] p {{
-        margin: 0 !important;
-        padding: 0 !important;
-        color: var(--text) !important;
-    }}
-
-    [data-testid="stSpinner"] svg,
-    [data-testid="stStatusWidget"] svg {{
-        background: transparent !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
     }}
 
     /* Buttons */
@@ -754,19 +700,57 @@ def inject_css():
         }}
     }}
 
+    /* ===== Ajustes puntuales sin romper la estética ===== */
+    /* Ojo de contraseña: sin círculo/fondo aparte */
+    .stPasswordInput button[kind="secondary"],
+    .stPasswordInput button[kind="secondary"]:hover,
+    .stPasswordInput button[kind="secondary"]:focus,
+    .stPasswordInput button[kind="secondary"]:active {{
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }}
 
-    /* Traducción visual del label por defecto de Streamlit */
-    [data-testid="stSpinner"] p[data-testid="stMarkdownContainer"] {
-        position: relative !important;
-        color: transparent !important;
-    }
-    [data-testid="stSpinner"] p[data-testid="stMarkdownContainer"]::after {
-        content: "Cargando...";
-        color: var(--text) !important;
-        position: absolute;
-        inset: 0 auto auto 0;
-        white-space: nowrap;
-    }
+    .stPasswordInput button[kind="secondary"] svg {{
+        border-radius: 0 !important;
+        background: transparent !important;
+    }}
+
+    /* + y - del number input: integrados al campo */
+    .stNumberInput button,
+    .stNumberInput button:hover,
+    .stNumberInput button:focus,
+    .stNumberInput button:active {{
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }}
+
+    /* Spinner/status: sin caja blanca ni hueco raro */
+    [data-testid="stSpinner"],
+    [data-testid="stSpinner"] > div,
+    [data-testid="stSpinner"] > div > div,
+    [data-testid="stStatusWidget"],
+    [data-testid="stStatusWidget"] > div,
+    [data-testid="stStatusWidget"] > div > div {{
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }}
+
+    [data-testid="stSpinner"] {{
+        margin: 0 0 .25rem 0 !important;
+        padding: 0 !important;
+    }}
+
+    [data-testid="stSpinner"] p,
+    [data-testid="stSpinner"] span,
+    [data-testid="stStatusWidget"] p,
+    [data-testid="stStatusWidget"] span {{
+        margin: 0 !important;
+    }}
 
     </style>
     """, unsafe_allow_html=True)
