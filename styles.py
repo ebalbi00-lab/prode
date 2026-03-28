@@ -4,57 +4,66 @@ def inject_css():
     st.markdown("""
     <style>
 
-    /* ===== NO TOCAR FONDO GENERAL ===== */
-    /* (respeta el tema azul original de la app) */
+    /* ===== THEME GENERAL AZUL ===== */
 
+    .stApp {
+        background: linear-gradient(180deg, #0f2a44 0%, #163a5c 100%);
+    }
 
-    /* ===== INPUT BASE (MISMO FONDO PARA TODO) ===== */
+    /* CONTENEDOR PRINCIPAL */
+    .block-container {
+        padding-top: 1rem !important;  /* reduce espacio superior */
+        padding-bottom: 1rem !important;
+    }
+
+    /* ELIMINAR ESPACIO EXTRA ARRIBA */
+    header {
+        visibility: hidden;
+        height: 0px;
+    }
+
+    /* ===== INPUT PASSWORD (OJO INTEGRADO) ===== */
 
     div[data-baseweb="input"] {
-        background-color: #e6f0ff !important;
+        background-color: #1e4f7a !important;
         border-radius: 8px !important;
-        border: 1px solid #cfe0ff !important;
+        border: 1px solid #2f7ef7 !important;
         overflow: hidden !important;
     }
 
-    /* INPUT TEXTO */
     div[data-baseweb="input"] input {
         background-color: transparent !important;
-        color: #1e293b !important;
+        color: #ffffff !important;
     }
 
-    /* CONTENEDOR DERECHO (OJO) */
     div[data-baseweb="input"] > div:last-child {
-        background-color: #e6f0ff !important;
+        background-color: #1e4f7a !important;
     }
 
-    /* BOTÓN DEL OJO */
     div[data-baseweb="input"] button {
-        background-color: #e6f0ff !important;
+        background-color: #1e4f7a !important;
         border: none !important;
         box-shadow: none !important;
         padding: 6px !important;
     }
 
-    /* HOVER */
     div[data-baseweb="input"] button:hover {
-        background-color: #d6e6ff !important;
+        background-color: #2f7ef7 !important;
     }
 
-    /* ICONO */
     div[data-baseweb="input"] button svg {
-        color: #2f7ef7 !important;
-        fill: #2f7ef7 !important;
+        color: #ffffff !important;
+        fill: #ffffff !important;
     }
 
     div[data-baseweb="input"] button svg path {
-        fill: #2f7ef7 !important;
+        fill: #ffffff !important;
     }
 
     /* ===== TITULO ===== */
 
     .login-title {
-        color: #16a34a;
+        color: #22c55e;
         font-size: 32px;
         font-weight: 700;
         text-align: center;
@@ -63,7 +72,7 @@ def inject_css():
 
     .login-subtitle {
         text-align: center;
-        color: #64748b;
+        color: #cbd5f5;
         font-size: 14px;
         margin-bottom: 20px;
     }
