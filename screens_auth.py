@@ -286,7 +286,6 @@ def pantalla_acerca():
             <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">⏳ Cierre por fase</span>
             <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🏆 Premios finales</span>
             <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🎁 Premios sorpresa</span>
-            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🇦🇷 Horario Argentina / Buenos Aires</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -364,7 +363,6 @@ def pantalla_acerca():
             Durante la competencia habrá <strong style="color:var(--text);">premios para quienes terminen en los primeros puestos</strong>
             del ranking general y también <strong style="color:var(--text);">premios sorpresa</strong> en distintas etapas del torneo.<br><br>
             Estar activo, consumir en el local y seguir de cerca cada fase te puede dar más chances de sumar puntos y meterte en la pelea.
-            <span style="color:var(--blue);"> Todo se maneja con horario de Argentina / Buenos Aires.</span>
         </div>
     </div>
     """, unsafe_allow_html=True)

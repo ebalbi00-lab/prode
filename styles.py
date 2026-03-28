@@ -206,10 +206,21 @@ def inject_css():
     }}
 
     .stForm {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.92) 100%) !important;
+        background: linear-gradient(180deg, rgba(15,29,51,0.92) 0%, rgba(10,20,36,0.95) 100%) !important;
         border: 1px solid var(--border) !important;
-        box-shadow: 0 16px 40px var(--shadow-clr) !important;
-        padding: 1rem 1rem 0.7rem 1rem !important;
+        box-shadow: 0 20px 48px var(--shadow-clr) !important;
+        padding: 1.05rem 1.05rem 0.8rem 1.05rem !important;
+        position: relative;
+        overflow: hidden;
+    }}
+
+    .stForm::before {{
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(110,231,255,0.65) 22%, rgba(139,92,246,0.55) 68%, transparent 100%);
+        pointer-events: none;
     }}
 
     /* Inputs */
@@ -345,6 +356,48 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
+
+
+    /* Icon / utility buttons */
+    .stNumberInput button,
+    .stPasswordInput button,
+    .stTextInput button,
+    [data-baseweb="input"] button,
+    [data-baseweb="base-input"] button {{
+        background: linear-gradient(135deg, rgba(34,211,238,0.96) 0%, rgba(59,130,246,0.92) 100%) !important;
+        color: #04111f !important;
+        border: 1px solid rgba(110,231,255,0.34) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 22px rgba(34,211,238,0.18) !important;
+        transition: all 0.18s ease !important;
+    }}
+
+    .stNumberInput button:hover,
+    .stPasswordInput button:hover,
+    .stTextInput button:hover,
+    [data-baseweb="input"] button:hover,
+    [data-baseweb="base-input"] button:hover {{
+        border-color: var(--accent) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px rgba(34,211,238,0.22), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
+    }}
+
+    .stNumberInput button svg,
+    .stPasswordInput button svg,
+    .stTextInput button svg,
+    [data-baseweb="input"] button svg,
+    [data-baseweb="base-input"] button svg {{
+        fill: #04111f !important;
+        color: #04111f !important;
+    }}
+
+    .stNumberInput [data-testid="stWidgetLabel"] + div,
+    .stPasswordInput [data-testid="stWidgetLabel"] + div,
+    .stTextInput [data-testid="stWidgetLabel"] + div {{
+        box-shadow: 0 12px 28px rgba(0,0,0,0.16) !important;
+        border-radius: 16px !important;
+    }}
+
     /* Buttons */
     .stButton > button,
     .stDownloadButton > button {{
@@ -463,10 +516,21 @@ def inject_css():
 
     /* Metrics */
     div[data-testid="stMetric"] {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.88) 0%, rgba(10,20,36,0.92) 100%) !important;
+        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.95) 100%) !important;
         border: 1px solid var(--border) !important;
-        padding: 0.9rem 1rem !important;
-        box-shadow: 0 16px 32px rgba(0,0,0,0.18) !important;
+        padding: 0.95rem 1rem !important;
+        box-shadow: 0 18px 38px rgba(0,0,0,0.20) !important;
+        position: relative;
+        overflow: hidden;
+    }}
+
+    div[data-testid="stMetric"]::after {{
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 3px;
+        background: linear-gradient(180deg, rgba(34,211,238,0.95) 0%, rgba(139,92,246,0.95) 100%);
+        opacity: 0.9;
     }}
 
     div[data-testid="stMetric"] label {{
