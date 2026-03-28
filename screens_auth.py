@@ -273,7 +273,7 @@ def pantalla_acerca():
     st.markdown("""
     <div style="background:linear-gradient(135deg, rgba(52,211,153,0.16) 0%, rgba(34,211,238,0.12) 100%);
                 border:1.5px solid var(--green-glow); border-radius:18px; padding:18px 20px; margin-bottom:1rem;
-                box-shadow:0 18px 36px rgba(0,0,0,0.18);">
+                box-shadow:0 18px 36px rgba(58,12,118,0.24);">
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
                     color:var(--green); margin-bottom:8px;">⚽ ¿Cómo funciona?</div>
         <div style="color:var(--text2); font-size:0.94rem; line-height:1.8;">
@@ -283,9 +283,9 @@ def pantalla_acerca():
             Cada pronóstico se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
-            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">⏳ Cierre por fase</span>
-            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🏆 Premios finales</span>
-            <span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🎁 Premios sorpresa</span>
+            <span style="background:rgba(129,92,255,0.16); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">⏳ Cierre por fase</span>
+            <span style="background:rgba(129,92,255,0.16); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🏆 Premios finales</span>
+            <span style="background:rgba(129,92,255,0.16); border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:0.75rem; color:var(--text);">🎁 Premios sorpresa</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -305,7 +305,7 @@ def pantalla_acerca():
                       f'<td style="padding:10px 14px; color:var(--text); font-weight:600; font-size:0.92rem;">{fase}</td>'
                       f'<td style="padding:10px 14px; color:var(--blue); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{res_pts[i]}</td>'
                       f'<td style="padding:10px 14px; color:var(--green); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{exacto_pts[i]}</td></tr>')
-    st.markdown(f"""<div style="border-radius:16px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:0.8rem; box-shadow:0 18px 36px rgba(0,0,0,0.16);">
+    st.markdown(f"""<div style="border-radius:16px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:0.8rem; box-shadow:0 18px 36px rgba(58,12,118,0.22);">
         <table style="width:100%; border-collapse:collapse; background:var(--table-bg);">
         <thead><tr style="background:var(--table-head); border-bottom:1px solid var(--border);">
             <th style="padding:10px 14px; color:var(--text3); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:left;">Fase</th>
@@ -317,12 +317,12 @@ def pantalla_acerca():
     st.divider()
     col_info1, col_info2 = st.columns(2)
     with col_info1:
-        st.markdown("""<div style="background:linear-gradient(135deg, rgba(251,146,60,0.14) 0%, rgba(245,158,11,0.10) 100%); border:1.5px solid var(--orange-border); border-radius:16px; padding:16px 18px; box-shadow:0 16px 32px rgba(0,0,0,0.16);">
+        st.markdown("""<div style="background:linear-gradient(135deg, rgba(251,146,60,0.14) 0%, rgba(245,158,11,0.10) 100%); border:1.5px solid var(--orange-border); border-radius:16px; padding:16px 18px; box-shadow:0 16px 32px rgba(58,12,118,0.22);">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:6px;">💰 Puntos de consumo</div>
             <div style="color:var(--text2); font-size:0.88rem; line-height:1.7;">El admin puede sumar puntos por consumo en el local o presencia en los partidos.</div>
         </div>""", unsafe_allow_html=True)
     with col_info2:
-        st.markdown("""<div style="background:linear-gradient(135deg, rgba(110,231,255,0.14) 0%, rgba(59,130,246,0.10) 100%); border:1.5px solid var(--blue-border); border-radius:16px; padding:16px 18px; box-shadow:0 16px 32px rgba(0,0,0,0.16);">
+        st.markdown("""<div style="background:linear-gradient(135deg, rgba(110,231,255,0.14) 0%, rgba(59,130,246,0.10) 100%); border:1.5px solid var(--blue-border); border-radius:16px; padding:16px 18px; box-shadow:0 16px 32px rgba(58,12,118,0.22);">
             <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--blue); margin-bottom:6px;">📊 Ranking</div>
             <div style="color:var(--text2); font-size:0.88rem; line-height:1.7;">Se actualiza automáticamente. Total = resultados + goles + consumo + especiales.</div>
         </div>""", unsafe_allow_html=True)
@@ -342,7 +342,7 @@ def pantalla_acerca():
         cards_esp += f"""
         <div style="display:flex; justify-content:space-between; align-items:center;
                     background:var(--surface); border:1px solid var(--border);
-                    border-radius:14px; padding:12px 16px; margin-bottom:8px; box-shadow:0 10px 24px rgba(0,0,0,0.12);">
+                    border-radius:14px; padding:12px 16px; margin-bottom:8px; box-shadow:0 10px 24px rgba(58,12,118,0.18);">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-size:1.2rem;">{icono}</span>
                 <span style="color:var(--text); font-weight:600; font-size:0.92rem;">{label}</span>
@@ -357,7 +357,7 @@ def pantalla_acerca():
     st.markdown("""
     <div style="background:linear-gradient(135deg, rgba(110,231,255,0.14) 0%, rgba(139,92,246,0.14) 100%);
                 border:1.5px solid var(--blue-border); border-radius:18px; padding:16px 20px; margin-bottom:0.8rem;
-                box-shadow:0 18px 36px rgba(0,0,0,0.18);">
+                box-shadow:0 18px 36px rgba(58,12,118,0.24);">
         <div style="color:var(--blue); font-weight:700; font-size:0.92rem; margin-bottom:8px;">🏆 Premios para los primeros puestos + premios sorpresa</div>
         <div style="color:var(--text2); font-size:0.9rem; line-height:1.8;">
             Durante la competencia habrá <strong style="color:var(--text);">premios para quienes terminen en los primeros puestos</strong>

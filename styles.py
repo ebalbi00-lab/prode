@@ -5,56 +5,57 @@ import streamlit as st
 
 PREMIUM_THEME = dict(
     scheme="dark",
-    bg_html="#07111f",
-    bg="#07111f",
-    bg2="#0b1729",
-    bg3="#0f1d33",
-    surface="rgba(12, 22, 40, 0.78)",
-    surface_elevated="rgba(16, 28, 50, 0.92)",
-    surface_soft="rgba(120, 140, 180, 0.08)",
-    surface2="rgba(120, 140, 180, 0.12)",
-    text="#f4f7fb",
-    text2="#c6d3e6",
-    text3="#8da2c0",
-    border="rgba(143, 170, 214, 0.18)",
-    border2="rgba(143, 170, 214, 0.28)",
-    hover_border="rgba(110, 231, 255, 0.42)",
-    shadow="rgba(2, 8, 20, 0.42)",
-    input_bg="rgba(9, 18, 33, 0.96)",
-    input_text="#f4f7fb",
-    table_bg="rgba(9, 18, 33, 0.94)",
-    table_head="rgba(110, 231, 255, 0.10)",
-    table_row="rgba(255, 255, 255, 0.02)",
-    accent="#6ee7ff",
-    accent_2="#8b5cf6",
-    accent_3="#22c55e",
-    gold="#f5c76b",
-    gold2="#ffd891",
-    gold_dim="rgba(245, 199, 107, 0.12)",
-    gold_glow="rgba(245, 199, 107, 0.22)",
-    gold_border="rgba(245, 199, 107, 0.32)",
-    blue="#6ee7ff",
-    blue2="#bae6fd",
-    blue_dim="rgba(110, 231, 255, 0.12)",
-    blue_border="rgba(110, 231, 255, 0.28)",
-    cyan="#22d3ee",
-    cyan_dim="rgba(34, 211, 238, 0.12)",
-    cyan_border="rgba(34, 211, 238, 0.26)",
-    red="#fb7185",
-    red_dim="rgba(251, 113, 133, 0.12)",
-    red_border="rgba(251, 113, 133, 0.28)",
-    orange="#fb923c",
-    orange_dim="rgba(251, 146, 60, 0.14)",
-    orange_border="rgba(251, 146, 60, 0.28)",
-    green="#34d399",
-    green2="#10b981",
-    green_dim="rgba(52, 211, 153, 0.14)",
-    green_border="rgba(52, 211, 153, 0.28)",
-    green_glow="rgba(52, 211, 153, 0.20)",
-    success="#34d399",
-    warning="#f59e0b",
-    danger="#fb7185",
+    bg_html="#120a2a",
+    bg="#120a2a",
+    bg2="#1b0f3b",
+    bg3="#231452",
+    surface="rgba(36, 20, 82, 0.76)",
+    surface_elevated="rgba(46, 24, 102, 0.88)",
+    surface_soft="rgba(110, 72, 170, 0.14)",
+    surface2="rgba(65, 227, 217, 0.16)",
+    text="#ffe8ff",
+    text2="#f6c6ff",
+    text3="#cf9fff",
+    border="rgba(129, 92, 255, 0.24)",
+    border2="rgba(65, 227, 217, 0.34)",
+    hover_border="rgba(255, 122, 212, 0.54)",
+    shadow="rgba(33, 6, 72, 0.46)",
+    input_bg="rgba(28, 14, 58, 0.94)",
+    input_text="#ffe8ff",
+    table_bg="rgba(25, 12, 55, 0.95)",
+    table_head="rgba(255, 122, 212, 0.12)",
+    table_row="rgba(94, 43, 154, 0.18)",
+    accent="#ff7ad4",
+    accent_2="#815cff",
+    accent_3="#41e3d9",
+    gold="#ffb84d",
+    gold2="#ffd36f",
+    gold_dim="rgba(255, 184, 77, 0.16)",
+    gold_glow="rgba(255, 184, 77, 0.26)",
+    gold_border="rgba(255, 184, 77, 0.34)",
+    blue="#41e3d9",
+    blue2="#8ff7f2",
+    blue_dim="rgba(65, 227, 217, 0.16)",
+    blue_border="rgba(65, 227, 217, 0.32)",
+    cyan="#00d2ff",
+    cyan_dim="rgba(0, 210, 255, 0.14)",
+    cyan_border="rgba(0, 210, 255, 0.30)",
+    red="#ff5f9e",
+    red_dim="rgba(255, 95, 158, 0.16)",
+    red_border="rgba(255, 95, 158, 0.30)",
+    orange="#ff8a3d",
+    orange_dim="rgba(255, 138, 61, 0.18)",
+    orange_border="rgba(255, 138, 61, 0.30)",
+    green="#59f1b2",
+    green2="#22d98e",
+    green_dim="rgba(89, 241, 178, 0.16)",
+    green_border="rgba(89, 241, 178, 0.30)",
+    green_glow="rgba(89, 241, 178, 0.24)",
+    success="#59f1b2",
+    warning="#ffb84d",
+    danger="#ff5f9e",
 )
+
 
 
 def get_tema() -> str:
@@ -135,20 +136,20 @@ def inject_css():
 
     body {{
         background:
-            radial-gradient(circle at 0% 0%, rgba(110,231,255,0.18), transparent 28%),
-            radial-gradient(circle at 100% 0%, rgba(139,92,246,0.20), transparent 24%),
-            radial-gradient(circle at 50% 100%, rgba(52,211,153,0.10), transparent 26%),
-            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
+            radial-gradient(circle at 0% 0%, rgba(255,122,212,0.22), transparent 26%),
+            radial-gradient(circle at 100% 0%, rgba(129,92,255,0.24), transparent 24%),
+            radial-gradient(circle at 50% 100%, rgba(65,227,217,0.16), transparent 28%),
+            linear-gradient(180deg, #120a2a 0%, #1a0d38 42%, #220f4c 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text);
     }}
 
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
         background:
-            radial-gradient(circle at top left, rgba(110,231,255,0.16), transparent 24%),
-            radial-gradient(circle at top right, rgba(139,92,246,0.18), transparent 22%),
-            radial-gradient(circle at bottom center, rgba(52,211,153,0.08), transparent 26%),
-            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
+            radial-gradient(circle at top left, rgba(255,122,212,0.20), transparent 24%),
+            radial-gradient(circle at top right, rgba(129,92,255,0.24), transparent 22%),
+            radial-gradient(circle at bottom center, rgba(65,227,217,0.14), transparent 28%),
+            linear-gradient(180deg, #120a2a 0%, #1a0d38 42%, #220f4c 100%) !important;
         color: var(--text) !important;
     }}
 
@@ -194,7 +195,7 @@ def inject_css():
     }}
 
     hr {{
-        border-color: rgba(143,170,214,0.14) !important;
+        border-color: rgba(129,92,255,0.18) !important;
     }}
 
     /* Containers */
@@ -206,7 +207,7 @@ def inject_css():
     }}
 
     .stForm {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.92) 0%, rgba(10,20,36,0.95) 100%) !important;
+        background: linear-gradient(180deg, rgba(43,22,91,0.92) 0%, rgba(28,14,58,0.96) 100%) !important;
         border: 1px solid var(--border) !important;
         box-shadow: 0 20px 48px var(--shadow-clr) !important;
         padding: 1.05rem 1.05rem 0.8rem 1.05rem !important;
@@ -219,7 +220,7 @@ def inject_css():
         position: absolute;
         inset: 0 0 auto 0;
         height: 1px;
-        background: linear-gradient(90deg, transparent 0%, rgba(110,231,255,0.65) 22%, rgba(139,92,246,0.55) 68%, transparent 100%);
+        background: linear-gradient(90deg, transparent 0%, rgba(255,122,212,0.68) 22%, rgba(129,92,255,0.62) 52%, rgba(65,227,217,0.58) 78%, transparent 100%);
         pointer-events: none;
     }}
 
@@ -233,11 +234,11 @@ def inject_css():
     [data-baseweb="select"] > div,
     [data-baseweb="base-input"] > div,
     [data-testid="stFileUploaderDropzone"] {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        background: linear-gradient(180deg, rgba(33,16,68,0.98) 0%, rgba(24,12,52,0.98) 100%) !important;
         color: var(--input-text) !important;
         border: 1.5px solid var(--border2) !important;
         border-radius: 16px !important;
-        box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important;
+        box-shadow: 0 14px 34px rgba(62, 14, 122, 0.26) !important;
     }}
 
     .stTextInput > div > div > input,
@@ -268,7 +269,7 @@ def inject_css():
     [data-baseweb="select"] > div:focus-within,
     [data-baseweb="base-input"] > div:focus-within {{
         border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px rgba(110,231,255,0.12), 0 10px 30px rgba(110,231,255,0.10) !important;
+        box-shadow: 0 0 0 3px rgba(255,122,212,0.14), 0 10px 30px rgba(255,122,212,0.12) !important;
     }}
 
     .stTextInput label,
@@ -298,7 +299,7 @@ def inject_css():
     [data-baseweb="select"] [aria-haspopup="listbox"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
+        background: linear-gradient(180deg, rgba(33,16,68,0.98) 0%, rgba(24,12,52,0.98) 100%) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -315,10 +316,10 @@ def inject_css():
     [role="listbox"],
     ul[role="listbox"],
     div[role="listbox"] {{
-        background: rgba(10, 19, 35, 0.985) !important;
+        background: rgba(31, 14, 66, 0.985) !important;
         color: var(--text) !important;
         border: 1px solid var(--border2) !important;
-        box-shadow: 0 20px 44px rgba(0,0,0,0.36) !important;
+        box-shadow: 0 22px 46px rgba(47, 10, 102, 0.34) !important;
         border-radius: 16px !important;
         backdrop-filter: blur(14px);
     }}
@@ -326,7 +327,7 @@ def inject_css():
     [role="option"],
     li[role="option"],
     div[role="option"] {{
-        background: rgba(10, 19, 35, 0.985) !important;
+        background: rgba(31, 14, 66, 0.985) !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -344,7 +345,7 @@ def inject_css():
     [role="option"]:hover,
     li[role="option"]:hover,
     div[role="option"]:hover {{
-        background: rgba(110,231,255,0.14) !important;
+        background: rgba(255,122,212,0.16) !important;
         color: var(--text) !important;
     }}
 
@@ -364,11 +365,11 @@ def inject_css():
     .stTextInput button,
     [data-baseweb="input"] button,
     [data-baseweb="base-input"] button {{
-        background: linear-gradient(135deg, rgba(34,211,238,0.96) 0%, rgba(59,130,246,0.92) 100%) !important;
-        color: #04111f !important;
+        background: linear-gradient(135deg, rgba(255,122,212,0.96) 0%, rgba(129,92,255,0.94) 54%, rgba(65,227,217,0.92) 100%) !important;
+        color: #19092f !important;
         border: 1px solid rgba(110,231,255,0.34) !important;
         border-radius: 12px !important;
-        box-shadow: 0 10px 22px rgba(34,211,238,0.18) !important;
+        box-shadow: 0 10px 22px rgba(255,122,212,0.18) !important;
         transition: all 0.18s ease !important;
     }}
 
@@ -379,7 +380,7 @@ def inject_css():
     [data-baseweb="base-input"] button:hover {{
         border-color: var(--accent) !important;
         transform: translateY(-1px);
-        box-shadow: 0 14px 26px rgba(34,211,238,0.22), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
+        box-shadow: 0 14px 26px rgba(255,122,212,0.22), 0 0 0 1px rgba(255,122,212,0.14) inset !important;
     }}
 
     .stNumberInput button svg,
@@ -388,27 +389,27 @@ def inject_css():
     [data-baseweb="input"] button svg,
     [data-baseweb="base-input"] button svg {{
         fill: #04111f !important;
-        color: #04111f !important;
+        color: #19092f !important;
     }}
 
     .stNumberInput [data-testid="stWidgetLabel"] + div,
     .stPasswordInput [data-testid="stWidgetLabel"] + div,
     .stTextInput [data-testid="stWidgetLabel"] + div {{
-        box-shadow: 0 12px 28px rgba(0,0,0,0.16) !important;
+        box-shadow: 0 16px 30px rgba(58, 12, 118, 0.24) !important;
         border-radius: 16px !important;
     }}
 
     /* Buttons */
     .stButton > button,
     .stDownloadButton > button {{
-        background: linear-gradient(135deg, rgba(110,231,255,0.18) 0%, rgba(139,92,246,0.18) 100%) !important;
+        background: linear-gradient(135deg, rgba(255,122,212,0.18) 0%, rgba(129,92,255,0.20) 56%, rgba(65,227,217,0.18) 100%) !important;
         color: var(--text) !important;
         border: 1px solid rgba(110,231,255,0.22) !important;
         border-radius: 16px !important;
         padding: 0.72rem 1rem !important;
         font-weight: 800 !important;
         letter-spacing: 0.2px !important;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important;
+        box-shadow: 0 16px 34px rgba(58, 12, 118, 0.24) !important;
         transition: all 0.2s ease !important;
     }}
 
@@ -416,21 +417,21 @@ def inject_css():
     .stDownloadButton > button:hover {{
         transform: translateY(-1px);
         border-color: var(--accent) !important;
-        box-shadow: 0 16px 34px rgba(0,0,0,0.24), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
+        box-shadow: 0 18px 36px rgba(58, 12, 118, 0.28), 0 0 0 1px rgba(255,122,212,0.14) inset !important;
     }}
 
     .stButton > button[kind="primary"],
     .stFormSubmitButton > button,
     .stDownloadButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, #22d3ee 0%, #8b5cf6 100%) !important;
-        color: #04111f !important;
+        background: linear-gradient(135deg, #ff7ad4 0%, #815cff 56%, #41e3d9 100%) !important;
+        color: #19092f !important;
         border: 0 !important;
-        box-shadow: 0 18px 38px rgba(34,211,238,0.18), 0 10px 24px rgba(139,92,246,0.14) !important;
+        box-shadow: 0 22px 42px rgba(255,122,212,0.20), 0 12px 28px rgba(129,92,255,0.18) !important;
     }}
 
     .stButton > button:focus,
     .stFormSubmitButton > button:focus {{
-        box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
+        box-shadow: 0 0 0 3px rgba(255,122,212,0.18) !important;
     }}
 
     /* Alerts */
@@ -440,7 +441,7 @@ def inject_css():
     [data-testid="stError"] {{
         border-radius: 18px !important;
         border: 1px solid var(--border) !important;
-        box-shadow: 0 12px 26px rgba(0,0,0,0.18) !important;
+        box-shadow: 0 16px 30px rgba(58, 12, 118, 0.24) !important;
         backdrop-filter: blur(10px);
     }}
 
@@ -451,7 +452,7 @@ def inject_css():
 
     /* Tabs */
     button[role="tab"] {{
-        background: rgba(255,255,255,0.03) !important;
+        background: rgba(129,92,255,0.12) !important;
         border: 1px solid var(--border) !important;
         border-radius: 14px !important;
         color: var(--text2) !important;
@@ -463,14 +464,14 @@ def inject_css():
     button[role="tab"][aria-selected="true"] {{
         color: var(--text) !important;
         border-color: var(--accent) !important;
-        background: linear-gradient(135deg, rgba(110,231,255,0.12) 0%, rgba(139,92,246,0.12) 100%) !important;
-        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
+        background: linear-gradient(135deg, rgba(255,122,212,0.14) 0%, rgba(139,92,246,0.12) 100%) !important;
+        box-shadow: 0 12px 24px rgba(62, 14, 122, 0.22) !important;
     }}
 
     /* Radio / Checkbox */
     .stRadio [role="radiogroup"] > label,
     .stCheckbox > label {{
-        background: rgba(255,255,255,0.03);
+        background: rgba(129,92,255,0.12);
         border: 1px solid var(--border);
         border-radius: 14px;
         padding: 0.4rem 0.65rem;
@@ -482,7 +483,7 @@ def inject_css():
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         overflow: hidden !important;
-        box-shadow: 0 16px 34px rgba(0,0,0,0.20) !important;
+        box-shadow: 0 18px 36px rgba(58, 12, 118, 0.24) !important;
     }}
 
     table {{
@@ -498,7 +499,7 @@ def inject_css():
     }}
 
     th, td {{
-        border-color: rgba(143,170,214,0.12) !important;
+        border-color: rgba(129,92,255,0.16) !important;
     }}
 
     /* Expanders */
@@ -507,19 +508,19 @@ def inject_css():
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         overflow: hidden !important;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.18) !important;
+        box-shadow: 0 18px 32px rgba(58, 12, 118, 0.24) !important;
     }}
 
     details summary {{
-        background: rgba(255,255,255,0.02) !important;
+        background: rgba(129,92,255,0.10) !important;
     }}
 
     /* Metrics */
     div[data-testid="stMetric"] {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.95) 100%) !important;
+        background: linear-gradient(180deg, rgba(43,22,91,0.92) 0%, rgba(24,12,52,0.96) 100%) !important;
         border: 1px solid var(--border) !important;
         padding: 0.95rem 1rem !important;
-        box-shadow: 0 18px 38px rgba(0,0,0,0.20) !important;
+        box-shadow: 0 20px 40px rgba(58, 12, 118, 0.26) !important;
         position: relative;
         overflow: hidden;
     }}
@@ -529,7 +530,7 @@ def inject_css():
         position: absolute;
         inset: 0 auto 0 0;
         width: 3px;
-        background: linear-gradient(180deg, rgba(34,211,238,0.95) 0%, rgba(139,92,246,0.95) 100%);
+        background: linear-gradient(180deg, rgba(255,122,212,0.95) 0%, rgba(129,92,255,0.95) 58%, rgba(65,227,217,0.95) 100%);
         opacity: 0.9;
     }}
 
@@ -546,7 +547,7 @@ def inject_css():
 
     /* Progress */
     .stProgress > div > div > div > div {{
-        background: linear-gradient(90deg, #22d3ee 0%, #8b5cf6 100%) !important;
+        background: linear-gradient(90deg, #ff7ad4 0%, #815cff 58%, #41e3d9 100%) !important;
     }}
 
 
@@ -562,7 +563,7 @@ def inject_css():
     input:-webkit-autofill:focus,
     textarea:-webkit-autofill {{
         -webkit-text-fill-color: var(--text) !important;
-        -webkit-box-shadow: 0 0 0px 1000px rgba(8,18,32,0.98) inset !important;
+        -webkit-box-shadow: 0 0 0px 1000px rgba(33,16,68,0.98) inset !important;
         transition: background-color 9999s ease-out 0s;
     }}
 
@@ -589,7 +590,7 @@ def inject_css():
 
     /* Extra mobile/browser fixes for select menus */
     select, option, optgroup {{
-        background-color: #0a1323 !important;
+        background-color: #24144c !important;
         color: var(--text) !important;
         -webkit-text-fill-color: var(--text) !important;
     }}
@@ -605,7 +606,7 @@ def inject_css():
     }}
 
     [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, rgba(7,17,31,0.96) 0%, rgba(11,23,41,0.96) 100%) !important;
+        background: linear-gradient(180deg, rgba(22,10,48,0.97) 0%, rgba(33,16,68,0.97) 100%) !important;
         border-right: 1px solid var(--border) !important;
     }}
 
@@ -617,9 +618,9 @@ def inject_css():
 
     /* Scrollbar */
     ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
-    ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
-    ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
-    ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
+    ::-webkit-scrollbar-track {{ background: rgba(129,92,255,0.14); }}
+    ::-webkit-scrollbar-thumb {{ background: linear-gradient(180deg, rgba(255,122,212,0.62) 0%, rgba(129,92,255,0.72) 58%, rgba(65,227,217,0.62) 100%); border-radius: 999px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: linear-gradient(180deg, rgba(255,122,212,0.82) 0%, rgba(129,92,255,0.86) 58%, rgba(65,227,217,0.80) 100%); }}
 
 
     /* Premium polish */
@@ -629,9 +630,10 @@ def inject_css():
         inset: 0;
         pointer-events: none;
         background:
-            linear-gradient(180deg, rgba(255,255,255,0.015), transparent 22%),
-            radial-gradient(circle at 20% 20%, rgba(110,231,255,0.06), transparent 18%),
-            radial-gradient(circle at 80% 10%, rgba(139,92,246,0.07), transparent 16%);
+            linear-gradient(180deg, rgba(255,122,212,0.04), transparent 22%),
+            radial-gradient(circle at 20% 20%, rgba(255,122,212,0.08), transparent 18%),
+            radial-gradient(circle at 80% 10%, rgba(129,92,255,0.09), transparent 16%),
+            radial-gradient(circle at 50% 100%, rgba(65,227,217,0.07), transparent 20%);
         mix-blend-mode: screen;
     }}
 
@@ -662,14 +664,14 @@ def inject_css():
 
     details[open] {{
         border-color: var(--hover-border) !important;
-        box-shadow: 0 18px 40px rgba(0,0,0,0.22), 0 0 0 1px rgba(110,231,255,0.08) inset !important;
+        box-shadow: 0 22px 42px rgba(58, 12, 118, 0.28), 0 0 0 1px rgba(255,122,212,0.10) inset !important;
     }}
 
     div[data-testid="stMetric"]:hover,
     .stForm:hover,
     div[data-testid="stExpander"]:hover {{
         border-color: var(--hover-border) !important;
-        box-shadow: 0 20px 42px rgba(0,0,0,0.24) !important;
+        box-shadow: 0 22px 44px rgba(58, 12, 118, 0.28) !important;
     }}
 
     [data-testid="stHorizontalBlock"] > div {{
