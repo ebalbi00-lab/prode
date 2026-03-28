@@ -83,14 +83,13 @@ def pantalla_ranking():
         st_autorefresh(interval=60 * 1000, key="ranking_refresh")
 
     st.markdown("""
-    <div style="text-align:center; padding:1.3rem 0 1rem 0; position:relative;">
-        <div style="position:absolute; inset:-8px auto auto 50%; transform:translateX(-50%); width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(103,190,255,0.14) 0%, rgba(47,126,247,0.06) 42%, transparent 72%); filter:blur(12px);"></div>
-        <div style="position:relative; z-index:1; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
-                    color:var(--text3); margin-bottom:0.35rem;">Il Baigo — Mundial 2026</div>
-        <div style="position:relative; z-index:1; font-family:Outfit,Inter,sans-serif; font-size:3rem; font-weight:800; letter-spacing:0.06em;
-                    background:linear-gradient(135deg,#fff7cc 0%,#f8d66d 38%,#d4a73b 70%,#fff0a8 100%);
+    <div style="text-align:center; padding:1.2rem 0 1rem 0;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
+                    color:var(--text3); margin-bottom:0.3rem;">Il Baigo — Mundial 2026</div>
+        <div style="font-family:Bebas Neue,sans-serif; font-size:3.2rem; letter-spacing:4px;
+                    background:linear-gradient(135deg,#ffc940 0%,#ffd86b 45%,#ffb300 100%);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.05; text-transform:uppercase; filter:drop-shadow(0 8px 22px rgba(212,167,59,0.18));">Ranking</div>
+                    background-clip:text; line-height:1.05; text-shadow:0 4px 18px rgba(255,200,40,0.35);">🏆 RANKING</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -137,12 +136,12 @@ def pantalla_ranking():
             elif pos == 3:
                 pos_color = "#14b8a6"; bg = "rgba(20,184,166,0.07)"; bl = "3px solid rgba(20,184,166,0.22)"
             elif es_yo:
-                pos_color = "#67beff"; bg = "rgba(103,190,255,0.08)"; bl = "3px solid rgba(103,190,255,0.38)"
+                pos_color = "#00e87a"; bg = "rgba(0,232,122,0.07)"; bl = "3px solid rgba(0,200,96,0.5)"
             else:
                 pos_color = "#525268"; bg = "transparent"; bl = "3px solid transparent"
 
             you_badge = (
-                '<span style="background:var(--blue-dim);color:var(--blue2);font-size:0.6rem;font-weight:700;'
+                '<span style="background:var(--green-dim);color:var(--green);font-size:0.6rem;font-weight:700;'
                 'letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:10px;margin-left:6px;'
                 'border:1px solid var(--green-glow);">vos</span>'
             ) if es_yo else ""
@@ -155,7 +154,7 @@ def pantalla_ranking():
                 f'<td style="padding:10px 8px;color:var(--text2);text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["G"]}</td>'
                 f'<td style="padding:10px 8px;color:var(--text2);text-align:center;font-family:JetBrains Mono,monospace;font-size:0.88rem;">{r["C"]}</td>'
                 f'<td style="padding:10px 8px;color:var(--gold);text-align:center;font-family:JetBrains Mono,monospace;font-size:0.9rem;font-weight:700;">{r["E"]}</td>'
-                f'<td style="padding:10px 10px;color:var(--blue);font-weight:800;text-align:center;font-family:JetBrains Mono,monospace;font-size:1rem;">{r["Total"]}</td>'
+                f'<td style="padding:10px 10px;color:var(--green);font-weight:800;text-align:center;font-family:JetBrains Mono,monospace;font-size:1rem;">{r["Total"]}</td>'
                 f'</tr>'
             )
 
@@ -197,8 +196,8 @@ def pantalla_ranking():
             if pos_actual:
                 fila = next(r for r in rows if r["_username"] == username_actual)
                 st.divider()
-                bg_pos = "var(--blue-dim)" if pos_actual <= 3 else "var(--surface)"
-                border_pos = "var(--blue-border)" if pos_actual <= 3 else "var(--border2)"
+                bg_pos = "var(--green-dim)" if pos_actual <= 3 else "var(--surface)"
+                border_pos = "var(--green-glow)" if pos_actual <= 3 else "var(--border2)"
                 emoji_pos = {1: "🥇", 2: "🥈", 3: "🥉"}.get(pos_actual, "📍")
                 st.markdown(f"""
                 <div style="background:{bg_pos}; border:1.5px solid {border_pos};
@@ -208,7 +207,7 @@ def pantalla_ranking():
                         <div style="color:var(--text3); font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; font-weight:600;">Tu posición</div>
                         <div style="color:var(--text); font-weight:700; font-size:1rem;">
                             {fila['Nombre']} &nbsp;·&nbsp;
-                            <span style="color:var(--blue);">{pos_actual}° lugar</span> &nbsp;·&nbsp;
+                            <span style="color:var(--green);">{pos_actual}° lugar</span> &nbsp;·&nbsp;
                             <span style="color:var(--gold);">{fila['Total']} pts</span>
                         </div>
                     </div>

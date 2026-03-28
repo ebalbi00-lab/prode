@@ -14,12 +14,6 @@ from contextlib import contextmanager
 
 from constants import FASES, CATEGORIAS_ESPECIALES, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, GRUPOS_DEFAULT
 
-APP_TZ = datetime.timezone(datetime.timedelta(hours=-3))
-
-def ahora_argentina():
-    return datetime.datetime.now(APP_TZ)
-
-
 
 # ─── Conexión ────────────────────────────────────────────────────────────────
 
@@ -339,11 +333,9 @@ def db_resetear_todos_puntajes():
         cur.execute("DELETE FROM prodes")
         cur.execute("DELETE FROM resultados")
         cur.execute("DELETE FROM consumo_log")
-        cur.execute("ALTER SEQUENCE consumo_log_id_seq RESTART WITH 1")
         cur.execute("DELETE FROM especiales")
         cur.execute("DELETE FROM especiales_resultados")
         cur.execute("DELETE FROM actividad_feed")
-        cur.execute("ALTER SEQUENCE actividad_feed_id_seq RESTART WITH 1")
         cur.execute("DELETE FROM actividad_usuarios")
         cur.execute("DELETE FROM config WHERE clave LIKE 'wizard_pos_%'")
     st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
@@ -669,7 +661,7 @@ def db_sumar_consumo(username, puntos, descripcion=""):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE usuarios SET consumo=consumo+%s WHERE username=%s", (puntos, username))
-        fecha = ahora_argentina().strftime("%Y-%m-%d %H:%M")
+        fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         cur.execute(
             "INSERT INTO consumo_log (username, puntos, descripcion, fecha) VALUES (%s, %s, %s, %s)",
             (username, puntos, descripcion, fecha)
@@ -685,7 +677,6 @@ def db_sumar_consumo(username, puntos, descripcion=""):
 
 
 def db_eliminar_consumo_log(log_id):
-    row = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM consumo_log WHERE id=%s", (log_id,))
@@ -697,20 +688,11 @@ def db_eliminar_consumo_log(log_id):
             )
             cur.execute("DELETE FROM consumo_log WHERE id=%s", (log_id,))
     try:
-        if row:
-            db_get_usuario.clear(row["username"])
-    except Exception:
-        pass
-    try:
         db_get_todos_usuarios.clear()
         db_get_consumo_log.clear()
-        if row:
-            db_get_consumo_log.clear(row["username"])
     except Exception:
         pass
-    if row:
-        detalle = f" ({row['descripcion']})" if row.get("descripcion") else ""
-        db_feed_event(f"🗑️ Se eliminó el consumo #{log_id} de {row['username']} por {row['puntos']} puntos{detalle}", "consumo")
+
 
 @st.cache_data(ttl=20)
 def db_get_consumo_log(username=None):
