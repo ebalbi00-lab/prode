@@ -10,6 +10,7 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
+from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -75,7 +76,7 @@ def pantalla_login():
 
     with st.form("form_login"):
         usuario = st.text_input("Usuario", placeholder="tu_usuario")
-        clave = st.text_input("Clave", type="password", placeholder="••••••••")
+        clave = password_input_with_toggle("Clave", key="login_clave", placeholder="••••••••")
         col1, col2 = st.columns(2)
         ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
         registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
@@ -171,8 +172,8 @@ def pantalla_registro_cuenta():
 
     with st.form("form_registro_cuenta"):
         usuario   = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
-        clave     = st.text_input("Clave (mínimo 4 caracteres)", type="password")
-        confirmar = st.text_input("Confirmar clave", type="password")
+        clave     = password_input_with_toggle("Clave (mínimo 4 caracteres)", key="registro_clave")
+        confirmar = password_input_with_toggle("Confirmar clave", key="registro_confirmar")
         st.markdown(f"""
         <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                     border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
@@ -348,21 +349,36 @@ def pantalla_acerca():
     st.markdown("""
     <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                 border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🎁 Premios para los primeros puestos</div>
+        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🥇 Ranking general + premios sorpresa</div>
         <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            Los premios principales son para quienes terminen en los <strong style="color:var(--text);">primeros puestos del ranking general</strong>.<br><br>
+            Los premios principales se entregan a los <strong style="color:var(--text);">primeros puestos del ranking general</strong>.<br><br>
             Además, durante el transcurso de la competencia puede haber <strong style="color:var(--gold);">premios sorpresa</strong> en distintos momentos del torneo.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.divider()
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">🎉 Durante la competencia</div>""", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background:var(--blue-dim); border:1.5px solid var(--blue-border);
+                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
+        <div style="color:var(--blue); font-weight:700; font-size:0.88rem; margin-bottom:8px;">⚡ Premios sorpresa en el camino</div>
+        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
+            A lo largo del torneo pueden aparecer <strong style="color:var(--text);">premios sorpresa</strong> 
+            en momentos especiales de la competencia.<br><br>
+            Seguí el torneo, cargá tus pronósticos y mantenete atento a las novedades del admin. <span style="color:var(--blue);">Todo sigue dentro de la misma competencia.</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
     with st.expander("¿Puedo modificar mi pronóstico después de confirmarlo?"):
-        st.write("No. Una vez que confirmás, el pronóstico queda bloqueado definitivamente.")
+        st.write("No. Una vez que confirmás con tu contraseña, el pronóstico queda bloqueado definitivamente.")
     with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
         st.write("No sumás puntos para esa fase.")
     with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
-        st.write("Podés cargar o editar tu pronóstico hasta que el admin cierre la fase.")
+        st.write("Podés editar tu pronóstico hasta que el admin cierre esa fase.")
     with st.expander("¿Olvidé mi contraseña, qué hago?"):
         st.write("Contactá al administrador por fuera de la app para que te resetee la contraseña.")
 

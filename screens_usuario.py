@@ -97,6 +97,7 @@ import streamlit as st
 import unicodedata
 
 from constants import FASES, CATEGORIAS_ESPECIALES, BANDERAS, GRUPOS_DEFAULT, bandera
+from ui_helpers import integrated_stepper
 from db import (
     db_get_usuario, db_get_fases, db_get_partidos, db_get_prode,
     db_get_resultado_completo, db_guardar_pred, db_confirmar_prode,
@@ -551,12 +552,12 @@ def pantalla_usuario():
     # ── 3) Pronósticos ────────────────────────────────────────────────────────────
     estado_badge = ('<span style="background:var(--green-dim);color:var(--green);font-size:0.65rem;font-weight:700;'
                     'letter-spacing:1px;text-transform:uppercase;padding:2px 9px;border-radius:20px;'
-                    'border:1px solid var(--green-glow);margin-left:8px;">Confirmado ✓</span>') if confirmado else ""
+                    'border:1px solid var(--green-glow);margin-left:8px;">Carga cerrada</span>') if confirmado else ""
 
     titulo_fase = fase if grupos_completados else "Grupos"
     st.markdown(f"""<div style="margin:0.8rem 0 0.5rem 0;">
         <span style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text);">
-            Pronósticos — {titulo_fase}</span>{estado_badge}
+            Pronósticos — {titulo_fase}</span>{estado_badge}<div style="color:var(--text3);font-size:0.82rem;margin-top:0.35rem;">Podés editar mientras la fase siga abierta por el admin.</div>
     </div>""", unsafe_allow_html=True)
 
     resultados_fase = db_get_resultado_completo(fase) if confirmado else {}
@@ -618,15 +619,14 @@ def pantalla_usuario():
             st.markdown(f'<div style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:10px 12px;margin:5px 0;">', unsafe_allow_html=True)
             col_local, col_gl, col_sep, col_gv, col_visita = st.columns([3, 1, 0.3, 1, 3])
             col_local.markdown(f"<div style='text-align:right;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_local}</div>", unsafe_allow_html=True)
-            gl = col_gl.number_input("L", min_value=0, max_value=10, value=int(gl_prev), key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+            with col_gl:
+                gl = integrated_stepper("L", key=f"gl_{fase}_{idx}", value=int(gl_prev), min_value=0, max_value=10)
             col_sep.markdown("<div style='text-align:center;padding-top:10px;color:var(--text3);font-size:0.8rem;'>:</div>", unsafe_allow_html=True)
-            gv = col_gv.number_input("V", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+            with col_gv:
+                gv = integrated_stepper("V", key=f"gv_{fase}_{idx}", value=int(gv_prev), min_value=0, max_value=10)
             col_visita.markdown(f"<div style='text-align:left;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
-            if gl != pred.get(idx, (0, 0))[0] or gv != pred.get(idx, (0, 0))[1]:
-                pred_buffer[idx] = (gl, gv)
-            else:
-                pred_buffer.pop(idx, None)
+            pred_buffer[idx] = (gl, gv)
 
     # ── Fase Grupos con wizard ────────────────────────────────────────────────
     if fase == "Grupos":
@@ -747,15 +747,26 @@ def pantalla_usuario():
 
         if not confirmado:
             st.divider()
-            with st.form(f"form_confirmar_{fase}"):
-                confirmar_btn = st.form_submit_button("✅ Confirmar prode", type="primary", use_container_width=True)
-
-            if confirmar_btn:
-                with st.spinner("Confirmando pronósticos..."):
+            pred_actual = _merge_predicciones(pred, pred_buffer)
+            faltantes = [p["idx"] for p in partidos if p["idx"] not in pred_actual]
+            if faltantes:
+                st.info(f"Faltan cargar {len(faltantes)} partido(s) para cerrar esta fase.")
+            c1_acc, c2_acc = st.columns(2)
+            if c1_acc.button("💾 Guardar cambios", key=f"save_{fase}", use_container_width=True):
+                with st.spinner("Guardando..."):
+                    _flush_pred_buffer(username, fase)
+                st.success("Cambios guardados.")
+                st.rerun()
+            if c2_acc.button("✅ Cerrar mi carga", key=f"confirm_{fase}", type="primary", use_container_width=True, disabled=bool(faltantes)):
+                with st.spinner("Guardando..."):
                     _flush_pred_buffer(username, fase)
                     db_confirmar_prode(username, fase)
                     db_calcular_puntos()
-                st.success("✅ Pronósticos confirmados para esta fase.")
+                st.session_state["wizard_grupos_completo"] = True
+                st.success("Fase guardada correctamente.")
+                st.rerun()
+        else:
+            st.success("✅ Fase cargada. Podés seguir viendo tus pronósticos.")
 
     if "msg_grupos" in st.session_state:
         st.success(st.session_state.pop("msg_grupos"))
@@ -916,33 +927,47 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
     if "msg_esp" in st.session_state:
         st.success(st.session_state.pop("msg_esp"))
 
-    # ── Confirmación final ──
-    confirmar_esp = st.button("✅ Confirmar grupos + especiales", type="primary", use_container_width=True)
+    partidos_cargados = _merge_predicciones(pred, _get_pred_buffer(username, fase))
+    faltan_partidos = [p["idx"] for p in partidos if p["idx"] >= 0 and p["idx"] not in partidos_cargados]
+    esp_confirmados = especiales_usuario
+    sin_elegir = [
+        info["label"]
+        for cat, info in CATEGORIAS_ESPECIALES.items()
+        if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
+    ]
 
-    if confirmar_esp:
-        esp_confirmados = especiales_usuario
-        sin_elegir = [
-            info["label"]
-            for cat, info in CATEGORIAS_ESPECIALES.items()
-            if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
-        ]
-        if sin_elegir:
-            st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
-        else:
-            with st.spinner("Confirmando pronósticos..."):
-                _flush_pred_buffer(username, fase)
-                db_confirmar_prode(username, fase)
-                for cat, elec in selecciones_esp.items():
-                    esp_cat = esp_confirmados.get(cat) or {}
-                    if elec and not esp_cat.get("confirmado"):
-                        db_guardar_especial(username, cat, elec)
-                        db_confirmar_especial(username, cat)
-                _get_special_buffer(username).clear()
-                db_calcular_puntos()
-            st.session_state["wizard_grupos_completo"] = True
-            st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
-            db_set_config(f"wizard_pos_{username}", "0")
-            st.rerun()
+    if faltan_partidos:
+        st.info(f"Faltan cargar {len(faltan_partidos)} partido(s) de grupos antes de cerrar la fase.")
+    if sin_elegir:
+        st.warning("Falta completar: " + ", ".join(sin_elegir))
+
+    csave, cconfirm = st.columns(2)
+    if csave.button("💾 Guardar cambios", key="esp_save", use_container_width=True):
+        with st.spinner("Guardando..."):
+            _flush_pred_buffer(username, fase)
+            for cat, elec in selecciones_esp.items():
+                esp_cat = esp_confirmados.get(cat) or {}
+                if elec and not esp_cat.get("confirmado"):
+                    db_guardar_especial(username, cat, elec)
+        st.session_state["msg_grupos"] = "Cambios guardados."
+        st.rerun()
+
+    puede_cerrar = not faltan_partidos and not sin_elegir
+    if cconfirm.button("✅ Cerrar grupos + especiales", key="esp_confirm", type="primary", use_container_width=True, disabled=not puede_cerrar):
+        with st.spinner("Guardando..."):
+            _flush_pred_buffer(username, fase)
+            db_confirmar_prode(username, fase)
+            for cat, elec in selecciones_esp.items():
+                esp_cat = esp_confirmados.get(cat) or {}
+                if elec and not esp_cat.get("confirmado"):
+                    db_guardar_especial(username, cat, elec)
+                    db_confirmar_especial(username, cat)
+            _get_special_buffer(username).clear()
+            db_calcular_puntos()
+        st.session_state["wizard_grupos_completo"] = True
+        st.session_state["msg_grupos"] = "✅ Grupos y especiales guardados."
+        db_set_config(f"wizard_pos_{username}", "0")
+        st.rerun()
 
     esp_buffer = _get_special_buffer(username)
     resultados_especiales = db_get_resultados_especiales()
@@ -1037,37 +1062,10 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
     if "msg_esp" in st.session_state:
         st.success(st.session_state.pop("msg_esp"))
 
-    # ── Confirmación final ──
-    confirmar_esp = st.button("✅ Confirmar grupos + especiales", type="primary", use_container_width=True)
-
-    if confirmar_esp:
-        esp_confirmados = especiales_usuario
-        sin_elegir = [
-            info["label"]
-            for cat, info in CATEGORIAS_ESPECIALES.items()
-            if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
-        ]
-        if sin_elegir:
-            st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
-        else:
-            with st.spinner("Confirmando pronósticos..."):
-                _flush_pred_buffer(username, fase)
-                db_confirmar_prode(username, fase)
-                for cat, elec in selecciones_esp.items():
-                    esp_cat = esp_confirmados.get(cat) or {}
-                    if elec and not esp_cat.get("confirmado"):
-                        db_guardar_especial(username, cat, elec)
-                        db_confirmar_especial(username, cat)
-                _get_special_buffer(username).clear()
-                db_calcular_puntos()
-            st.session_state["wizard_grupos_completo"] = True
-            st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
-            db_set_config(f"wizard_pos_{username}", "0")
-            st.rerun()
+    # ── Diálogo de confirmación ──
 
     esp_buffer = _get_special_buffer(username)
     for cat, elec in selecciones_esp.items():
-
         esp_actual = especiales_usuario.get(cat)
         confirmado_actual = bool(esp_actual and esp_actual["confirmado"])
         if elec and not confirmado_actual:

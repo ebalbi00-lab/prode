@@ -345,73 +345,6 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
     }}
 
-    /* Integración visual: ojo de contraseña y controles +/- */
-    [data-testid="stPasswordInput"] [data-baseweb="input"] {{
-        position: relative !important;
-        display: flex !important;
-        align-items: center !important;
-        background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
-        border: 1.5px solid var(--border2) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important;
-        overflow: hidden !important;
-        padding-right: 0.2rem !important;
-    }}
-
-    [data-testid="stPasswordInput"] [data-baseweb="input"] > div:first-child {{
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-    }}
-
-    [data-testid="stPasswordInput"] input {{
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        padding-right: 3rem !important;
-    }}
-
-    [data-testid="stPasswordInput"] button[aria-label*="password" i],
-    [data-testid="stPasswordInput"] button[title*="password" i],
-    [data-testid="stPasswordInput"] [data-baseweb="input"] button {{
-        position: absolute !important;
-        right: 0.55rem !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        width: 2rem !important;
-        height: 2rem !important;
-        min-height: 2rem !important;
-        border: 0 !important;
-        border-radius: 999px !important;
-        background: rgba(255,255,255,0.05) !important;
-        color: var(--text2) !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 0 !important;
-        z-index: 5 !important;
-    }}
-
-    [data-testid="stPasswordInput"] button[aria-label*="password" i]:hover,
-    [data-testid="stPasswordInput"] button[title*="password" i]:hover,
-    [data-testid="stPasswordInput"] [data-baseweb="input"] button:hover {{
-        background: rgba(110,231,255,0.12) !important;
-        color: var(--accent) !important;
-    }}
-
-    [data-testid="stPasswordInput"] button svg,
-    [data-testid="stPasswordInput"] [data-baseweb="input"] button svg {{
-        width: 1rem !important;
-        height: 1rem !important;
-        fill: currentColor !important;
-        color: currentColor !important;
-    }}
-
-    [data-testid="stNumberInput"] [data-baseweb="input"] {{
-        position: relative !important;
-        overflow: hidden !important;
-        border-radius: 16px !important;
-    }}
-
     /* Buttons */
     .stButton > button,
     .stDownloadButton > button {{
@@ -446,6 +379,24 @@ def inject_css():
     .stFormSubmitButton > button:focus {{
         box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
     }}
+
+
+    /* Status / skeleton / running init */
+    [data-testid="stStatusWidget"],
+    [data-testid="stSpinner"],
+    [data-testid="stSkeleton"] {
+        background: linear-gradient(180deg, rgba(15,29,51,0.88) 0%, rgba(10,20,36,0.92) 100%) !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 18px !important;
+    }
+
+    /* Compact integrated controls */
+    .stNumberInput button,
+    .stTextInput button,
+    .stPasswordInput button {
+        min-height: 48px !important;
+    }
 
     /* Alerts */
     [data-testid="stSuccess"],

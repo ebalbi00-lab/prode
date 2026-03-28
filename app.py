@@ -1,11 +1,5 @@
 import streamlit as st
 
-st.set_page_config(
-    page_title="Prode Il Baigo",
-    layout="wide",
-    page_icon="⚽"
-)
-
 # ─── META / ICONOS PWA ─────────────────────────────────────
 
 st.markdown("""
@@ -18,20 +12,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 _original_markdown = st.markdown
-
 def _safe_markdown(body, *args, **kwargs):
     if isinstance(body, str) and "<div" in body and "unsafe_allow_html" not in kwargs:
         kwargs["unsafe_allow_html"] = True
     return _original_markdown(body, *args, **kwargs)
-
 st.markdown = _safe_markdown
 
-try:
-    from styles import inject_css
-except Exception:
-    def inject_css():
-        return None
+st.set_page_config(
+    page_title="Prode Il Baigo",
+    layout="wide",
+    page_icon="⚽"
+)
 
+from styles import inject_css
 from db import init_db
 from screens_auth import (
     pantalla_login, pantalla_registro_datos,
@@ -41,17 +34,13 @@ from screens_usuario import pantalla_usuario
 from screens_stats import pantalla_ranking, pantalla_estadisticas, pantalla_estadisticas_torneo
 from screens_admin import pantalla_admin
 
-# ─── CSS temprana ────────────────────────────────────────────
-
-inject_css()
-
 # ─── Inicialización ───────────────────────────────────────────
 
 if "db_initialized" not in st.session_state:
     try:
         init_db()
         st.session_state["db_initialized"] = True
-    except Exception:
+    except Exception as e:
         st.markdown("""
         <div style="text-align:center; padding:4rem 1rem;">
             <div style="font-size:3rem; margin-bottom:1rem;">⚠️</div>
@@ -75,17 +64,20 @@ if "usuario" not in st.session_state:
 if "registro_temp" not in st.session_state:
     st.session_state.registro_temp = {}
 
+# ─── CSS ─────────────────────────────────────────────────────
+
+inject_css()
 
 # ─── Router ───────────────────────────────────────────────────
 
 PANTALLAS = {
-    0: pantalla_login,
-    1: pantalla_registro_datos,
-    2: pantalla_registro_cuenta,
-    4: pantalla_en_revision,
-    5: pantalla_usuario,
-    6: pantalla_ranking,
-    9: pantalla_admin,
+    0:  pantalla_login,
+    1:  pantalla_registro_datos,
+    2:  pantalla_registro_cuenta,
+    4:  pantalla_en_revision,
+    5:  pantalla_usuario,
+    6:  pantalla_ranking,
+    9:  pantalla_admin,
     10: pantalla_acerca,
     12: pantalla_estadisticas,
     13: pantalla_estadisticas_torneo,
