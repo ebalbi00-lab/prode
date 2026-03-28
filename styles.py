@@ -454,6 +454,52 @@ def inject_css():
         stroke: var(--blue2) !important;
     }}
 
+
+    /* Streamlit runtime status: quitar blanco/gris y traducir a español */
+    div[data-testid="stSpinner"] [role="status"],
+    div[data-testid="stSpinner"] [role="status"] > div,
+    div[data-testid="stSpinner"] [role="status"] > div > div,
+    div[data-testid="stStatusWidget"] [role="status"],
+    div[data-testid="stStatusWidget"] [role="status"] > div,
+    div[data-testid="stStatusWidget"] [role="status"] > div > div {{
+        background: transparent !important;
+        background-color: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stSpinner"] svg,
+    div[data-testid="stSpinner"] svg *,
+    div[data-testid="stStatusWidget"] svg,
+    div[data-testid="stStatusWidget"] svg * {{
+        background: transparent !important;
+        background-color: transparent !important;
+    }}
+
+    div[data-testid="stSpinner"] p,
+    div[data-testid="stSpinner"] span,
+    div[data-testid="stSpinner"] label,
+    div[data-testid="stStatusWidget"] p,
+    div[data-testid="stStatusWidget"] span,
+    div[data-testid="stStatusWidget"] label {{
+        color: transparent !important;
+        position: relative !important;
+    }}
+
+    div[data-testid="stSpinner"] p::after,
+    div[data-testid="stSpinner"] span::after,
+    div[data-testid="stSpinner"] label::after,
+    div[data-testid="stStatusWidget"] p::after,
+    div[data-testid="stStatusWidget"] span::after,
+    div[data-testid="stStatusWidget"] label::after {{
+        content: "Cargando...";
+        color: var(--text) !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        white-space: nowrap;
+    }}
+
     /* Buttons */
     .stButton > button,
     .stDownloadButton > button {{
