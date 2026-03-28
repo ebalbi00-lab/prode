@@ -380,56 +380,6 @@ def inject_css():
         box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
     }}
 
-
-    /* Icon buttons inside inputs / toolbars */
-    .stNumberInput button,
-    .stPasswordInput button,
-    [data-testid="stNumberInput"] button,
-    [data-testid="stPasswordInput"] button,
-    [data-baseweb="input"] button,
-    [data-baseweb="base-input"] button {{
-        color: var(--text) !important;
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid var(--border) !important;
-    }}
-
-    .stNumberInput button:hover,
-    .stPasswordInput button:hover,
-    [data-testid="stNumberInput"] button:hover,
-    [data-testid="stPasswordInput"] button:hover,
-    [data-baseweb="input"] button:hover,
-    [data-baseweb="base-input"] button:hover {{
-        color: var(--text) !important;
-        border-color: var(--accent) !important;
-        background: rgba(110,231,255,0.10) !important;
-    }}
-
-    .stNumberInput button svg,
-    .stPasswordInput button svg,
-    [data-testid="stNumberInput"] button svg,
-    [data-testid="stPasswordInput"] button svg,
-    [data-baseweb="input"] button svg,
-    [data-baseweb="base-input"] button svg,
-    [data-testid="stToolbar"] *,
-    [data-testid="stAppToolbar"] *,
-    [data-testid="stStatusWidget"] *,
-    [data-testid="stDecoration"] *,
-    [class*="toolbar"] *,
-    [class*="status"] * {{
-        color: var(--text) !important;
-        fill: currentColor !important;
-        stroke: currentColor !important;
-        -webkit-text-fill-color: currentColor !important;
-    }}
-
-    [data-testid="stToolbar"],
-    [data-testid="stAppToolbar"],
-    [data-testid="stStatusWidget"],
-    [class*="toolbar"],
-    [class*="status"] {{
-        color: var(--text) !important;
-    }}
-
     /* Alerts */
     [data-testid="stSuccess"],
     [data-testid="stInfo"],
@@ -606,5 +556,145 @@ def inject_css():
     ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
     ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
+
+
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&family=JetBrains+Mono:wght@500;700&display=swap");
+
+    .premium-hero {{
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(12,22,40,0.90) 0%, rgba(16,28,50,0.94) 55%, rgba(10,20,36,0.96) 100%);
+        border: 1px solid var(--border2);
+        border-radius: 28px;
+        padding: 1.35rem 1.4rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.04);
+        backdrop-filter: blur(10px);
+    }}
+    .premium-hero::before {{
+        content: "";
+        position: absolute;
+        inset: -30% auto auto -5%;
+        width: 240px;
+        height: 240px;
+        background: radial-gradient(circle, rgba(110,231,255,0.24) 0%, rgba(110,231,255,0.06) 38%, transparent 68%);
+        pointer-events: none;
+    }}
+    .premium-hero::after {{
+        content: "";
+        position: absolute;
+        inset: auto -5% -55% auto;
+        width: 260px;
+        height: 260px;
+        background: radial-gradient(circle, rgba(139,92,246,0.22) 0%, rgba(139,92,246,0.07) 40%, transparent 70%);
+        pointer-events: none;
+    }}
+    .glass-card {{
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(15,29,51,0.86) 0%, rgba(9,18,33,0.96) 100%);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 1rem 1.05rem;
+        box-shadow: 0 14px 40px rgba(0,0,0,0.18);
+    }}
+    .glass-card.soft {{ background: linear-gradient(180deg, rgba(15,29,51,0.70) 0%, rgba(9,18,33,0.92) 100%); }}
+    .eyebrow {{
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text3);
+        margin-bottom: 0.32rem;
+    }}
+    .title-gradient {{
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(2rem, 5vw, 3.8rem);
+        letter-spacing: 3px;
+        line-height: 0.98;
+        background: linear-gradient(135deg, #f8fbff 0%, #6ee7ff 45%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+    }}
+    .title-gold {{
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(2rem, 5vw, 3.6rem);
+        letter-spacing: 3px;
+        line-height: 1;
+        background: linear-gradient(135deg, #ffe29a 0%, #f5c76b 45%, #ffb300 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+    }}
+    .subtle-copy {{ color: var(--text2); font-size: 0.92rem; line-height: 1.7; }}
+    .pill {{
+        display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+        background: rgba(255,255,255,0.04); border:1px solid var(--border2);
+        color: var(--text2); font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    }}
+    .metric-grid {{
+        display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0.75rem 0 1rem 0;
+    }}
+    .metric-card {{
+        background: linear-gradient(180deg, rgba(15,29,51,0.84) 0%, rgba(9,18,33,0.96) 100%);
+        border:1px solid var(--border);border-radius:20px;padding:1rem;text-align:left;box-shadow:0 10px 28px rgba(0,0,0,0.16);
+    }}
+    .metric-label {{ font-size:0.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.45rem;font-weight:800; }}
+    .metric-value {{ font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:1px;line-height:1;color:var(--text); }}
+    .metric-foot {{ color:var(--text2); font-size:0.8rem; margin-top:0.25rem; }}
+    .menu-tile {{
+        background: linear-gradient(180deg, rgba(15,29,51,0.84) 0%, rgba(9,18,33,0.98) 100%);
+        border:1px solid var(--border);border-radius:22px;padding:1rem 1rem 0.95rem 1rem;min-height:132px;
+        box-shadow:0 12px 32px rgba(0,0,0,0.16); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }}
+    .menu-tile:hover {{ transform: translateY(-2px); border-color: var(--hover-border); box-shadow:0 16px 34px rgba(0,0,0,0.22); }}
+    .menu-icon {{ font-size:1.25rem; margin-bottom:0.35rem; }}
+    .menu-title {{ color:var(--text);font-weight:800;font-size:0.98rem; }}
+    .menu-desc {{ color:var(--text3);font-size:0.76rem;line-height:1.55;margin-top:0.24rem; }}
+    .section-shell {{ margin-bottom: 1rem; }}
+
+    .stButton > button, .stDownloadButton > button {{
+        border: 1px solid rgba(110,231,255,0.18) !important;
+        border-radius: 16px !important;
+        background: linear-gradient(135deg, rgba(110,231,255,0.16) 0%, rgba(139,92,246,0.20) 100%) !important;
+        color: var(--text) !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.3px;
+        min-height: 44px;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.14) !important;
+        transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease !important;
+    }}
+    .stButton > button:hover, .stDownloadButton > button:hover {{
+        transform: translateY(-1px);
+        border-color: var(--hover-border) !important;
+        box-shadow: 0 16px 30px rgba(0,0,0,0.20) !important;
+    }}
+    .stButton > button[kind="primary"], button[kind="primary"] {{
+        background: linear-gradient(135deg, rgba(110,231,255,0.95) 0%, rgba(139,92,246,0.92) 100%) !important;
+        color: #08101d !important;
+        border: none !important;
+    }}
+    .stAlert {{
+        border-radius: 18px !important;
+        border: 1px solid var(--border2) !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.14) !important;
+    }}
+    [data-testid="stExpander"] {{
+        border:1px solid var(--border) !important;
+        background: linear-gradient(180deg, rgba(15,29,51,0.74) 0%, rgba(9,18,33,0.96) 100%) !important;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.12) !important;
+    }}
+    @media (max-width: 900px) {{
+        .metric-grid {{ grid-template-columns:repeat(2,minmax(0,1fr)); }}
+        .premium-hero {{ border-radius: 22px; padding: 1.1rem 1rem; }}
+    }}
+    @media (max-width: 640px) {{
+        .metric-grid {{ grid-template-columns:1fr; }}
+        .title-gradient, .title-gold {{ letter-spacing: 2px; }}
+        .block-container {{ padding-top: 1rem !important; }}
+    }}
+
     </style>
     """, unsafe_allow_html=True)

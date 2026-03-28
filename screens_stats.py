@@ -26,11 +26,10 @@ def _destino_panel():
 
 def render_destacados_usuarios():
     st.markdown("""
-    <div style="margin-bottom:1rem;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.4rem;">Estadísticas</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:1.8rem; letter-spacing:3px; color:var(--text);">
-            🏅 DESTACADOS</div>
+    <div class="premium-hero section-shell">
+        <div class="eyebrow">Estadísticas</div>
+        <div class="title-gradient" style="font-size:2.4rem;">🏅 DESTACADOS</div>
+        <div class="subtle-copy" style="margin-top:0.55rem;max-width:620px;">Los líderes del torneo por categorías clave, presentados con una jerarquía visual mucho más fuerte.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -83,13 +82,10 @@ def pantalla_ranking():
         st_autorefresh(interval=60 * 1000, key="ranking_refresh")
 
     st.markdown("""
-    <div style="text-align:center; padding:1.2rem 0 1rem 0;">
-        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:2.5px;
-                    color:var(--text3); margin-bottom:0.3rem;">Il Baigo — Mundial 2026</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:3.2rem; letter-spacing:4px;
-                    background:linear-gradient(135deg,#ffc940 0%,#ffd86b 45%,#ffb300 100%);
-                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.05; text-shadow:0 4px 18px rgba(255,200,40,0.35);">🏆 RANKING</div>
+    <div class="premium-hero section-shell" style="text-align:center;">
+        <div class="eyebrow">Il Baigo · Mundial 2026</div>
+        <div class="title-gold">🏆 RANKING</div>
+        <div class="subtle-copy" style="max-width:620px;margin:0.6rem auto 0 auto;">Posiciones, puntos y estadísticas en una vista más limpia, más contundente y mucho más premium.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -167,7 +163,7 @@ def pantalla_ranking():
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Resultados">R</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Goles exactos">G</th>'
             '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;" title="Consumo">C</th>'
-            '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">E</th>'
+            '<th style="padding:10px 8px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">ESP</th>'
             '<th style="padding:10px 10px;color:var(--green);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">Total</th>'
             '</tr></thead>'
             f'<tbody>{filas_html}</tbody>'

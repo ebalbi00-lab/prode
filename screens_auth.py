@@ -10,6 +10,7 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
+from styles import PREMIUM_THEME
 
 
 def cambiar_pantalla(step):
@@ -58,27 +59,48 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
 
 def pantalla_login():
     st.markdown("""
-    <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
-        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:3.8rem; letter-spacing:5px;
-                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
-                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
-        <div style="display:inline-block; background:linear-gradient(135deg,rgba(255,210,76,0.18),rgba(255,190,32,0.12)); border:1px solid rgba(228,175,33,0.35);
-                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#d49a00;
-                    font-weight:800; letter-spacing:3px; text-transform:uppercase; box-shadow:0 4px 14px rgba(212,154,0,0.10);">⚽ MUNDIAL 2026</div>
+    <div class="premium-hero section-shell">
+        <div class="eyebrow">Prode Il Baigo · Mundial 2026</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;">
+            <div style="max-width:620px;position:relative;z-index:1;">
+                <div style="font-size:3rem; margin-bottom:0.35rem;">⚽</div>
+                <div class="title-gradient">PRODE IL BAIGO</div>
+                <div class="subtle-copy" style="max-width:560px;margin-top:0.65rem;">
+                    Una experiencia de prode mucho más premium, clara y competitiva. Entrá, cargá tus pronósticos y seguí el ranking en tiempo real.
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:0.9rem;">
+                    <span class="pill">🏆 Ranking en vivo</span>
+                    <span class="pill">⚡ Confirmación por fase</span>
+                    <span class="pill">⭐ Especiales</span>
+                </div>
+            </div>
+            <div class="glass-card soft" style="min-width:240px;max-width:280px;position:relative;z-index:1;">
+                <div class="eyebrow" style="margin-bottom:0.45rem;color:var(--gold);">Estado del torneo</div>
+                <div style="font-family:Bebas Neue,sans-serif;font-size:2.1rem;letter-spacing:2px;color:var(--gold);line-height:1;">MUNDIAL 2026</div>
+                <div class="subtle-copy" style="font-size:0.84rem;margin-top:0.55rem;">Viví cada partido con una interfaz más limpia, más moderna y más contundente visualmente.</div>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     if "login_error" in st.session_state:
         st.error(st.session_state.pop("login_error"))
 
-    with st.form("form_login"):
-        usuario = st.text_input("Usuario", placeholder="tu_usuario")
-        clave = st.text_input("Clave", type="password", placeholder="••••••••")
-        col1, col2 = st.columns(2)
-        ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
-        registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
+    col_l, col_c, col_r = st.columns([0.16, 0.68, 0.16])
+    with col_c:
+        st.markdown("""
+        <div class="glass-card section-shell" style="padding:1.15rem 1.15rem 0.4rem 1.15rem;">
+            <div class="eyebrow">Acceso</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;letter-spacing:2px;color:var(--text);margin-bottom:0.25rem;">Ingresá a tu cuenta</div>
+            <div class="subtle-copy" style="font-size:0.86rem;margin-bottom:0.8rem;">Usá tu usuario y clave para entrar al panel.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        with st.form("form_login"):
+            usuario = st.text_input("Usuario", placeholder="tu_usuario")
+            clave = st.text_input("Clave", type="password", placeholder="••••••••")
+            col1, col2 = st.columns(2)
+            ingresar = col1.form_submit_button("Ingresar", type="primary", use_container_width=True)
+            registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
 
     if ingresar:
         with st.spinner("Ingresando..."):
@@ -87,20 +109,25 @@ def pantalla_login():
         cambiar_pantalla(1)
         st.rerun()
 
-    st.divider()
+    st.markdown("""
+    <div class="glass-card soft" style="text-align:center;">
+        <div class="eyebrow">Info rápida</div>
+        <div class="subtle-copy" style="margin-bottom:0.8rem;">Conocé cómo funciona el sistema de puntos, especiales y premios.</div>
+    </div>
+    """, unsafe_allow_html=True)
     st.button("ℹ️ Acerca del prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
     st.markdown("""
     <div style="text-align:center; margin-top:0.8rem;">
         <a href="https://www.instagram.com/il_baigo" target="_blank"
            style="display:inline-flex; align-items:center; gap:7px; text-decoration:none;
                   background:var(--surface); border:1.5px solid var(--border2);
-                  border-radius:20px; padding:6px 16px; transition:all 0.16s ease;">
+                  border-radius:20px; padding:8px 16px; transition:all 0.16s ease; box-shadow:0 10px 24px rgba(0,0,0,0.12);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
                 <rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
                 <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
                 <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" style="color:var(--text2);"/>
             </svg>
-            <span style="color:var(--text2); font-size:0.82rem; font-weight:600; letter-spacing:0.3px;">
+            <span style="color:var(--text2); font-size:0.82rem; font-weight:700; letter-spacing:0.3px;">
                 Seguinos <strong style="color:var(--text);">@il_baigo</strong></span>
         </a>
     </div>
@@ -109,11 +136,10 @@ def pantalla_login():
 
 def pantalla_registro_datos():
     st.markdown("""
-    <div style="padding:0.5rem 0 1rem 0;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.3rem;">Paso 1 de 2</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:2.2rem; letter-spacing:3px; color:var(--text);">
-            Datos personales</div>
+    <div class="premium-hero section-shell">
+        <div class="eyebrow">Paso 1 de 2</div>
+        <div class="title-gradient" style="font-size:2.7rem;">Datos personales</div>
+        <div class="subtle-copy" style="max-width:620px;margin-top:0.55rem;">Completá tus datos para iniciar la inscripción. Todo quedó más ordenado, claro y visualmente más sólido.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -161,11 +187,10 @@ def pantalla_registro_cuenta():
     instrucciones_pago = pago.get("instrucciones", "")
 
     st.markdown("""
-    <div style="padding:0.5rem 0 1rem 0;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.3rem;">Paso 2 de 2</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:2.2rem; letter-spacing:3px; color:var(--text);">
-            Cuenta y pago</div>
+    <div class="premium-hero section-shell">
+        <div class="eyebrow">Paso 2 de 2</div>
+        <div class="title-gradient" style="font-size:2.7rem;">Cuenta y pago</div>
+        <div class="subtle-copy" style="max-width:620px;margin-top:0.55rem;">Definí tu acceso y cargá el comprobante desde una interfaz más limpia y premium.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -275,8 +300,8 @@ def pantalla_acerca():
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
                     color:var(--green); margin-bottom:6px;">⚽ ¿Cómo funciona?</div>
         <div style="color:var(--text2); font-size:0.92rem; line-height:1.75;">
-            Pronosticás el resultado de cada partido <strong>antes de que el administrador cierre la fase</strong>.<br>
-            Podés modificar tus pronósticos todas las veces que quieras mientras la fase siga abierta. Se guardan automáticamente mientras navegás.
+            Pronosticás el resultado de cada partido <strong>antes de que empiece</strong>.<br>
+            Una vez que arranca, tu pronóstico queda bloqueado. Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -344,26 +369,42 @@ def pantalla_acerca():
 
     st.divider()
     st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🏆 Premios</div>""", unsafe_allow_html=True)
+                color:var(--text3); margin-bottom:0.7rem;">🏅 Premios destacados</div>""", unsafe_allow_html=True)
     st.markdown("""
     <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                 border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🥇 Ranking general + premios sorpresa</div>
+        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🎁 Premio sorpresa para los destacados</div>
         <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            Los premios principales son para los <strong style="color:var(--text);">primeros puestos del ranking general</strong>.<br><br>
-            Además, durante el transcurso de la competencia se van a ir entregando <strong style="color:var(--text);">premios sorpresa</strong>
-            en distintos momentos del torneo.
+            Al finalizar el torneo se premiarán los mejores en cada categoría del ranking de destacados:<br>
+            <span style="color:var(--text);">🥇 Más resultados acertados &nbsp;·&nbsp; 🎯 Más exactos &nbsp;·&nbsp; 👑 Rey de grupos &nbsp;·&nbsp; 🔥 Rey de finales</span><br><br>
+            Los premios son una <strong style="color:var(--gold);">sorpresa</strong> — se revelarán al finalizar la competencia.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.divider()
-    with st.expander("¿Puedo modificar mi pronóstico después de guardarlo?"):
-        st.write("Sí. Los partidos se pueden seguir editando hasta que el administrador cierre la fase. Los especiales quedan confirmados cuando los validás con tu contraseña.")
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">🎉 Premios durante la competencia</div>""", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background:var(--blue-dim); border:1.5px solid var(--blue-border);
+                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
+        <div style="color:var(--blue); font-weight:700; font-size:0.88rem; margin-bottom:8px;">⚡ Premios sorpresa en el camino</div>
+        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
+            A lo largo del torneo se irán otorgando <strong style="color:var(--text);">diversos premios sorpresa</strong> 
+            en momentos especiales de la competencia — fase de grupos, octavos, cuartos, semifinales y más.<br><br>
+            Estar activo, consumir en el local y seguir de cerca cada partido puede sumar puntos 
+            y acceso a premios exclusivos. <span style="color:var(--blue);">¡Seguí participando!</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+    with st.expander("¿Puedo modificar mi pronóstico después de confirmarlo?"):
+        st.write("No. Una vez que confirmás con tu contraseña, el pronóstico queda bloqueado definitivamente.")
     with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
         st.write("No sumás puntos para esa fase.")
     with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
-        st.write("Podés modificar tus pronósticos hasta que el admin cierre la fase.")
+        st.write("El admin controla manualmente cuándo se cierra cada fase.")
     with st.expander("¿Olvidé mi contraseña, qué hago?"):
         st.write("Contactá al administrador por fuera de la app para que te resetee la contraseña.")
 

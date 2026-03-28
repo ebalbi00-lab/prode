@@ -110,30 +110,24 @@ def pantalla_admin():
     usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
     _pend_count = len(db_get_pendientes()) if ctx["es_admin_total"] else 0
 
-    header_left, header_right = st.columns([0.72, 0.28])
-    with header_left:
-        st.markdown(f"""
-        <div style="display:flex;align-items:center;gap:12px;padding:0.4rem 0 1rem 0;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--gold-dim);border:1.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">{ctx['icono']}</div>
-            <div>
-                <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);line-height:1.05;">{ctx['titulo']}</div>
-                <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">{ctx['subtitulo']}</div>
+    badges = [f'<span class="pill">🟢 {usuarios_en_linea} en línea</span>']
+    if ctx["es_admin_total"] and _pend_count > 0:
+        badges.append(f'<span class="pill" style="background:var(--red-dim);color:var(--red);border-color:var(--red-border);">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</span>')
+    st.markdown(f"""
+    <div class="premium-hero section-shell">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;position:relative;z-index:1;">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <div style="width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,var(--gold),var(--accent));display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#08101d;box-shadow:0 16px 32px rgba(245,199,107,0.18);">{ctx['icono']}</div>
+                <div>
+                    <div class="eyebrow">Centro de control</div>
+                    <div style="font-family:Bebas Neue,sans-serif;font-size:2.1rem;letter-spacing:2px;color:var(--text);line-height:1;">{ctx['titulo']}</div>
+                    <div class="subtle-copy" style="font-size:0.84rem;">{ctx['subtitulo']}</div>
+                </div>
             </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">{''.join(badges)}</div>
         </div>
-        """, unsafe_allow_html=True)
-    with header_right:
-        badges = [
-            f'<span style="display:inline-flex;align-items:center;background:var(--blue-dim);color:var(--blue);font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;border:1px solid var(--blue-border);">🟢 {usuarios_en_linea} en línea</span>'
-        ]
-        if ctx["es_admin_total"] and _pend_count > 0:
-            badges.append(
-                f'<span style="display:inline-flex;align-items:center;background:var(--red);color:#fff;font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;">⚠️ {_pend_count} pendiente{"s" if _pend_count > 1 else ""}</span>'
-            )
-        st.markdown(
-            '<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;padding:0.55rem 0 1rem 0;">' + ''.join(badges) + '</div>',
-            unsafe_allow_html=True,
-        )
-    st.markdown('<div style="height:1px;background:var(--border);margin:0 0 1rem 0;"></div>', unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
     sec = st.session_state.get("admin_sec", "inicio")
     if ctx["es_admin_total"]:
@@ -168,11 +162,10 @@ def pantalla_admin():
         for i, (key, icono, titulo, desc) in enumerate(secciones):
             badge = f' <span style="background:var(--red);color:#fff;font-size:0.65rem;padding:1px 7px;border-radius:10px;font-family:Outfit,sans-serif;">{_pend_count}</span>' if key == "pendientes" and _pend_count > 0 else ""
             with cols_menu[i % 2]:
-                st.markdown(f"""<div style="background:var(--bg3);border:1px solid var(--border);
-                    border-radius:12px;padding:14px 16px;margin-bottom:2px;">
-                    <div style="font-size:1.1rem;margin-bottom:3px;">{icono}</div>
-                    <div style="font-weight:700;color:var(--text);font-size:0.9rem;">{titulo}{badge}</div>
-                    <div style="color:var(--text3);font-size:0.72rem;margin-top:1px;">{desc}</div>
+                st.markdown(f"""<div class="menu-tile">
+                    <div class="menu-icon">{icono}</div>
+                    <div class="menu-title">{titulo}{badge}</div>
+                    <div class="menu-desc">{desc}</div>
                 </div>""", unsafe_allow_html=True)
                 if st.button("Abrir", key=f"menu_{key}", use_container_width=True):
                     st.session_state["admin_sec"] = key
