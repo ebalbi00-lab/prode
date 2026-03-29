@@ -99,7 +99,7 @@ def render_destacados_usuarios():
         ("top_resultados", "✅ Más resultados", "resultados acertados", "#3b82f6", "rgba(59,130,246,0.12)", "rgba(59,130,246,0.28)"),
         ("top_exactos",    "🎯 Más exactos",    "scores exactos",       "#2563eb", "rgba(37,99,235,0.11)", "rgba(37,99,235,0.24)"),
         ("top_grupos",     "⚽ Rey de grupos",   "pts en Grupos",        "#14b8a6", "rgba(20,184,166,0.11)", "rgba(20,184,166,0.24)"),
-        ("top_finales",    "🏆 Rey de finales",  "pts en Finales",       "#0ea5e9", "rgba(14,165,233,0.11)", "rgba(14,165,233,0.24)"),
+        ("top_finales",    "🏆 Rey de finales", "pts en Finales",       "#0ea5e9", "rgba(14,165,233,0.11)", "rgba(14,165,233,0.24)"),
     ]
     col_a, col_b = st.columns(2)
     cols = [col_a, col_b, col_a, col_b]
@@ -108,38 +108,42 @@ def render_destacados_usuarios():
     for i, (key, titulo, unidad, color, bg_color, border_color) in enumerate(categorias):
         datos = stats.get(key, [])
         with cols[i]:
-            if not datos:
-                contenido = '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>'
-            else:
-                top3 = datos[:3]
-                filas = ""
-                for j, d in enumerate(top3):
-                    icono = iconos_pos[j] if j < 3 else str(j + 1)
-                    sep = "border-top:1px solid var(--border);" if j > 0 else ""
-                    filas += f"""
-                    <div style="display:flex; align-items:center; justify-content:space-between;
-                                padding:7px 0; {sep}">
-                        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-                            <span style="font-size:1.0rem; flex-shrink:0;">{icono}</span>
-                            <span style="color:var(--text); font-weight:600; font-size:0.88rem;
-                                         overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                {d['nombre']}
-                            </span>
-                        </div>
-                        <span style="color:{color}; font-weight:800; font-size:0.95rem;
-                                      font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px;">
-                            {d['valor']}
-                        </span>
-                    </div>"""
-                contenido = filas
             st.markdown(f"""
             <div style="background:{bg_color}; border:1.5px solid {border_color};
                         border-radius:14px; padding:14px 16px; margin-bottom:12px;">
                 <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
                             letter-spacing:1.5px; color:{color}; margin-bottom:10px;">{titulo}</div>
-                {contenido}
-            </div>
             """, unsafe_allow_html=True)
+
+            if not datos:
+                st.markdown(
+                    '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown("</div>", unsafe_allow_html=True)
+                continue
+
+            top3 = datos[:3]
+            for j, d in enumerate(top3):
+                icono = iconos_pos[j] if j < 3 else str(j + 1)
+                sep = "" if j == 0 else "border-top:1px solid var(--border);"
+                nombre = d.get("nombre") or d.get("username") or "—"
+                valor = d.get("valor", 0)
+                st.markdown(f"""
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 0; {sep}">
+                    <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                        <span style="font-size:1.0rem; flex-shrink:0;">{icono}</span>
+                        <span style="color:var(--text); font-weight:600; font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            {nombre}
+                        </span>
+                    </div>
+                    <span style="color:{color}; font-weight:800; font-size:0.95rem; font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px; white-space:nowrap;">
+                        {valor}
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
 def pantalla_ranking():
