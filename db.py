@@ -330,7 +330,13 @@ def db_resetear_todos_puntajes():
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE usuarios SET puntos=0, goles=0, consumo=0 WHERE es_admin=0")
-        cur.execute("TRUNCATE TABLE prodes, resultados, consumo_log, especiales, especiales_resultados, actividad_feed, actividad_usuarios RESTART IDENTITY")
+        cur.execute("TRUNCATE TABLE prodes RESTART IDENTITY")
+        cur.execute("TRUNCATE TABLE resultados RESTART IDENTITY")
+        cur.execute("TRUNCATE TABLE consumo_log RESTART IDENTITY")
+        cur.execute("TRUNCATE TABLE especiales RESTART IDENTITY")
+        cur.execute("TRUNCATE TABLE especiales_resultados RESTART IDENTITY")
+        cur.execute("TRUNCATE TABLE actividad_feed RESTART IDENTITY")
+        cur.execute("TRUNCATE TABLE actividad_usuarios")
         cur.execute("DELETE FROM config WHERE clave LIKE 'wizard_pos_%'")
     st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
 
@@ -671,25 +677,25 @@ def db_sumar_consumo(username, puntos, descripcion=""):
 
 
 def db_eliminar_consumo_log(log_id):
-    evento_texto = None
+    deleted = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM consumo_log WHERE id=%s", (log_id,))
         row = cur.fetchone()
         if row:
+            deleted = dict(row)
             cur.execute(
                 "UPDATE usuarios SET consumo=GREATEST(0, consumo-%s) WHERE username=%s",
                 (row["puntos"], row["username"])
             )
             cur.execute("DELETE FROM consumo_log WHERE id=%s", (log_id,))
-            evento_texto = f"🗑️ Se eliminó el consumo #{log_id} de {row['username']} ({row['puntos']} pts)"
     try:
         db_get_todos_usuarios.clear()
         db_get_consumo_log.clear()
     except Exception:
         pass
-    if evento_texto:
-        db_feed_event(evento_texto, "consumo")
+    if deleted:
+        db_feed_event(f"🗑️ Se eliminó un consumo de {deleted['username']} ({deleted['puntos']} pts)", "consumo")
 
 
 @st.cache_data(ttl=20)
@@ -991,79 +997,91 @@ def db_get_estadisticas_usuarios():
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
-            SELECT p.username,
-                   SUM(CASE WHEN
-                       (p.goles_local > p.goles_visita AND r.goles_local > r.goles_visita) OR
-                       (p.goles_local < p.goles_visita AND r.goles_local < r.goles_visita) OR
-                       (p.goles_local = p.goles_visita AND r.goles_local = r.goles_visita)
-                   THEN 1 ELSE 0 END) AS resultados
-            FROM prodes p
-            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
-            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
-            WHERE p.confirmado = 1 AND p.partido_idx >= 0
-            GROUP BY p.username ORDER BY resultados DESC
+            WITH mult (fase, m) AS (
+                VALUES
+                    ('Grupos',        1),
+                    ('Dieciseisavos', 2),
+                    ('Octavos',       3),
+                    ('Cuartos',       4),
+                    ('Semifinal',     5),
+                    ('Final',         6)
+            ),
+            calc AS (
+                SELECT
+                    p.username,
+                    p.fase,
+                    COALESCE(m.m, 1) AS mult,
+                    CASE
+                        WHEN (
+                            (p.goles_local > p.goles_visita AND r.goles_local > r.goles_visita) OR
+                            (p.goles_local < p.goles_visita AND r.goles_local < r.goles_visita) OR
+                            (p.goles_local = p.goles_visita AND r.goles_local = r.goles_visita)
+                        ) THEN COALESCE(m.m, 1)
+                        ELSE 0
+                    END AS pts_resultado,
+                    CASE
+                        WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
+                        THEN COALESCE(m.m, 1) * 3
+                        ELSE 0
+                    END AS pts_exacto
+                FROM prodes p
+                JOIN resultados r
+                  ON r.fase = p.fase
+                 AND r.partido_idx = p.partido_idx
+                JOIN usuarios u
+                  ON u.username = p.username
+                 AND u.es_admin = 0
+                LEFT JOIN mult m
+                  ON m.fase = p.fase
+                WHERE p.confirmado = 1
+                  AND p.partido_idx >= 0
+            )
+            SELECT
+                username,
+                SUM(pts_resultado)::int AS puntos_resultados,
+                SUM(pts_exacto)::int AS puntos_exactos,
+                SUM(CASE WHEN fase = 'Grupos' THEN pts_resultado + pts_exacto ELSE 0 END)::int AS puntos_grupos,
+                SUM(CASE WHEN fase IN ('Dieciseisavos','Octavos','Cuartos','Semifinal','Final')
+                         THEN pts_resultado + pts_exacto ELSE 0 END)::int AS puntos_finales
+            FROM calc
+            GROUP BY username
         """)
-        top_resultados = [dict(r) for r in cur.fetchall()]
-        cur.execute("""
-            SELECT p.username,
-                   SUM(CASE WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
-                   THEN 1 ELSE 0 END) AS exactos
-            FROM prodes p
-            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
-            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
-            WHERE p.confirmado = 1 AND p.partido_idx >= 0
-            GROUP BY p.username ORDER BY exactos DESC
-        """)
-        top_exactos = [dict(r) for r in cur.fetchall()]
-        cur.execute("""
-            SELECT p.username,
-                   SUM(CASE WHEN
-                       (p.goles_local > p.goles_visita AND r.goles_local > r.goles_visita) OR
-                       (p.goles_local < p.goles_visita AND r.goles_local < r.goles_visita) OR
-                       (p.goles_local = p.goles_visita AND r.goles_local = r.goles_visita)
-                   THEN 1 ELSE 0 END) +
-                   SUM(CASE WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
-                   THEN 1 ELSE 0 END) AS puntos_grupos
-            FROM prodes p
-            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
-            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
-            WHERE p.confirmado = 1 AND p.partido_idx >= 0 AND p.fase = 'Grupos'
-            GROUP BY p.username ORDER BY puntos_grupos DESC
-        """)
-        top_grupos = [dict(r) for r in cur.fetchall()]
-        cur.execute("""
-            SELECT p.username,
-                   SUM(CASE WHEN
-                       (p.goles_local > p.goles_visita AND r.goles_local > r.goles_visita) OR
-                       (p.goles_local < p.goles_visita AND r.goles_local < r.goles_visita) OR
-                       (p.goles_local = p.goles_visita AND r.goles_local = r.goles_visita)
-                   THEN 1 ELSE 0 END) +
-                   SUM(CASE WHEN p.goles_local = r.goles_local AND p.goles_visita = r.goles_visita
-                   THEN 1 ELSE 0 END) AS puntos_finales
-            FROM prodes p
-            JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
-            JOIN usuarios u ON u.username = p.username AND u.es_admin = 0
-            WHERE p.confirmado = 1 AND p.partido_idx >= 0
-              AND p.fase IN ('Dieciseisavos','Octavos','Cuartos','Semifinal','Final')
-            GROUP BY p.username ORDER BY puntos_finales DESC
-        """)
-        top_finales = [dict(r) for r in cur.fetchall()]
+        rows = [dict(r) for r in cur.fetchall()]
 
-    with get_db() as conn:
-        cur = conn.cursor()
         cur.execute("SELECT username, nombre FROM usuarios WHERE es_admin=0")
         nombres_map = {r["username"]: (r["nombre"] or r["username"]) for r in cur.fetchall()}
 
-    def enrich(lst, key):
-        return [{"nombre": nombres_map.get(r["username"], r["username"]),
-                 "valor": r.get(key) or 0, "username": r["username"]}
-                for r in lst if (r.get(key) or 0) > 0]
+    enriched = []
+    for r in rows:
+        enriched.append({
+            "username": r["username"],
+            "nombre": nombres_map.get(r["username"], r["username"]),
+            "puntos_resultados": int(r.get("puntos_resultados") or 0),
+            "puntos_exactos": int(r.get("puntos_exactos") or 0),
+            "puntos_grupos": int(r.get("puntos_grupos") or 0),
+            "puntos_finales": int(r.get("puntos_finales") or 0),
+        })
+
+    def top_by(key):
+        ordered = sorted(
+            [r for r in enriched if (r.get(key) or 0) > 0],
+            key=lambda x: (int(x.get(key) or 0), str(x.get("nombre") or x.get("username") or "").lower()),
+            reverse=True,
+        )
+        return [
+            {
+                "nombre": r["nombre"],
+                "valor": int(r.get(key) or 0),
+                "username": r["username"],
+            }
+            for r in ordered
+        ]
 
     return {
-        "top_resultados": enrich(top_resultados, "resultados"),
-        "top_exactos":    enrich(top_exactos,    "exactos"),
-        "top_grupos":     enrich(top_grupos,      "puntos_grupos"),
-        "top_finales":    enrich(top_finales,     "puntos_finales"),
+        "top_resultados": top_by("puntos_resultados"),
+        "top_exactos":    top_by("puntos_exactos"),
+        "top_grupos":     top_by("puntos_grupos"),
+        "top_finales":    top_by("puntos_finales"),
     }
 
 @st.cache_data(ttl=15)
