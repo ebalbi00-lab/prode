@@ -47,44 +47,41 @@ def _top_especiales(counter_obj):
     return resultado
 
 
-def _render_top_especiales(titulo, data, color="#f5c76b", icono_titulo="📊"):
+def _render_top_especiales(titulo, data, color="#f5c76b", bg_color="rgba(245,199,107,0.12)", border_color="rgba(245,199,107,0.28)"):
+    if not data:
+        contenido = '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>'
+    else:
+        ranking = _top_especiales(data)
+        filas = ""
+        for i, nombre, votos, pct in ranking:
+            pos = "Otros" if i == "otros" else f"{i}°"
+            sep = "border-top:1px solid var(--border);" if filas else ""
+            filas += f"""
+            <div style="display:flex; align-items:center; justify-content:space-between;
+                        padding:7px 0; {sep}">
+                <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                    <span style="font-size:0.95rem; flex-shrink:0; color:var(--text3);
+                                 font-weight:800; min-width:38px;">{pos}</span>
+                    <span style="color:var(--text); font-weight:600; font-size:0.88rem;
+                                 overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        {nombre}
+                    </span>
+                </div>
+                <span style="color:{color}; font-weight:800; font-size:0.95rem;
+                              font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px;">
+                    {votos} · {pct:.0f}%
+                </span>
+            </div>"""
+        contenido = filas
+
     st.markdown(f"""
-    <div style="background:rgba(245,199,107,0.08); border:1.5px solid rgba(245,199,107,0.18);
+    <div style="background:{bg_color}; border:1.5px solid {border_color};
                 border-radius:14px; padding:14px 16px; margin-bottom:12px;">
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
-                    letter-spacing:1.5px; color:{color}; margin-bottom:10px;">{icono_titulo} {titulo}</div>
+                    letter-spacing:1.5px; color:{color}; margin-bottom:10px;">{titulo}</div>
+        {contenido}
+    </div>
     """, unsafe_allow_html=True)
-
-    if not data:
-        st.markdown(
-            '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 2px 0;">Sin datos aún.</div></div>',
-            unsafe_allow_html=True,
-        )
-        return
-
-    ranking = _top_especiales(data)
-
-    filas = ""
-    for i, nombre, votos, pct in ranking:
-        pos = "Otros" if i == "otros" else f"{i}°"
-        sep = "border-top:1px solid var(--border);" if filas else ""
-        filas += f"""
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 0; {sep}">
-            <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-                <span style="font-size:0.95rem; flex-shrink:0; color:var(--text3); font-weight:800; min-width:38px;">{pos}</span>
-                <span style="color:var(--text); font-weight:600; font-size:0.88rem;
-                             overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                    {nombre}
-                </span>
-            </div>
-            <span style="color:{color}; font-weight:800; font-size:0.92rem;
-                          font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px; white-space:nowrap;">
-                {votos} · {pct:.0f}%
-            </span>
-        </div>
-        """
-
-    st.markdown(filas + "</div>", unsafe_allow_html=True)
 
 
 def render_destacados_usuarios():
@@ -315,11 +312,15 @@ def pantalla_estadisticas():
 
     col1, col2 = st.columns(2)
     with col1:
-        _render_top_especiales("Campeón más elegido", campeon, color="#f5c76b", icono_titulo="🏆")
-        _render_top_especiales("Arquero más elegido", arquero, color="#6ee7ff", icono_titulo="🧤")
+        _render_top_especiales("🏆 Campeón más elegido", campeon, color="#f5c76b",
+                               bg_color="rgba(245,199,107,0.12)", border_color="rgba(245,199,107,0.28)")
+        _render_top_especiales("🧤 Arquero más elegido", arquero, color="#6ee7ff",
+                               bg_color="rgba(110,231,255,0.12)", border_color="rgba(110,231,255,0.28)")
     with col2:
-        _render_top_especiales("Goleador más elegido", goleador, color="#34d399", icono_titulo="⚽")
-        _render_top_especiales("MVP más elegido", jugador, color="#fb923c", icono_titulo="⭐")
+        _render_top_especiales("⚽ Goleador más elegido", goleador, color="#34d399",
+                               bg_color="rgba(52,211,153,0.12)", border_color="rgba(52,211,153,0.28)")
+        _render_top_especiales("⭐ MVP más elegido", jugador, color="#fb923c",
+                               bg_color="rgba(251,146,60,0.12)", border_color="rgba(251,146,60,0.28)")
 
     st.divider()
     destino = _destino_panel()
