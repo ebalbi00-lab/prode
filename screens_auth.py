@@ -275,8 +275,8 @@ def pantalla_acerca():
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
                     color:var(--green); margin-bottom:6px;">⚽ ¿Cómo funciona?</div>
         <div style="color:var(--text2); font-size:0.92rem; line-height:1.75;">
-            Pronosticás el resultado de cada partido <strong>antes de que empiece</strong>.<br>
-            Una vez que arranca, tu pronóstico queda bloqueado. Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
+            Pronosticás el resultado de cada partido antes de que el admin cierre la fase.<br>
+            Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -344,31 +344,14 @@ def pantalla_acerca():
 
     st.divider()
     st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🏅 Premios destacados</div>""", unsafe_allow_html=True)
+                color:var(--text3); margin-bottom:0.7rem;">🎁 Premios</div>""", unsafe_allow_html=True)
     st.markdown("""
     <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                 border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🎁 Premio sorpresa para los destacados</div>
+        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🏆 Premios para el ranking y sorpresas durante el torneo</div>
         <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            Al finalizar el torneo se premiarán los mejores en cada categoría del ranking de destacados:<br>
-            <span style="color:var(--text);">🥇 Más resultados acertados &nbsp;·&nbsp; 🎯 Más exactos &nbsp;·&nbsp; 👑 Rey de grupos &nbsp;·&nbsp; 🔥 Rey de finales</span><br><br>
-            Los premios son una <strong style="color:var(--gold);">sorpresa</strong> — se revelarán al finalizar la competencia.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🎉 Premios durante la competencia</div>""", unsafe_allow_html=True)
-    st.markdown("""
-    <div style="background:var(--blue-dim); border:1.5px solid var(--blue-border);
-                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--blue); font-weight:700; font-size:0.88rem; margin-bottom:8px;">⚡ Premios sorpresa en el camino</div>
-        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            A lo largo del torneo se irán otorgando <strong style="color:var(--text);">diversos premios sorpresa</strong> 
-            en momentos especiales de la competencia — fase de grupos, octavos, cuartos, semifinales y más.<br><br>
-            Estar activo, consumir en el local y seguir de cerca cada partido puede sumar puntos 
-            y acceso a premios exclusivos. <span style="color:var(--blue);">¡Seguí participando!</span>
+            Los premios principales serán para los <strong style="color:var(--text);">primeros puestos del ranking general</strong> al finalizar la competencia.<br><br>
+            Además, durante el transcurso del torneo va a haber <strong style="color:var(--gold);">premios sorpresa</strong> en distintos momentos de la competencia.
         </div>
     </div>
     """, unsafe_allow_html=True)

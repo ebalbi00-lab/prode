@@ -330,13 +330,7 @@ def db_resetear_todos_puntajes():
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE usuarios SET puntos=0, goles=0, consumo=0 WHERE es_admin=0")
-        cur.execute("DELETE FROM prodes")
-        cur.execute("DELETE FROM resultados")
-        cur.execute("DELETE FROM consumo_log")
-        cur.execute("DELETE FROM especiales")
-        cur.execute("DELETE FROM especiales_resultados")
-        cur.execute("DELETE FROM actividad_feed")
-        cur.execute("DELETE FROM actividad_usuarios")
+        cur.execute("TRUNCATE TABLE prodes, resultados, consumo_log, especiales, especiales_resultados, actividad_feed, actividad_usuarios RESTART IDENTITY")
         cur.execute("DELETE FROM config WHERE clave LIKE 'wizard_pos_%'")
     st.cache_data.clear()  # reset total — OK acá, es acción de admin poco frecuente
 
@@ -677,6 +671,7 @@ def db_sumar_consumo(username, puntos, descripcion=""):
 
 
 def db_eliminar_consumo_log(log_id):
+    evento_texto = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT * FROM consumo_log WHERE id=%s", (log_id,))
@@ -687,11 +682,14 @@ def db_eliminar_consumo_log(log_id):
                 (row["puntos"], row["username"])
             )
             cur.execute("DELETE FROM consumo_log WHERE id=%s", (log_id,))
+            evento_texto = f"🗑️ Se eliminó el consumo #{log_id} de {row['username']} ({row['puntos']} pts)"
     try:
         db_get_todos_usuarios.clear()
         db_get_consumo_log.clear()
     except Exception:
         pass
+    if evento_texto:
+        db_feed_event(evento_texto, "consumo")
 
 
 @st.cache_data(ttl=20)
