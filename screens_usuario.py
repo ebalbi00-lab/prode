@@ -348,7 +348,7 @@ def pantalla_usuario():
             with c2:
                 if st.button("📊  Mis puntos", use_container_width=True, key="menu_puntos"):
                     st.session_state["sub_pantalla"] = "puntos"; st.rerun()
-                if st.button("🏅  Destacados", use_container_width=True, key="menu_dest"):
+                if st.button("📊  Estadísticas", use_container_width=True, key="menu_dest"):
                     cambiar_pantalla(12); st.rerun()
 
             st.markdown("""

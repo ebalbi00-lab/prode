@@ -1,6 +1,7 @@
 """
 screens_stats.py — Pantallas de ranking, destacados y estadísticas.
 """
+from collections import Counter
 import streamlit as st
 from constants import bandera
 
@@ -10,8 +11,12 @@ except Exception:
     st_autorefresh = None
 
 from db import (
-    db_get_estadisticas_usuarios, db_get_estadisticas_partidos,
-    db_get_partidos, db_get_ranking_snapshot, db_get_tipo_usuario,
+    db_get_estadisticas_usuarios,
+    db_get_estadisticas_partidos,
+    db_get_partidos,
+    db_get_ranking_snapshot,
+    db_get_tipo_usuario,
+    db_get_todos_especiales,
 )
 
 
@@ -24,13 +29,69 @@ def _destino_panel():
     return 9 if db_get_tipo_usuario(usuario) in ("admin", "consumo") else 5
 
 
+def _top_especiales(counter_obj):
+    total = sum(counter_obj.values())
+    top = counter_obj.most_common(3)
+    usados = sum(v for _, v in top)
+    otros = total - usados
+
+    resultado = []
+    for i, (nombre, votos) in enumerate(top, start=1):
+        pct = (votos / total * 100) if total else 0
+        resultado.append((i, nombre, votos, pct))
+
+    if otros > 0:
+        pct = (otros / total * 100) if total else 0
+        resultado.append(("otros", "Otros", otros, pct))
+
+    return resultado
+
+
+def _render_top_especiales(titulo, data, color="#f5c76b", icono_titulo="📊"):
+    st.markdown(f"""
+    <div style="background:rgba(245,199,107,0.08); border:1.5px solid rgba(245,199,107,0.18);
+                border-radius:14px; padding:14px 16px; margin-bottom:12px;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase;
+                    letter-spacing:1.5px; color:{color}; margin-bottom:10px;">{icono_titulo} {titulo}</div>
+    """, unsafe_allow_html=True)
+
+    if not data:
+        st.markdown(
+            '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 2px 0;">Sin datos aún.</div></div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    ranking = _top_especiales(data)
+
+    filas = ""
+    for i, nombre, votos, pct in ranking:
+        pos = "Otros" if i == "otros" else f"{i}°"
+        sep = "border-top:1px solid var(--border);" if filas else ""
+        filas += f"""
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 0; {sep}">
+            <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+                <span style="font-size:0.95rem; flex-shrink:0; color:var(--text3); font-weight:800; min-width:38px;">{pos}</span>
+                <span style="color:var(--text); font-weight:600; font-size:0.88rem;
+                             overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    {nombre}
+                </span>
+            </div>
+            <span style="color:{color}; font-weight:800; font-size:0.92rem;
+                          font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px; white-space:nowrap;">
+                {votos} · {pct:.0f}%
+            </span>
+        </div>
+        """
+
+    st.markdown(filas + "</div>", unsafe_allow_html=True)
+
+
 def render_destacados_usuarios():
     st.markdown("""
     <div style="margin-bottom:1rem;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.4rem;">Estadísticas</div>
         <div style="font-family:Bebas Neue,sans-serif; font-size:1.8rem; letter-spacing:3px; color:var(--text);">
-            🏅 DESTACADOS</div>
+            📊 ESTADÍSTICAS</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -62,10 +123,14 @@ def render_destacados_usuarios():
                         <div style="display:flex; align-items:center; gap:8px; min-width:0;">
                             <span style="font-size:1.0rem; flex-shrink:0;">{icono}</span>
                             <span style="color:var(--text); font-weight:600; font-size:0.88rem;
-                                         white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px;">{d['nombre']}</span>
+                                         overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                {d['nombre']}
+                            </span>
                         </div>
                         <span style="color:{color}; font-weight:800; font-size:0.95rem;
-                                      font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px;">{d['valor']}</span>
+                                      font-family:JetBrains Mono,monospace; flex-shrink:0; margin-left:8px;">
+                            {d['valor']}
+                        </span>
                     </div>"""
                 contenido = filas
             st.markdown(f"""
@@ -220,6 +285,42 @@ def pantalla_ranking():
 
 def pantalla_estadisticas():
     render_destacados_usuarios()
+
+    especiales = db_get_todos_especiales() or []
+    campeon = Counter()
+    goleador = Counter()
+    arquero = Counter()
+    jugador = Counter()
+
+    for e in especiales:
+        cat = (e.get("categoria") or "").strip().lower()
+        eleccion = (e.get("eleccion") or "").strip()
+        if not eleccion:
+            continue
+        if cat == "campeon":
+            campeon[eleccion] += 1
+        elif cat == "goleador":
+            goleador[eleccion] += 1
+        elif cat == "arquero":
+            arquero[eleccion] += 1
+        elif cat == "jugador":
+            jugador[eleccion] += 1
+
+    st.markdown("""
+    <div style="margin:0.3rem 0 1rem 0;">
+        <div style="font-family:Bebas Neue,sans-serif; font-size:1.6rem; letter-spacing:2px; color:var(--text);">
+            🗳️ ELECCIONES DE LA GENTE</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        _render_top_especiales("Campeón más elegido", campeon, color="#f5c76b", icono_titulo="🏆")
+        _render_top_especiales("Arquero más elegido", arquero, color="#6ee7ff", icono_titulo="🧤")
+    with col2:
+        _render_top_especiales("Goleador más elegido", goleador, color="#34d399", icono_titulo="⚽")
+        _render_top_especiales("MVP más elegido", jugador, color="#fb923c", icono_titulo="⭐")
+
     st.divider()
     destino = _destino_panel()
     st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)

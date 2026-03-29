@@ -147,7 +147,7 @@ def pantalla_admin():
             ("pagos", "💳", "Pagos", "Editar datos de pago del registro"),
             ("especiales", "⭐", "Especiales", "Resultados especiales"),
             ("usuarios", "👤", "Usuarios", "Gestionar usuarios"),
-            ("destacados", "🏅", "Destacados", "Estadísticas por jugador"),
+            ("destacados", "📊", "Estadísticas", "Destacados y especiales más elegidos"),
             ("reset", "⚠️", "Reset", "Resetear fases o todo"),
             ("exportar", "📥", "Exportar", "Descargar base de datos"),
         ]
@@ -155,7 +155,7 @@ def pantalla_admin():
         secciones = [
             ("resumen", "📋", "Resumen", "Usuarios en línea y actividad"),
             ("consumo", "💰", "Consumo", "Sumar y ajustar puntos de consumo"),
-            ("destacados", "🏅", "Destacados", "Estadísticas por jugador"),
+            ("destacados", "📊", "Estadísticas", "Destacados y especiales más elegidos"),
         ]
 
     allowed_keys = {k for k, *_ in secciones}
@@ -209,7 +209,7 @@ def pantalla_admin():
     elif sec == "usuarios" and ctx["es_admin_total"]:
         _tab_usuarios()
     elif sec == "destacados":
-        st.subheader("🏅 Destacados")
+        st.subheader("📊 Estadísticas")
         render_destacados_usuarios()
     elif sec == "reset" and ctx["es_admin_total"]:
         _tab_reset()
