@@ -78,7 +78,7 @@ def pantalla_login():
     _hero(
         "Prode Il Baigo",
         "Mundial 2026 · pronosticá, competí y gana grandes premios",
-        "Entrá con tu cuenta o registrate para dejar tus pronósticos listos antes del arranque.",
+        "",
         "⚽",
     )
     if "login_error" in st.session_state:
@@ -99,16 +99,6 @@ def pantalla_login():
         cambiar_pantalla(1)
         st.rerun()
 
-    st.markdown(
-        """
-        <div class="glass-note" style="margin-top:1rem;">
-            <div class="glass-note__title">Qué te vas a encontrar adentro</div>
-            <div class="glass-note__text">Pronósticos por fase, ranking general, estadísticas del torneo y especiales para sumar puntos extra.</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     cta1, cta2 = st.columns([1.1, 1])
     with cta1:
         st.button("ℹ️ Cómo funciona el prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
@@ -116,7 +106,20 @@ def pantalla_login():
         st.markdown(
             """
             <a href="https://www.instagram.com/il_baigo" target="_blank" class="social-cta">
-                <span>📷</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+                    <defs>
+                        <radialGradient id="ig-grad" cx="30%" cy="107%" r="150%">
+                            <stop offset="0%" stop-color="#ffd600"/>
+                            <stop offset="30%" stop-color="#ff6930"/>
+                            <stop offset="60%" stop-color="#e0206a"/>
+                            <stop offset="100%" stop-color="#6a30c8"/>
+                        </radialGradient>
+                    </defs>
+                    <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#ig-grad)"/>
+                    <rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+                    <circle cx="12" cy="12" r="4.2" stroke="white" stroke-width="1.7" fill="none"/>
+                    <circle cx="17.2" cy="6.8" r="1.1" fill="white"/>
+                </svg>
                 <span>Seguinos en Instagram</span>
             </a>
             """,
