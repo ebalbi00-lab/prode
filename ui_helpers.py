@@ -1,54 +1,57 @@
 import streamlit as st
 
-def password_input_with_toggle(label, key):
-    show_key = f"{key}_show"
+
+def password_input_with_toggle(label: str, key: str, placeholder: str = "", value: str = "", help_text: str | None = None):
+    show_key = f"{key}__show"
     shown = st.session_state.get(show_key, False)
-
-    cols = st.columns([5,1])
-
+    cols = st.columns([12, 2], gap="small")
     with cols[0]:
-        value = st.text_input(
+        val = st.text_input(
             label,
+            value=value,
+            key=key,
             type="default" if shown else "password",
-            key=key
+            placeholder=placeholder,
+            help=help_text,
         )
-
     with cols[1]:
-        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-        if st.button(
-            "👁️" if not shown else "🙈",
-            key=f"{key}_btn",
-            type="secondary",
-            use_container_width=True
-        ):
+        st.markdown("<div style='height:1.72rem'></div>", unsafe_allow_html=True)
+        if st.button("🙈" if shown else "👁️", key=f"{key}__toggle", use_container_width=True, type="secondary"):
             st.session_state[show_key] = not shown
             st.rerun()
+    return val
 
-    return value
 
 
-def stepper(key, min_value=0, max_value=10):
-    val_key = f"{key}_val"
+def integrated_stepper(label: str, key: str, value: int = 0, min_value: int = 0, max_value: int = 10):
+    state_key = f"{key}__val"
+    if state_key not in st.session_state:
+        st.session_state[state_key] = int(value)
+    else:
+        try:
+            st.session_state[state_key] = int(st.session_state[state_key])
+        except Exception:
+            st.session_state[state_key] = int(value)
 
-    if val_key not in st.session_state:
-        st.session_state[val_key] = 0
-
-    cols = st.columns([1,2,1])
-
+    cols = st.columns([1.15, 2.2, 1.15], gap="small")
     with cols[0]:
-        if st.button("−", key=f"{key}_minus", type="secondary", use_container_width=True):
-            st.session_state[val_key] = max(min_value, st.session_state[val_key] - 1)
+        st.markdown("<div style='height:1.72rem'></div>", unsafe_allow_html=True)
+        if st.button("−", key=f"{key}__minus", use_container_width=True, type="secondary"):
+            st.session_state[state_key] = max(min_value, int(st.session_state[state_key]) - 1)
             st.rerun()
-
     with cols[1]:
-        st.markdown(
-            f"<div style='text-align:center;font-size:20px;font-weight:700'>{st.session_state[val_key]}</div>",
-            unsafe_allow_html=True
+        st.number_input(
+            label,
+            min_value=min_value,
+            max_value=max_value,
+            step=1,
+            key=state_key,
+            label_visibility="collapsed",
         )
-
     with cols[2]:
-        if st.button("+", key=f"{key}_plus", type="secondary", use_container_width=True):
-            st.session_state[val_key] = min(max_value, st.session_state[val_key] + 1)
+        st.markdown("<div style='height:1.72rem'></div>", unsafe_allow_html=True)
+        if st.button("+", key=f"{key}__plus", use_container_width=True, type="secondary"):
+            st.session_state[state_key] = min(max_value, int(st.session_state[state_key]) + 1)
             st.rerun()
 
-    return st.session_state[val_key]
+    return int(st.session_state[state_key])

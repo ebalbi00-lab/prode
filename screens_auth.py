@@ -1,5 +1,5 @@
 """
-screens_auth.py — Pantallas de login, registro y revisión.
+screens_auth_final.py — pantallas de login, registro y revisión.
 """
 import datetime
 import re
@@ -53,13 +53,20 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
         st.session_state.step = 2
 
 
-def _hero(title: str, eyebrow: str, subtitle: str, icon: str = "⚽"):
+def _hero(icon: str = "⚽"):
     st.markdown(f"""
-    <div class="hero-shell hero-shell--center">
-        <div class="hero-orb">{icon}</div>
-        <div class="hero-eyebrow">{eyebrow}</div>
-        <div class="hero-title">{title}</div>
-        <div class="hero-subtitle">{subtitle}</div>
+    <div class="auth-hero">
+        <div class="hero-shell">
+            <div class="hero-badge">Mundial 2026 · pronosticá, competí y ganá grandes premios</div>
+            <div class="hero-orb">{icon}</div>
+            <div class="hero-title">Prode Il Baigo</div>
+            <div class="hero-subtitle">Entrá con tu cuenta o registrate para dejar tus pronósticos listos antes del arranque.</div>
+            <div class="hero-kpis">
+                <div class="hero-kpi"><strong>Cargá rápido</strong><span>Resultados por fase y especiales en una sola app.</span></div>
+                <div class="hero-kpi"><strong>Seguí tu puesto</strong><span>Vas viendo cómo te movés en el ranking general.</span></div>
+                <div class="hero-kpi"><strong>Confirmá seguro</strong><span>Todo queda cerrado con tu clave antes de cada fase.</span></div>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -75,24 +82,67 @@ def _step_header(step: str, title: str, subtitle: str):
 
 
 def pantalla_login():
-    _hero(
-        "Prode Il Baigo",
-        "Mundial 2026 · pronosticá, competí y ganá grandes premios",
-        "Entrá con tu cuenta o registrate para dejar tus pronósticos listos antes del arranque.",
-        "⚽",
-    )
+    left, right = st.columns([1.15, 0.92], gap="large")
 
+    with left:
+        _hero("⚽")
+        st.markdown(
+            """
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-item__icon">🎯</div>
+                    <div>
+                        <div class="feature-item__title">Pronósticos claros</div>
+                        <div class="feature-item__text">Cargás tus partidos por fase y confirmás cuando ya quedó todo revisado.</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item__icon">🏆</div>
+                    <div>
+                        <div class="feature-item__title">Puntos y premios</div>
+                        <div class="feature-item__text">Competís por el ranking general y por premios especiales durante el torneo.</div>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    if "login_error" in st.session_state:
-        st.error(st.session_state.pop("login_error"))
+    with right:
+        st.markdown('<div class="auth-card">', unsafe_allow_html=True)
+        st.markdown('<div class="section-title" style="font-size:1.55rem; margin-bottom:0.25rem;">Ingresar</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-subtitle" style="margin-bottom:0.95rem;">Usá tu usuario y tu clave para entrar.</div>', unsafe_allow_html=True)
+        if "login_error" in st.session_state:
+            st.error(st.session_state.pop("login_error"))
+        with st.form("form_login"):
+            usuario = st.text_input("Usuario", placeholder="Ej: juan123")
+            clave = st.text_input("Clave", type="password", placeholder="Tu contraseña")
+            c1, c2 = st.columns(2)
+            ingresar = c1.form_submit_button("Entrar ahora", type="primary", use_container_width=True)
+            registrarse = c2.form_submit_button("Crear cuenta", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="section-title" style="font-size:1.35rem;margin-top:1.1rem;">Ingresar</div>', unsafe_allow_html=True)
-    with st.form("form_login"):
-        usuario = st.text_input("Usuario", placeholder="Ej: juan123")
-        clave = st.text_input("Clave", type="password", placeholder="Tu contraseña")
-        c1, c2 = st.columns(2)
-        ingresar = c1.form_submit_button("Entrar ahora", type="primary", use_container_width=True)
-        registrarse = c2.form_submit_button("Crear cuenta", use_container_width=True)
+        st.markdown(
+            """
+            <div class="glass-note">
+                <div class="glass-note__title">Antes de entrar</div>
+                <div class="glass-note__text">Si todavía no tenés cuenta, registrate, hacé el pago y subí el comprobante. Cuando lo aprueben, ya podés empezar a jugar.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        cta1, cta2 = st.columns(2)
+        with cta1:
+            st.button("ℹ️ Cómo funciona", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
+        with cta2:
+            st.markdown(
+                """
+                <a href="https://www.instagram.com/il_baigo" target="_blank" class="social-cta">
+                    <span>📷</span><span>Instagram</span>
+                </a>
+                """,
+                unsafe_allow_html=True,
+            )
 
     if ingresar:
         with st.spinner("Validando acceso..."):
@@ -100,30 +150,6 @@ def pantalla_login():
     if registrarse:
         cambiar_pantalla(1)
         st.rerun()
-
-    st.markdown(
-        """
-        <div class="glass-note" style="margin-top:1rem;">
-            <div class="glass-note__title">Qué te vas a encontrar adentro</div>
-            <div class="glass-note__text">Pronósticos por fase, ranking general, estadísticas del torneo y especiales para sumar puntos extra.</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    cta1, cta2 = st.columns([1.1, 1])
-    with cta1:
-        st.button("ℹ️ Cómo funciona el prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
-    with cta2:
-        st.markdown(
-            """
-            <a href="https://www.instagram.com/il_baigo" target="_blank" class="social-cta">
-                <span>📷</span>
-                <span>Seguinos en Instagram</span>
-            </a>
-            """,
-            unsafe_allow_html=True,
-        )
 
 
 def pantalla_registro_datos():
@@ -271,8 +297,8 @@ def pantalla_en_revision():
     st.markdown("""
     <div class="review-shell">
         <div class="review-shell__icon">⏳</div>
-        <div class="hero-title" style="font-size:2.35rem;">Solicitud recibida</div>
-        <div class="hero-subtitle" style="max-width:460px;">
+        <div class="hero-title" style="font-size:2.2rem;">Solicitud recibida</div>
+        <div class="hero-subtitle" style="max-width:560px; margin: 0 auto;">
             Ya quedó cargada. Ahora la revisa el administrador junto con el comprobante de pago.
             Apenas esté aprobada, vas a poder entrar con tu usuario y empezar a jugar.
         </div>
@@ -298,7 +324,7 @@ def pantalla_acerca():
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="section-title" style="font-size:1.2rem;">Sistema de puntos</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title" style="font-size:1.2rem; margin-top:1rem;">Sistema de puntos</div>', unsafe_allow_html=True)
     st.markdown("Cuanto más avanzada la fase, más valen los aciertos. Acertar el marcador exacto siempre paga bastante más.")
 
     res_pts = [1, 2, 3, 4, 5, 6]
@@ -321,8 +347,8 @@ def pantalla_acerca():
                 <thead>
                     <tr style="background:var(--table-head);border-bottom:1px solid var(--border);">
                         <th style="padding:12px 14px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:left;">Fase</th>
-                        <th style="padding:12px 14px;color:var(--blue);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">✅ Resultado</th>
-                        <th style="padding:12px 14px;color:var(--green);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">🎯 Exacto</th>
+                        <th style="padding:12px 14px;color:var(--blue);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">Resultado</th>
+                        <th style="padding:12px 14px;color:var(--green);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">Exacto</th>
                     </tr>
                 </thead>
                 <tbody>{filas_pts}</tbody>
