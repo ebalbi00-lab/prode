@@ -1,13 +1,30 @@
 import streamlit as st
 
+def password_input_with_toggle(label, key):
+    show_key = f"{key}_show"
+    shown = st.session_state.get(show_key, False)
 
-def password_input_with_toggle(label, key, placeholder=None):
-    return st.text_input(
-        label,
-        type="password",
-        key=key,
-        placeholder=placeholder,
-    )
+    cols = st.columns([5,1])
+
+    with cols[0]:
+        value = st.text_input(
+            label,
+            type="default" if shown else "password",
+            key=key
+        )
+
+    with cols[1]:
+        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+        if st.button(
+            "👁️" if not shown else "🙈",
+            key=f"{key}_btn",
+            type="secondary",
+            use_container_width=True
+        ):
+            st.session_state[show_key] = not shown
+            st.rerun()
+
+    return value
 
 
 def stepper(key, min_value=0, max_value=10):
