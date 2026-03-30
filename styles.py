@@ -245,7 +245,7 @@ def inject_css():
     }
 
     .hero-title {
-        font-size: clamp(2.8rem, 7vw, 4.6rem);
+        font-size: clamp(3.6rem, 9vw, 6rem);
         margin-bottom: .4rem;
         background: linear-gradient(135deg, #e8f4ff 0%, var(--blue) 42%, var(--gold2) 100%);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -522,6 +522,30 @@ def inject_css():
         filter: brightness(1.06) !important;
     }
 
+
+    /* ── Stepper +/− buttons ──────────────────────── */
+    button[data-testid*="_minus"],
+    button[data-testid*="_plus"] {
+        background: rgba(110,231,255,0.08) !important;
+        border-color: rgba(110,231,255,0.25) !important;
+        color: var(--accent) !important;
+        font-size: 1.25rem !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+    }
+    button[data-testid*="_minus"]:hover,
+    button[data-testid*="_plus"]:hover {
+        background: rgba(110,231,255,0.16) !important;
+        border-color: rgba(110,231,255,0.50) !important;
+        color: #fff !important;
+        box-shadow: 0 0 0 3px rgba(110,231,255,0.12), 0 4px 16px rgba(110,231,255,0.14) !important;
+    }
+    button[data-testid*="_minus"]:active,
+    button[data-testid*="_plus"]:active {
+        background: rgba(110,231,255,0.24) !important;
+        transform: scale(0.95) !important;
+    }
+
     /* ── Tabs ─────────────────────────────────────── */
     button[role="tab"] {
         background: rgba(255,255,255,0.03) !important;
@@ -657,7 +681,7 @@ def inject_css():
         }
         .hero-shell { padding: 1.2rem 1rem 1.1rem 1rem; }
         .hero-orb { width: 68px; height: 68px; border-radius: 20px; font-size: 1.9rem; }
-        .hero-title { font-size: 2.6rem; }
+        .hero-title { font-size: 3.2rem; }
         .section-title { font-size: 1.65rem; }
         .payment-grid { grid-template-columns: 1fr; gap: .6rem; }
         .stForm { padding: 1.1rem .9rem .9rem .9rem !important; }
