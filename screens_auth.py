@@ -10,7 +10,6 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
-from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -208,8 +207,8 @@ def pantalla_registro_cuenta():
 
     with st.form("form_registro_cuenta"):
         usuario = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
-        clave = password_input_with_toggle("Clave", "registro_clave", placeholder="Mínimo 4 caracteres")
-        confirmar = password_input_with_toggle("Confirmar clave", "registro_confirmar", placeholder="Repetí la clave")
+        clave = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
+        confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••", key="registro_confirmar")
         comprobante = st.file_uploader("Comprobante de pago")
 
         st.markdown(
