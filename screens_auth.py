@@ -10,7 +10,6 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
-from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -78,25 +77,18 @@ def _step_header(step: str, title: str, subtitle: str):
 def pantalla_login():
     _hero(
         "Prode Il Baigo",
-        "Mundial 2026 · pronosticá, competí y subí en el ranking",
+        "Mundial 2026 · pronosticá, competí y ganá grandes premios",
         "Entrá con tu cuenta o registrate para dejar tus pronósticos listos antes del arranque.",
         "⚽",
     )
 
-    top_a, top_b, top_c = st.columns(3)
-    with top_a:
-        st.markdown('<div class="mini-stat-card"><span>🏟️</span><strong>Prode en vivo</strong><small>Cargá y confirmá por fase</small></div>', unsafe_allow_html=True)
-    with top_b:
-        st.markdown('<div class="mini-stat-card"><span>🏆</span><strong>Ranking automático</strong><small>Puntos, exactos y especiales</small></div>', unsafe_allow_html=True)
-    with top_c:
-        st.markdown('<div class="mini-stat-card"><span>✨</span><strong>Experiencia rápida</strong><small>Hecha para usar desde el celu</small></div>', unsafe_allow_html=True)
 
     if "login_error" in st.session_state:
         st.error(st.session_state.pop("login_error"))
 
     st.markdown('<div class="section-title" style="font-size:1.35rem;margin-top:1.1rem;">Ingresar</div>', unsafe_allow_html=True)
     with st.form("form_login"):
-        usuario = st.text_input("Usuario", placeholder="Ej: enzo, juan123, mati.prode")
+        usuario = st.text_input("Usuario", placeholder="Ej: juan123")
         clave = st.text_input("Clave", type="password", placeholder="Tu contraseña")
         c1, c2 = st.columns(2)
         ingresar = c1.form_submit_button("Entrar ahora", type="primary", use_container_width=True)
@@ -216,9 +208,9 @@ def pantalla_registro_cuenta():
     """, unsafe_allow_html=True)
 
     with st.form("form_registro_cuenta"):
-        usuario = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
-        clave = password_input_with_toggle("Clave", "registro_clave", placeholder="Mínimo 4 caracteres")
-        confirmar = password_input_with_toggle("Confirmar clave", "registro_confirmar", placeholder="Repetí la clave")
+        usuario = st.text_input("Usuario", placeholder="Ej: juan123")
+        clave = st.text_input("Clave", type="password", key="registro_clave", placeholder="Mínimo 4 caracteres")
+        confirmar = st.text_input("Confirmar clave", type="password", key="registro_confirmar", placeholder="Repetí la clave")
         comprobante = st.file_uploader("Comprobante de pago")
 
         st.markdown(
