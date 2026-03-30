@@ -10,7 +10,6 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
-from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -215,25 +214,25 @@ def pantalla_registro_cuenta():
     </div>
     """, unsafe_allow_html=True)
 
-    usuario = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123", key="reg_usuario")
-    clave = password_input_with_toggle("Clave", "registro_clave", placeholder="Mínimo 4 caracteres")
-    confirmar = password_input_with_toggle("Confirmar clave", "registro_confirmar", placeholder="Repetí la clave")
-    comprobante = st.file_uploader("Comprobante de pago", key="reg_comprobante")
-
-    st.markdown(
-        """
-        <div class="glass-note" style="margin-top:0.45rem;">
-            <div class="glass-note__title">Antes de enviar</div>
-            <div class="glass-note__text">Revisá que el usuario quede bien escrito. Es el que vas a usar para entrar durante todo el torneo.</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    if "reg_error" in st.session_state:
-        st.error(st.session_state.pop("reg_error"))
-
     with st.form("form_registro_cuenta"):
+        usuario = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
+        clave = st.text_input("Clave", type="password", placeholder="Mínimo 4 caracteres", key="registro_clave")
+        confirmar = st.text_input("Confirmar clave", type="password", placeholder="Repetí la clave", key="registro_confirmar")
+        comprobante = st.file_uploader("Comprobante de pago")
+
+        st.markdown(
+            """
+            <div class="glass-note" style="margin-top:0.45rem;">
+                <div class="glass-note__title">Antes de enviar</div>
+                <div class="glass-note__text">Revisá que el usuario quede bien escrito. Es el que vas a usar para entrar durante todo el torneo.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if "reg_error" in st.session_state:
+            st.error(st.session_state.pop("reg_error"))
+
         col1, col2 = st.columns(2)
         volver = col1.form_submit_button("← Volver", use_container_width=True)
         enviar = col2.form_submit_button("Enviar solicitud", type="primary", use_container_width=True)
