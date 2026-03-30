@@ -1,6 +1,6 @@
 import streamlit as st
 
-def password_input_with_toggle(label, key):
+def password_input_with_toggle(label, key, placeholder=""):
     show_key = f"{key}_show"
     shown = st.session_state.get(show_key, False)
 
@@ -10,7 +10,8 @@ def password_input_with_toggle(label, key):
         value = st.text_input(
             label,
             type="default" if shown else "password",
-            key=key
+            key=key,
+            placeholder=placeholder,
         )
 
     with cols[1]:
