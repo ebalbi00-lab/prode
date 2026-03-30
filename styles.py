@@ -488,10 +488,6 @@ def inject_css():
 
 
     /* Defensive contrast fixes for light-mode browsers / mobile webviews */
-    input, textarea, select, button {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: currentColor !important;
-    }}
 
     input:-webkit-autofill,
     input:-webkit-autofill:hover,
@@ -556,5 +552,116 @@ def inject_css():
     ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
     ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
+
+    /* ---------- FIX MOBILE INPUTS / SELECTS / BUTTONS ---------- */
+
+    div[data-testid="stTextInput"],
+    div[data-testid="stNumberInput"],
+    div[data-testid="stSelectbox"],
+    div[data-testid="stMultiSelect"] {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stTextInput"] > div,
+    div[data-testid="stNumberInput"] > div,
+    div[data-testid="stSelectbox"] > div,
+    div[data-testid="stMultiSelect"] > div {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stNumberInput"] input,
+    div[data-testid="stTextArea"] textarea {
+        width: 100% !important;
+        min-width: 0 !important;
+        background: var(--input-bg) !important;
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+        border-radius: var(--radius) !important;
+        box-sizing: border-box !important;
+    }
+
+    [data-testid="stSelectbox"] [data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+        background: var(--input-bg) !important;
+        color: var(--text) !important;
+        border-radius: var(--radius) !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+    }
+
+    [data-testid="stSelectbox"] [data-baseweb="select"] span,
+    [data-testid="stSelectbox"] [data-baseweb="select"] div,
+    [data-testid="stMultiSelect"] [data-baseweb="select"] span,
+    [data-testid="stMultiSelect"] [data-baseweb="select"] div {
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }
+
+    [data-baseweb="popover"] {
+        background: transparent !important;
+    }
+
+    [data-baseweb="popover"] ul,
+    [data-baseweb="popover"] [role="listbox"] {
+        background: #0a1323 !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+    }
+
+    [data-baseweb="popover"] [role="option"] {
+        background: #0a1323 !important;
+        color: var(--text) !important;
+    }
+
+    [data-baseweb="popover"] [role="option"][aria-selected="true"] {
+        background: rgba(110,231,255,0.10) !important;
+    }
+
+    .stButton > button,
+    .stFormSubmitButton > button,
+    .stDownloadButton > button {
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+    }
+
+    [data-testid="column"] {
+        min-width: 0 !important;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill {
+        -webkit-text-fill-color: var(--text) !important;
+        -webkit-box-shadow: 0 0 0 1000px rgba(8,18,32,0.98) inset !important;
+        box-shadow: 0 0 0 1000px rgba(8,18,32,0.98) inset !important;
+        transition: background-color 9999s ease-out 0s;
+    }
+
+    /* ---------- STREAMLIT SPINNER ---------- */
+
+    div[data-testid="stSpinner"] {
+        background: rgba(10, 20, 36, 0.88) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        padding: 10px 14px !important;
+        color: var(--text) !important;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.22) !important;
+    }
+
+    div[data-testid="stSpinner"] * {
+        color: var(--text) !important;
+        -webkit-text-fill-color: var(--text) !important;
+    }
+
+    div[data-testid="stSpinner"] svg {
+        color: var(--cyan) !important;
+        stroke: currentColor !important;
+    }
+
     </style>
     """, unsafe_allow_html=True)

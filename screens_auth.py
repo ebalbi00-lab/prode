@@ -10,6 +10,7 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
+from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -75,7 +76,7 @@ def pantalla_login():
 
     with st.form("form_login"):
         usuario = st.text_input("Usuario", placeholder="tu_usuario")
-        clave = st.text_input("Clave", type="password", placeholder="••••••••")
+        clave = password_input_with_toggle("Clave", "login_clave", placeholder="••••••••")
         col1, col2 = st.columns(2)
         ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
         registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
