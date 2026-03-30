@@ -2,29 +2,13 @@ import streamlit as st
 
 def password_input_with_toggle(label, key, placeholder=""):
     show_key = f"{key}_show"
-    shown = st.session_state.get(show_key, False)
-
-    cols = st.columns([5,1])
-
-    with cols[0]:
-        value = st.text_input(
-            label,
-            type="default" if shown else "password",
-            key=key,
-            placeholder=placeholder,
-        )
-
-    with cols[1]:
-        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-        if st.button(
-            "👁️" if not shown else "🙈",
-            key=f"{key}_btn",
-            type="secondary",
-            use_container_width=True
-        ):
-            st.session_state[show_key] = not shown
-            st.rerun()
-
+    shown = st.checkbox("👁️ Mostrar", key=show_key)
+    value = st.text_input(
+        label,
+        type="default" if shown else "password",
+        key=key,
+        placeholder=placeholder,
+    )
     return value
 
 
