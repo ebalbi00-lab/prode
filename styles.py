@@ -332,6 +332,27 @@ def inject_css():
         box-shadow: 0 0 0 4px rgba(110,231,255,0.12), 0 12px 34px rgba(110,231,255,0.10) !important;
     }
 
+    /* Oculta el ojo nativo de los password inputs */
+    .stPasswordInput button,
+    [data-testid="stPasswordInput"] button,
+    [data-baseweb="base-input"] button[aria-label*="password" i],
+    [data-baseweb="base-input"] button[title*="password" i],
+    [data-baseweb="base-input"] button[aria-label*="contrase" i],
+    [data-baseweb="base-input"] button[title*="contrase" i] {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+    }
+
+    .stPasswordInput [data-baseweb="base-input"],
+    [data-testid="stPasswordInput"] [data-baseweb="base-input"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
     .stTextInput label,
     .stPasswordInput label,
     .stSelectbox label,
@@ -384,9 +405,9 @@ def inject_css():
     .stDownloadButton > button,
     .stFormSubmitButton > button {
         min-height: 46px !important;
-        background: linear-gradient(135deg, rgba(232,244,255,0.96) 0%, rgba(198,235,255,0.94) 100%) !important;
+        background: linear-gradient(135deg, rgba(232,244,255,0.98) 0%, rgba(198,235,255,0.96) 100%) !important;
         color: #06101d !important;
-        border: 1px solid rgba(110,231,255,0.35) !important;
+        border: 1.5px solid rgba(110,231,255,0.45) !important;
         border-radius: 16px !important;
         padding: .78rem 1rem !important;
         font-weight: 900 !important;
@@ -395,6 +416,24 @@ def inject_css():
         text-shadow: none !important;
         box-shadow: 0 14px 32px rgba(0,0,0,0.18) !important;
         transition: all .18s ease !important;
+    }
+
+    .stButton > button *,
+    .stDownloadButton > button *,
+    .stFormSubmitButton > button * {
+        color: inherit !important;
+        fill: currentColor !important;
+        stroke: currentColor !important;
+    }
+
+    .stButton > button p,
+    .stDownloadButton > button p,
+    .stFormSubmitButton > button p {
+        margin: 0 !important;
+        color: inherit !important;
+        font-size: 1.08rem !important;
+        font-weight: 900 !important;
+        line-height: 1.05 !important;
     }
 
     .stButton > button:hover,
@@ -412,26 +451,6 @@ def inject_css():
         color: #03111d !important;
         border: 0 !important;
         box-shadow: 0 18px 40px rgba(34,211,238,0.18), 0 12px 30px rgba(139,92,246,0.18) !important;
-    }
-
-    .stButton > button[kind="secondary"],
-    .stFormSubmitButton > button[kind="secondary"],
-    .stDownloadButton > button[kind="secondary"] {
-        background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(236,244,255,0.96) 100%) !important;
-        color: #06101d !important;
-        border: 1.5px solid rgba(6,16,29,0.22) !important;
-        box-shadow: 0 10px 24px rgba(0,0,0,0.14) !important;
-    }
-
-    .stButton > button[kind="secondary"] p,
-    .stFormSubmitButton > button[kind="secondary"] p,
-    .stDownloadButton > button[kind="secondary"] p,
-    .stButton > button p,
-    .stFormSubmitButton > button p,
-    .stDownloadButton > button p {
-        color: inherit !important;
-        font-weight: 900 !important;
-        font-size: 1rem !important;
     }
 
     button[role="tab"] {
