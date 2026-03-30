@@ -54,7 +54,7 @@ def _render_top_especiales(titulo, data, color, bg_color, border_color):
 
     if not data:
         st.markdown(
-            '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>',
+            '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Todavía no hay datos.</div>',
             unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)
@@ -118,7 +118,7 @@ def render_destacados_usuarios():
 
             if not datos:
                 st.markdown(
-                    '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Sin datos aún.</div>',
+                    '<div style="color:var(--text3); font-size:0.82rem; padding:4px 0 8px 0;">Todavía no hay datos.</div>',
                     unsafe_allow_html=True,
                 )
                 st.markdown("</div>", unsafe_allow_html=True)
@@ -292,7 +292,7 @@ def pantalla_estadisticas():
     if "stats_show_people_choices" not in st.session_state:
         st.session_state["stats_show_people_choices"] = False
 
-    btn_label = "Ocultar elecciones de la gente" if st.session_state["stats_show_people_choices"] else "Ver elecciones de la gente"
+    btn_label = "Ocultar elecciones de la gente" if st.session_state["stats_show_people_choices"] else "Mostrar elecciones de la gente"
     if st.button(btn_label, key="toggle_people_choices", use_container_width=True):
         st.session_state["stats_show_people_choices"] = not st.session_state["stats_show_people_choices"]
         st.rerun()
@@ -321,7 +321,7 @@ def pantalla_estadisticas():
         st.markdown("""
         <div style="margin:0.8rem 0 1rem 0;">
             <div style="font-family:Bebas Neue,sans-serif; font-size:1.8rem; letter-spacing:3px; color:var(--text);">
-                🗳️ ELECCIONES DE LA GENTE</div>
+                🗳️ ELECCIONES DEL PRODE</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -340,7 +340,7 @@ def pantalla_estadisticas():
 
 def pantalla_estadisticas_torneo():
     st.markdown("""<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;
-        letter-spacing:3px;color:var(--text);margin-bottom:1rem;">📊 Estadísticas del torneo</div>""",
+        letter-spacing:3px;color:var(--text);margin-bottom:1rem;">📊 Radiografía del torneo</div>""",
         unsafe_allow_html=True)
 
     stats_partidos = db_get_estadisticas_partidos()

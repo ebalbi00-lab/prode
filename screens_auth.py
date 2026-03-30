@@ -10,6 +10,7 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
+from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -17,137 +18,171 @@ def cambiar_pantalla(step):
 
 
 def login(usuario, clave):
-    # Rate limiting — máx 5 intentos fallidos por sesión
     intentos = st.session_state.get("login_intentos", 0)
     if intentos >= 5:
         st.session_state.login_error = "Demasiados intentos fallidos. Recargá la página."
         st.rerun()
+
     u = db_get_usuario(usuario.strip().lower())
-    if not u:
+    if not u or u["clave"] != hash_clave(clave):
         st.session_state["login_intentos"] = intentos + 1
         st.session_state.login_error = "Usuario o clave incorrectos"
         st.rerun()
-    elif u["clave"] != hash_clave(clave):
-        st.session_state["login_intentos"] = intentos + 1
-        st.session_state.login_error = "Usuario o clave incorrectos"
-        st.rerun()
-    else:
-        st.session_state["login_intentos"] = 0
-        st.session_state.usuario = usuario.strip().lower()
-        db_touch_usuario(st.session_state.usuario)
-        st.session_state.step = 9 if db_get_tipo_usuario(st.session_state.usuario) in ("admin", "consumo") else 5
-        st.rerun()
+
+    st.session_state["login_intentos"] = 0
+    st.session_state.usuario = usuario.strip().lower()
+    db_touch_usuario(st.session_state.usuario)
+    st.session_state.step = 9 if db_get_tipo_usuario(st.session_state.usuario) in ("admin", "consumo") else 5
+    st.rerun()
 
 
 def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde=""):
     mail_valido = re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", mail.strip())
     if not (nombre.strip() and localidad.strip() and celular.strip() and mail.strip()):
-        st.session_state.reg_error = "Completá todos los campos"
+        st.session_state.reg_error = "Completá todos los campos obligatorios"
     elif not mail_valido:
-        st.session_state.reg_error = "El mail no tiene formato válido"
+        st.session_state.reg_error = "El mail no tiene un formato válido"
     else:
         st.session_state.registro_temp = {
-            "nombre": nombre.strip(), "nacimiento": str(nacimiento),
-            "localidad": localidad.strip(), "celular": celular.strip(),
-            "mail": mail.strip(), "desde": desde
+            "nombre": nombre.strip(),
+            "nacimiento": str(nacimiento),
+            "localidad": localidad.strip(),
+            "celular": celular.strip(),
+            "mail": mail.strip(),
+            "desde": desde.strip(),
         }
         st.session_state.step = 2
 
 
-# ─── Pantallas ────────────────────────────────────────────────────────────────
-
-def pantalla_login():
-    st.markdown("""
-    <div style="text-align:center; padding: 2.5rem 0 1.5rem 0;">
-        <div style="font-size:3.2rem; margin-bottom:0.6rem; filter:drop-shadow(0 4px 16px rgba(0,200,96,0.3));">⚽</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:3.8rem; letter-spacing:5px;
-                    background:linear-gradient(135deg,#00e87a 0%,#80ffbb 60%,#00c860 100%);
-                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                    background-clip:text; line-height:1.0; margin-bottom:0.3rem;">PRODE IL BAIGO</div>
-        <div style="display:inline-block; background:linear-gradient(135deg,rgba(255,210,76,0.18),rgba(255,190,32,0.12)); border:1px solid rgba(228,175,33,0.35);
-                    border-radius:20px; padding:3px 16px; font-size:0.75rem; color:#d49a00;
-                    font-weight:800; letter-spacing:3px; text-transform:uppercase; box-shadow:0 4px 14px rgba(212,154,0,0.10);">⚽ MUNDIAL 2026</div>
+def _hero(title: str, eyebrow: str, subtitle: str, icon: str = "⚽"):
+    st.markdown(f"""
+    <div class="hero-shell hero-shell--center">
+        <div class="hero-orb">{icon}</div>
+        <div class="hero-eyebrow">{eyebrow}</div>
+        <div class="hero-title">{title}</div>
+        <div class="hero-subtitle">{subtitle}</div>
     </div>
     """, unsafe_allow_html=True)
+
+
+def _step_header(step: str, title: str, subtitle: str):
+    st.markdown(f"""
+    <div class="section-header-card">
+        <div class="hero-eyebrow">{step}</div>
+        <div class="section-title">{title}</div>
+        <div class="section-subtitle">{subtitle}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def pantalla_login():
+    _hero(
+        "Prode Il Baigo",
+        "Mundial 2026 · pronosticá, competí y subí en el ranking",
+        "Entrá con tu cuenta o registrate para dejar tus pronósticos listos antes del arranque.",
+        "⚽",
+    )
+
+    top_a, top_b, top_c = st.columns(3)
+    with top_a:
+        st.markdown('<div class="mini-stat-card"><span>🏟️</span><strong>Prode en vivo</strong><small>Cargá y confirmá por fase</small></div>', unsafe_allow_html=True)
+    with top_b:
+        st.markdown('<div class="mini-stat-card"><span>🏆</span><strong>Ranking automático</strong><small>Puntos, exactos y especiales</small></div>', unsafe_allow_html=True)
+    with top_c:
+        st.markdown('<div class="mini-stat-card"><span>✨</span><strong>Experiencia rápida</strong><small>Hecha para usar desde el celu</small></div>', unsafe_allow_html=True)
 
     if "login_error" in st.session_state:
         st.error(st.session_state.pop("login_error"))
 
+    st.markdown('<div class="section-title" style="font-size:1.35rem;margin-top:1.1rem;">Ingresar</div>', unsafe_allow_html=True)
     with st.form("form_login"):
-        usuario = st.text_input("Usuario", placeholder="tu_usuario")
-        clave = st.text_input("Clave", type="password", placeholder="••••••••")
-        col1, col2 = st.columns(2)
-        ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
-        registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
+        usuario = st.text_input("Usuario", placeholder="Ej: enzo, juan123, mati.prode")
+        clave = st.text_input("Clave", type="password", placeholder="Tu contraseña")
+        c1, c2 = st.columns(2)
+        ingresar = c1.form_submit_button("Entrar ahora", type="primary", use_container_width=True)
+        registrarse = c2.form_submit_button("Crear cuenta", use_container_width=True)
 
     if ingresar:
-        with st.spinner("Ingresando..."):
+        with st.spinner("Validando acceso..."):
             login(usuario, clave)
     if registrarse:
         cambiar_pantalla(1)
         st.rerun()
 
-    st.divider()
-    st.button("ℹ️ Acerca del prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
-    st.markdown("""
-    <div style="text-align:center; margin-top:0.8rem;">
-        <a href="https://www.instagram.com/il_baigo" target="_blank"
-           style="display:inline-flex; align-items:center; gap:7px; text-decoration:none;
-                  background:var(--surface); border:1.5px solid var(--border2);
-                  border-radius:20px; padding:6px 16px; transition:all 0.16s ease;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                <rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
-                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" style="color:var(--text2);"/>
-                <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" style="color:var(--text2);"/>
-            </svg>
-            <span style="color:var(--text2); font-size:0.82rem; font-weight:600; letter-spacing:0.3px;">
-                Seguinos <strong style="color:var(--text);">@il_baigo</strong></span>
-        </a>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="glass-note" style="margin-top:1rem;">
+            <div class="glass-note__title">Qué te vas a encontrar adentro</div>
+            <div class="glass-note__text">Pronósticos por fase, ranking general, estadísticas del torneo y especiales para sumar puntos extra.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cta1, cta2 = st.columns([1.1, 1])
+    with cta1:
+        st.button("ℹ️ Cómo funciona el prode", on_click=cambiar_pantalla, args=(10,), use_container_width=True)
+    with cta2:
+        st.markdown(
+            """
+            <a href="https://www.instagram.com/il_baigo" target="_blank" class="social-cta">
+                <span>📷</span>
+                <span>Seguinos en Instagram</span>
+            </a>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def pantalla_registro_datos():
-    st.markdown("""
-    <div style="padding:0.5rem 0 1rem 0;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.3rem;">Paso 1 de 2</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:2.2rem; letter-spacing:3px; color:var(--text);">
-            Datos personales</div>
-    </div>
-    """, unsafe_allow_html=True)
+    _step_header(
+        "Paso 1 de 2",
+        "Tus datos",
+        "Completá la base del registro. Lo justo y necesario para validar la inscripción.",
+    )
 
     if not db_registro_abierto():
-        st.error("⛔ El registro está cerrado. No se aceptan nuevas inscripciones.")
-        st.button("Volver", on_click=cambiar_pantalla, args=(0,))
+        st.error("El registro está cerrado. No se están tomando nuevas inscripciones.")
+        st.button("← Volver al inicio", on_click=cambiar_pantalla, args=(0,), use_container_width=True)
         return
 
-    meses_es = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    meses_es = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ]
 
     with st.form("form_registro_datos"):
-        nombre  = st.text_input("Nombre y apellido")
-        st.markdown("**Fecha de nacimiento**")
-        año_sel = st.selectbox("Año de nacimiento", options=list(range(1930, datetime.date.today().year + 1))[::-1])
-        mes_sel = st.selectbox("Mes de nacimiento", options=list(range(1, 13)), format_func=lambda x: meses_es[x - 1])
-        dia_sel = st.selectbox("Día de nacimiento", options=list(range(1, 32)))
-        localidad = st.text_input("Localidad")
-        celular   = st.text_input("Celular")
-        mail      = st.text_input("Mail")
-        desde     = st.text_input("¿Desde dónde te estás inscribiendo? Nombrá comercio, institución o redes")
+        nombre = st.text_input("Nombre y apellido", placeholder="Como figura en tu pago")
+        st.markdown('<div class="field-subtitle">Fecha de nacimiento</div>', unsafe_allow_html=True)
+        c_fecha1, c_fecha2, c_fecha3 = st.columns(3)
+        with c_fecha1:
+            año_sel = st.selectbox("Año", options=list(range(1930, datetime.date.today().year + 1))[::-1])
+        with c_fecha2:
+            mes_sel = st.selectbox("Mes", options=list(range(1, 13)), format_func=lambda x: meses_es[x - 1])
+        with c_fecha3:
+            dia_sel = st.selectbox("Día", options=list(range(1, 32)))
+
+        localidad = st.text_input("Localidad", placeholder="Ciudad o barrio")
+        celular = st.text_input("Celular", placeholder="11 1234 5678")
+        mail = st.text_input("Mail", placeholder="nombre@mail.com")
+        desde = st.text_input("¿Cómo llegaste al prode?", placeholder="Local, redes, amigos, evento, etc.")
+
         if "reg_error" in st.session_state:
             st.error(st.session_state.pop("reg_error"))
+
         col1, col2 = st.columns(2)
-        volver    = col1.form_submit_button("Volver")
-        continuar = col2.form_submit_button("Continuar", type="primary")
+        volver = col1.form_submit_button("← Volver", use_container_width=True)
+        continuar = col2.form_submit_button("Seguir con la cuenta", type="primary", use_container_width=True)
 
     if volver:
-        cambiar_pantalla(0); st.rerun()
+        cambiar_pantalla(0)
+        st.rerun()
+
     if continuar:
         try:
             nacimiento = datetime.date(año_sel, mes_sel, dia_sel)
         except ValueError:
-            st.session_state.reg_error = "Fecha inválida. Revisá el día seleccionado."
+            st.session_state.reg_error = "La fecha no es válida. Revisá día, mes y año."
             st.rerun()
         avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde)
         st.rerun()
@@ -160,63 +195,63 @@ def pantalla_registro_cuenta():
     cvu_pago = pago.get("cvu", "0000003100000000000000")
     instrucciones_pago = pago.get("instrucciones", "")
 
-    st.markdown("""
-    <div style="padding:0.5rem 0 1rem 0;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.3rem;">Paso 2 de 2</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:2.2rem; letter-spacing:3px; color:var(--text);">
-            Cuenta y pago</div>
+    _step_header(
+        "Paso 2 de 2",
+        "Cuenta y pago",
+        "Elegí tus credenciales, hacé el pago y subí el comprobante para que revisen tu ingreso.",
+    )
+
+    st.markdown(f"""
+    <div class="payment-card">
+        <div class="payment-card__title">💳 Datos para transferir</div>
+        <div class="payment-grid">
+            <div><span>Titular</span><strong>{titular_pago or '—'}</strong></div>
+            <div><span>Alias</span><strong>{alias_pago or '—'}</strong></div>
+        </div>
+        <div class="payment-cvu-label">CVU · tocá para copiar</div>
+        <input type="text" value="{cvu_pago or ''}" readonly onclick="this.select();" ontouchstart="this.select();"
+            style="width:100%;background:rgba(4,17,31,0.88);border:1px solid var(--gold-border);border-radius:14px;color:var(--text);font-family:JetBrains Mono,monospace;font-size:0.95rem;font-weight:800;padding:0.9rem 1rem;box-sizing:border-box;" />
+        {f'<div class="payment-help">{instrucciones_pago}</div>' if instrucciones_pago else ''}
     </div>
     """, unsafe_allow_html=True)
 
     with st.form("form_registro_cuenta"):
-        usuario   = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
-        clave     = st.text_input("Clave (mínimo 4 caracteres)", type="password")
-        confirmar = st.text_input("Confirmar clave", type="password")
-        st.markdown(f"""
-        <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
-                    border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
-            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
-                        color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
-                <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular_pago or "—"}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
-                <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias_pago or "—"}</span>
-            </div>
-            <div style="margin-bottom:2px;">
-                <span style="color:var(--text2); font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:1px;">CVU — tocá para copiar</span>
-            </div>
-            <input type="text" value="{cvu_pago or ""}" readonly onclick="this.select();" ontouchstart="this.select();"
-                style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
-                       color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
-                       padding:8px 12px; cursor:pointer; outline:none; box-sizing:border-box;
-                       -webkit-user-select:all; user-select:all;" />
-            {"<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>" + instrucciones_pago + "</div>" if instrucciones_pago else ""}
-        </div>
-        """, unsafe_allow_html=True)
+        usuario = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
+        clave = password_input_with_toggle("Clave", "registro_clave", placeholder="Mínimo 4 caracteres")
+        confirmar = password_input_with_toggle("Confirmar clave", "registro_confirmar", placeholder="Repetí la clave")
         comprobante = st.file_uploader("Comprobante de pago")
+
+        st.markdown(
+            """
+            <div class="glass-note" style="margin-top:0.45rem;">
+                <div class="glass-note__title">Antes de enviar</div>
+                <div class="glass-note__text">Revisá que el usuario quede bien escrito. Es el que vas a usar para entrar durante todo el torneo.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
         if "reg_error" in st.session_state:
             st.error(st.session_state.pop("reg_error"))
+
         col1, col2 = st.columns(2)
-        volver = col1.form_submit_button("← Volver")
-        enviar = col2.form_submit_button("Enviar solicitud", type="primary")
+        volver = col1.form_submit_button("← Volver", use_container_width=True)
+        enviar = col2.form_submit_button("Enviar solicitud", type="primary", use_container_width=True)
 
     if volver:
-        cambiar_pantalla(1); st.rerun()
+        cambiar_pantalla(1)
+        st.rerun()
 
     if enviar:
         u_strip = usuario.strip().lower()
         if not u_strip:
-            st.session_state.reg_error = "Ingresá un nombre de usuario"
+            st.session_state.reg_error = "Ingresá un usuario"
         elif not re.match(r'^[a-zA-Z0-9._-]+$', u_strip):
-            st.session_state.reg_error = "El usuario solo puede tener letras, números, puntos, guiones o guiones bajos"
+            st.session_state.reg_error = "El usuario solo puede llevar letras, números, puntos, guiones o guiones bajos"
         elif len(u_strip) < 3:
             st.session_state.reg_error = "El usuario debe tener al menos 3 caracteres"
         elif db_get_usuario(u_strip):
-            st.session_state.reg_error = "Usuario ya existe"
+            st.session_state.reg_error = "Ese usuario ya existe"
         elif any(p["username"] == u_strip for p in db_get_pendientes()):
             st.session_state.reg_error = "Ya hay una solicitud pendiente con ese usuario"
         elif len(clave) < 4:
@@ -231,9 +266,10 @@ def pantalla_registro_cuenta():
             comprobante_data = f"data:{comprobante.type};base64,{comprobante_b64}"
             with st.spinner("Enviando solicitud..."):
                 db_agregar_pendiente({
-                    "username": u_strip, "clave": hash_clave(clave),
+                    "username": u_strip,
+                    "clave": hash_clave(clave),
                     "comprobante": comprobante_data,
-                    **st.session_state.registro_temp
+                    **st.session_state.registro_temp,
                 })
             st.session_state.step = 4
             st.rerun()
@@ -241,16 +277,12 @@ def pantalla_registro_cuenta():
 
 def pantalla_en_revision():
     st.markdown("""
-    <div style="text-align:center; padding:3.5rem 1rem 2rem 1rem;">
-        <div style="width:72px; height:72px; margin:0 auto 1.2rem auto;
-                    background:var(--gold-dim); border:2px solid rgba(255,200,64,0.3);
-                    border-radius:50%; display:flex; align-items:center; justify-content:center;
-                    font-size:2.2rem;">⏳</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:2.3rem; letter-spacing:3px; color:var(--gold); margin-bottom:0.8rem;">
-            INSCRIPCIÓN EN REVISIÓN</div>
-        <div style="color:var(--text2); font-size:0.95rem; line-height:1.8; max-width:380px; margin:0 auto;">
-            Tu solicitud está siendo revisada por el administrador.<br>
-            <span style="color:var(--text); font-weight:600;">Te avisamos cuando sea aprobada.</span>
+    <div class="review-shell">
+        <div class="review-shell__icon">⏳</div>
+        <div class="hero-title" style="font-size:2.35rem;">Solicitud recibida</div>
+        <div class="hero-subtitle" style="max-width:460px;">
+            Ya quedó cargada. Ahora la revisa el administrador junto con el comprobante de pago.
+            Apenas esté aprobada, vas a poder entrar con tu usuario y empezar a jugar.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -258,113 +290,115 @@ def pantalla_en_revision():
 
 
 def pantalla_acerca():
-    st.markdown("""
-    <div style="padding:0.5rem 0 1.2rem 0;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                    color:var(--text3); margin-bottom:0.3rem;">Guía del participante</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:2.8rem; letter-spacing:3px;
-                    color:var(--text); line-height:1.05;">ℹ️ PRODE IL BAIGO</div>
-        <div style="font-family:Bebas Neue,sans-serif; font-size:1.3rem; letter-spacing:2px;
-                    color:var(--text3);">MUNDIAL 2026</div>
-    </div>
-    """, unsafe_allow_html=True)
+    _step_header(
+        "Guía rápida",
+        "Cómo funciona el prode",
+        "Todo lo importante para entender reglas, puntaje y dinámica sin perder tiempo.",
+    )
 
-    st.markdown("""
-    <div style="background:var(--green-dim); border:1.5px solid var(--green-glow);
-                border-radius:12px; padding:14px 18px; margin-bottom:1rem;">
-        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
-                    color:var(--green); margin-bottom:6px;">⚽ ¿Cómo funciona?</div>
-        <div style="color:var(--text2); font-size:0.92rem; line-height:1.75;">
-            Pronosticás el resultado de cada partido antes de que el admin cierre la fase.<br>
-            Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
+    st.markdown(
+        """
+        <div class="glass-note glass-note--success">
+            <div class="glass-note__title">⚽ Dinámica</div>
+            <div class="glass-note__text">Cargás tus resultados antes del cierre de cada fase. La app guarda mientras avanzás y al final confirmás con tu clave.</div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
-    st.divider()
-    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🏆 Sistema de puntos</div>""", unsafe_allow_html=True)
-    st.markdown("Los puntos **aumentan por fase**. Cuanto más avanzada la etapa, más valen los aciertos.")
+    st.markdown('<div class="section-title" style="font-size:1.2rem;">Sistema de puntos</div>', unsafe_allow_html=True)
+    st.markdown("Cuanto más avanzada la fase, más valen los aciertos. Acertar el marcador exacto siempre paga bastante más.")
 
-    fases_pts  = FASES
-    res_pts    = [1, 2, 3, 4, 5, 6]
+    res_pts = [1, 2, 3, 4, 5, 6]
     exacto_pts = [3, 6, 9, 12, 15, 18]
-    filas_pts  = ""
-    for i, fase in enumerate(fases_pts):
+    filas_pts = ""
+    for i, fase in enumerate(FASES):
         bg = "var(--surface)" if i % 2 == 0 else "transparent"
-        filas_pts += (f'<tr style="background:{bg};">'
-                      f'<td style="padding:10px 14px; color:var(--text); font-weight:600; font-size:0.92rem;">{fase}</td>'
-                      f'<td style="padding:10px 14px; color:var(--blue); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{res_pts[i]}</td>'
-                      f'<td style="padding:10px 14px; color:var(--green); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{exacto_pts[i]}</td></tr>')
-    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--border, unsafe_allow_html=True);margin-bottom:0.8rem;">
-        <table style="width:100%; border-collapse:collapse; background:var(--table-bg);">
-        <thead><tr style="background:var(--table-head); border-bottom:1px solid var(--border);">
-            <th style="padding:10px 14px; color:var(--text3); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:left;">Fase</th>
-            <th style="padding:10px 14px; color:var(--blue); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">✅ Resultado</th>
-            <th style="padding:10px 14px; color:var(--green); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">🎯 Exacto</th>
-        </tr></thead><tbody>{filas_pts}</tbody></table></div>""", unsafe_allow_html=True)
-    st.caption("**Resultado** = acertás quién gana o si es empate. &nbsp;&nbsp;**Exacto** = acertás el marcador exacto (ambos goles).")
+        filas_pts += (
+            f'<tr style="background:{bg};">'
+            f'<td style="padding:12px 14px;color:var(--text);font-weight:700;font-size:0.94rem;">{fase}</td>'
+            f'<td style="padding:12px 14px;color:var(--blue);font-weight:900;text-align:center;font-family:JetBrains Mono,monospace;">{res_pts[i]}</td>'
+            f'<td style="padding:12px 14px;color:var(--green);font-weight:900;text-align:center;font-family:JetBrains Mono,monospace;">{exacto_pts[i]}</td>'
+            '</tr>'
+        )
 
-    st.divider()
-    col_info1, col_info2 = st.columns(2)
-    with col_info1:
-        st.markdown("""<div style="background:var(--orange-dim); border:1.5px solid var(--orange-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
-            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:6px;">💰 Puntos de consumo</div>
-            <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">El admin puede sumar puntos por consumo en el local o presencia en los partidos.</div>
-        </div>""", unsafe_allow_html=True)
-    with col_info2:
-        st.markdown("""<div style="background:var(--blue-dim); border:1.5px solid var(--blue-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
-            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--blue); margin-bottom:6px;">📊 Ranking</div>
-            <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">Se actualiza automáticamente. Total = resultados + goles + consumo + especiales.</div>
-        </div>""", unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="table-shell" style="margin-bottom:0.6rem;">
+            <table style="width:100%;border-collapse:collapse;background:var(--table-bg);">
+                <thead>
+                    <tr style="background:var(--table-head);border-bottom:1px solid var(--border);">
+                        <th style="padding:12px 14px;color:var(--text3);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:left;">Fase</th>
+                        <th style="padding:12px 14px;color:var(--blue);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">✅ Resultado</th>
+                        <th style="padding:12px 14px;color:var(--green);font-size:0.68rem;text-transform:uppercase;letter-spacing:1.5px;text-align:center;">🎯 Exacto</th>
+                    </tr>
+                </thead>
+                <tbody>{filas_pts}</tbody>
+            </table>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.caption("Resultado = acertás ganador o empate. Exacto = clavás el marcador completo.")
 
-    st.divider()
-    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">⭐ Pronósticos especiales</div>""", unsafe_allow_html=True)
-    st.markdown("Además de los partidos, podés ganar puntos extra acertando estos pronósticos especiales:")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(
+            """
+            <div class="info-card info-card--warm">
+                <div class="info-card__title">🍻 Puntos extra</div>
+                <div class="info-card__text">El admin puede sumar puntos por consumo, presencia en eventos o dinámicas especiales del torneo.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with c2:
+        st.markdown(
+            """
+            <div class="info-card info-card--cool">
+                <div class="info-card__title">📊 Ranking en tiempo real</div>
+                <div class="info-card__text">El total se arma con resultados, exactos, consumo y especiales. Siempre ves tu posición actualizada.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown('<div class="section-title" style="font-size:1.2rem;margin-top:1rem;">Pronósticos especiales</div>', unsafe_allow_html=True)
+    st.markdown("Además de los partidos, hay elecciones extra para rascar puntos importantes al cierre del torneo.")
+
     especiales_filas = [
         ("🏆", "Campeón del mundo", "20 pts"),
-        ("👟", "Goleador del torneo", "10 pts"),
+        ("⚽", "Goleador del torneo", "10 pts"),
         ("🧤", "Mejor arquero", "8 pts"),
-        ("🌟", "Mejor jugador", "8 pts"),
+        ("⭐", "Mejor jugador", "8 pts"),
     ]
     cards_esp = ""
     for icono, label, pts in especiales_filas:
         cards_esp += f"""
-        <div style="display:flex; justify-content:space-between; align-items:center;
-                    background:var(--surface); border:1px solid var(--border);
-                    border-radius:10px; padding:10px 16px; margin-bottom:6px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:1.2rem;">{icono}</span>
-                <span style="color:var(--text); font-weight:600; font-size:0.92rem;">{label}</span>
-            </div>
-            <span style="color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.2rem; letter-spacing:1px;">+{pts}</span>
-        </div>"""
-    st.markdown(f'<div style="margin-bottom:0.5rem;">{cards_esp}</div>', unsafe_allow_html=True)
-
-    st.divider()
-    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
-                color:var(--text3); margin-bottom:0.7rem;">🎁 Premios</div>""", unsafe_allow_html=True)
-    st.markdown("""
-    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
-                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
-        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🏆 Premios para el ranking y sorpresas durante el torneo</div>
-        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
-            Los premios principales serán para los <strong style="color:var(--text);">primeros puestos del ranking general</strong> al finalizar la competencia.<br><br>
-            Además, durante el transcurso del torneo va a haber <strong style="color:var(--gold);">premios sorpresa</strong> en distintos momentos de la competencia.
+        <div class="special-pill-row">
+            <div class="special-pill-row__left"><span>{icono}</span><strong>{label}</strong></div>
+            <div class="special-pill-row__right">+{pts}</div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """
+    st.markdown(cards_esp, unsafe_allow_html=True)
 
-    st.divider()
-    with st.expander("¿Puedo modificar mi pronóstico después de confirmarlo?"):
-        st.write("No. Una vez que confirmás con tu contraseña, el pronóstico queda bloqueado definitivamente.")
-    with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
-        st.write("No sumás puntos para esa fase.")
-    with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
-        st.write("El admin controla manualmente cuándo se cierra cada fase.")
-    with st.expander("¿Olvidé mi contraseña, qué hago?"):
-        st.write("Contactá al administrador por fuera de la app para que te resetee la contraseña.")
+    st.markdown(
+        """
+        <div class="glass-note glass-note--gold" style="margin-top:1rem;">
+            <div class="glass-note__title">🎁 Premios</div>
+            <div class="glass-note__text">Habrá premios para los primeros puestos del ranking general y también acciones sorpresa durante el torneo.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    st.divider()
+    with st.expander("¿Puedo cambiar un pronóstico después de confirmarlo?"):
+        st.write("No. Una vez confirmado con tu clave, queda bloqueado.")
+    with st.expander("¿Qué pasa si no cargo una fase?"):
+        st.write("Esa fase queda en cero. No suma puntos.")
+    with st.expander("¿Hasta cuándo puedo cargar pronósticos?"):
+        st.write("Hasta que el administrador cierre manualmente la fase.")
+    with st.expander("¿Qué hago si olvidé mi contraseña?"):
+        st.write("Contactá al administrador para que la reinicie.")
+
     st.button("← Volver", on_click=cambiar_pantalla, args=(0,), use_container_width=True)

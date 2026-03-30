@@ -5,31 +5,31 @@ import streamlit as st
 
 PREMIUM_THEME = dict(
     scheme="dark",
-    bg_html="#07111f",
+    bg_html="#06101d",
     bg="#07111f",
     bg2="#0b1729",
-    bg3="#0f1d33",
+    bg3="#10203a",
     surface="rgba(12, 22, 40, 0.78)",
     surface_elevated="rgba(16, 28, 50, 0.92)",
     surface_soft="rgba(120, 140, 180, 0.08)",
     surface2="rgba(120, 140, 180, 0.12)",
-    text="#f4f7fb",
-    text2="#c6d3e6",
-    text3="#8da2c0",
+    text="#f5f8fc",
+    text2="#cfdbeb",
+    text3="#8ea4c4",
     border="rgba(143, 170, 214, 0.18)",
     border2="rgba(143, 170, 214, 0.28)",
     hover_border="rgba(110, 231, 255, 0.42)",
-    shadow="rgba(2, 8, 20, 0.42)",
+    shadow="rgba(2, 8, 20, 0.44)",
     input_bg="rgba(9, 18, 33, 0.96)",
     input_text="#f4f7fb",
     table_bg="rgba(9, 18, 33, 0.94)",
     table_head="rgba(110, 231, 255, 0.10)",
     table_row="rgba(255, 255, 255, 0.02)",
-    accent="#6ee7ff",
+    accent="#78ecff",
     accent_2="#8b5cf6",
     accent_3="#22c55e",
     gold="#f5c76b",
-    gold2="#ffd891",
+    gold2="#ffe1a8",
     gold_dim="rgba(245, 199, 107, 0.12)",
     gold_glow="rgba(245, 199, 107, 0.22)",
     gold_border="rgba(245, 199, 107, 0.32)",
@@ -58,7 +58,7 @@ PREMIUM_THEME = dict(
 
 
 def get_tema() -> str:
-    return "premium-dark"
+    return "premium-launch"
 
 
 def render_tema_boton():
@@ -67,152 +67,231 @@ def render_tema_boton():
 
 def inject_css():
     v = PREMIUM_THEME
-    st.markdown(f"""
+    css = """
     <style>
-    :root {{
-        color-scheme: {v['scheme']};
-        --bg: {v['bg']};
-        --bg2: {v['bg2']};
-        --bg3: {v['bg3']};
-        --surface: {v['surface']};
-        --surface-elevated: {v['surface_elevated']};
-        --surface-soft: {v['surface_soft']};
-        --surface2: {v['surface2']};
-        --text: {v['text']};
-        --text2: {v['text2']};
-        --text3: {v['text3']};
-        --border: {v['border']};
-        --border2: {v['border2']};
-        --hover-border: {v['hover_border']};
-        --shadow-clr: {v['shadow']};
-        --input-bg: {v['input_bg']};
-        --input-text: {v['input_text']};
-        --table-bg: {v['table_bg']};
-        --table-head: {v['table_head']};
-        --table-row: {v['table_row']};
-        --accent: {v['accent']};
-        --accent-2: {v['accent_2']};
-        --accent-3: {v['accent_3']};
-        --gold: {v['gold']};
-        --gold2: {v['gold2']};
-        --gold-dim: {v['gold_dim']};
-        --gold-glow: {v['gold_glow']};
-        --gold-border: {v['gold_border']};
-        --blue: {v['blue']};
-        --blue2: {v['blue2']};
-        --blue-dim: {v['blue_dim']};
-        --blue-border: {v['blue_border']};
-        --cyan: {v['cyan']};
-        --cyan-dim: {v['cyan_dim']};
-        --cyan-border: {v['cyan_border']};
-        --red: {v['red']};
-        --red-dim: {v['red_dim']};
-        --red-border: {v['red_border']};
-        --orange: {v['orange']};
-        --orange-dim: {v['orange_dim']};
-        --orange-border: {v['orange_border']};
-        --green: {v['green']};
-        --green2: {v['green2']};
-        --green-dim: {v['green_dim']};
-        --green-border: {v['green_border']};
-        --green-glow: {v['green_glow']};
-        --success: {v['success']};
-        --warning: {v['warning']};
-        --danger: {v['danger']};
-        --radius: 18px;
-        --radius-sm: 14px;
-        --radius-lg: 26px;
-    }}
+    :root {
+        color-scheme: __scheme__;
+        --bg: __bg__;
+        --bg2: __bg2__;
+        --bg3: __bg3__;
+        --surface: __surface__;
+        --surface-elevated: __surface_elevated__;
+        --surface-soft: __surface_soft__;
+        --surface2: __surface2__;
+        --text: __text__;
+        --text2: __text2__;
+        --text3: __text3__;
+        --border: __border__;
+        --border2: __border2__;
+        --hover-border: __hover_border__;
+        --shadow-clr: __shadow__;
+        --input-bg: __input_bg__;
+        --input-text: __input_text__;
+        --table-bg: __table_bg__;
+        --table-head: __table_head__;
+        --table-row: __table_row__;
+        --accent: __accent__;
+        --accent-2: __accent_2__;
+        --accent-3: __accent_3__;
+        --gold: __gold__;
+        --gold2: __gold2__;
+        --gold-dim: __gold_dim__;
+        --gold-glow: __gold_glow__;
+        --gold-border: __gold_border__;
+        --blue: __blue__;
+        --blue2: __blue2__;
+        --blue-dim: __blue_dim__;
+        --blue-border: __blue_border__;
+        --cyan: __cyan__;
+        --cyan-dim: __cyan_dim__;
+        --cyan-border: __cyan_border__;
+        --red: __red__;
+        --red-dim: __red_dim__;
+        --red-border: __red_border__;
+        --orange: __orange__;
+        --orange-dim: __orange_dim__;
+        --orange-border: __orange_border__;
+        --green: __green__;
+        --green2: __green2__;
+        --green-dim: __green_dim__;
+        --green-border: __green_border__;
+        --green-glow: __green_glow__;
+        --success: __success__;
+        --warning: __warning__;
+        --danger: __danger__;
+        --radius: 22px;
+        --radius-sm: 16px;
+        --radius-lg: 30px;
+        --maxw: 1120px;
+    }
 
-    html, body, [class*="css"] {{
-        font-family: 'Inter', sans-serif !important;
-    }}
+    html, body, [class*="css"] {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    }
 
-    html, body {{
-        background: {v['bg_html']} !important;
+    html, body {
+        background: __bg_html__ !important;
         color: var(--text) !important;
-    }}
+    }
 
-    body {{
+    body {
         background:
-            radial-gradient(circle at 0% 0%, rgba(110,231,255,0.18), transparent 28%),
-            radial-gradient(circle at 100% 0%, rgba(139,92,246,0.20), transparent 24%),
-            radial-gradient(circle at 50% 100%, rgba(52,211,153,0.10), transparent 26%),
-            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text);
-    }}
+            radial-gradient(circle at 0% 0%, rgba(110,231,255,0.18), transparent 26%),
+            radial-gradient(circle at 100% 0%, rgba(139,92,246,0.18), transparent 22%),
+            radial-gradient(circle at 50% 100%, rgba(52,211,153,0.08), transparent 30%),
+            linear-gradient(180deg, #07111f 0%, #081320 36%, #0a1522 100%) !important;
+    }
 
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {{
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {
         background:
-            radial-gradient(circle at top left, rgba(110,231,255,0.16), transparent 24%),
-            radial-gradient(circle at top right, rgba(139,92,246,0.18), transparent 22%),
-            radial-gradient(circle at bottom center, rgba(52,211,153,0.08), transparent 26%),
-            linear-gradient(180deg, #07111f 0%, #091626 42%, #0b1320 100%) !important;
+            radial-gradient(circle at top left, rgba(110,231,255,0.14), transparent 23%),
+            radial-gradient(circle at top right, rgba(139,92,246,0.16), transparent 22%),
+            radial-gradient(circle at bottom center, rgba(52,211,153,0.08), transparent 28%),
+            linear-gradient(180deg, #06101d 0%, #091524 44%, #0a1320 100%) !important;
         color: var(--text) !important;
-    }}
+    }
 
-    [data-testid="stHeader"], header, #MainMenu, footer {{
+    [data-testid="stHeader"], header, #MainMenu, footer {
         visibility: hidden !important;
         height: 0 !important;
-    }}
+    }
 
-    html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
-    [data-testid="stAppViewBlockContainer"], section.main, section[data-testid="stSidebar"] {{
-        color: var(--text) !important;
-        background-color: var(--bg) !important;
-    }}
+    [data-testid="stAppViewContainer"]::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.02), transparent 14%),
+            radial-gradient(circle at 20% 18%, rgba(255,255,255,0.045), transparent 0.8%),
+            radial-gradient(circle at 72% 12%, rgba(255,255,255,0.04), transparent 0.7%),
+            radial-gradient(circle at 30% 64%, rgba(255,255,255,0.035), transparent 0.9%),
+            radial-gradient(circle at 86% 74%, rgba(255,255,255,0.04), transparent 0.8%);
+        opacity: .75;
+        z-index: 0;
+    }
 
-    [data-testid="stAppViewContainer"] * ,
-    .stApp * ,
-    section[data-testid="stSidebar"] * {{
-        color: inherit;
-    }}
-
-    .block-container {{
-        max-width: 1080px !important;
-        padding-top: 1.5rem !important;
+    .block-container {
+        max-width: var(--maxw) !important;
+        padding-top: 1.45rem !important;
         padding-bottom: 3rem !important;
-    }}
+    }
 
-    h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small {{
-        color: inherit;
-    }}
+    h1, h2, h3, h4, h5, h6, p, li, label, span, div, strong, small, code { color: inherit; }
+    a { color: var(--accent) !important; text-decoration: none !important; }
+    hr { border-color: rgba(143,170,214,0.16) !important; }
 
-    [data-testid="stMarkdownContainer"],
-    [data-testid="stMarkdownContainer"] p,
-    [data-testid="stMarkdownContainer"] li,
-    [data-testid="stText"],
-    .stCaption,
-    code {{
-        color: var(--text) !important;
-    }}
-
-    a {{
-        color: var(--accent) !important;
-        text-decoration: none !important;
-    }}
-
-    hr {{
-        border-color: rgba(143,170,214,0.14) !important;
-    }}
-
-    /* Containers */
-    [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlockBorderWrapper"] > div,
-    div[data-testid="stExpander"],
     .stForm,
-    div[data-testid="stMetric"] {{
+    div[data-testid="stMetric"],
+    div[data-testid="stExpander"],
+    details,
+    .table-shell,
+    .section-header-card,
+    .hero-shell,
+    .glass-note,
+    .mini-stat-card,
+    .payment-card,
+    .review-shell,
+    .info-card {
+        position: relative;
+        overflow: hidden;
         border-radius: var(--radius) !important;
-    }}
-
-    .stForm {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.90) 0%, rgba(10,20,36,0.92) 100%) !important;
         border: 1px solid var(--border) !important;
-        box-shadow: 0 16px 40px var(--shadow-clr) !important;
-        padding: 1rem 1rem 0.7rem 1rem !important;
-    }}
+        background: linear-gradient(180deg, rgba(14,26,46,0.92) 0%, rgba(9,19,35,0.94) 100%) !important;
+        box-shadow: 0 22px 54px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.03);
+        backdrop-filter: blur(14px);
+    }
 
-    /* Inputs */
+    .stForm::before,
+    .section-header-card::before,
+    .hero-shell::before,
+    .glass-note::before,
+    .mini-stat-card::before,
+    .payment-card::before,
+    .review-shell::before,
+    .info-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(135deg, rgba(110,231,255,0.08), transparent 40%, rgba(139,92,246,0.08));
+        opacity: .9;
+    }
+
+    .stForm { padding: 1.1rem 1rem 0.9rem 1rem !important; margin-top: .25rem; }
+    .hero-shell { padding: 1.35rem 1.35rem 1.25rem 1.35rem; margin-bottom: 1rem; }
+    .hero-shell--center { text-align: center; }
+
+    .hero-orb {
+        width: 84px; height: 84px; margin: 0 auto 0.9rem auto; border-radius: 24px; display: flex; align-items: center; justify-content: center;
+        font-size: 2.35rem; background: linear-gradient(135deg, rgba(34,211,238,0.18), rgba(139,92,246,0.18));
+        border: 1px solid rgba(110,231,255,0.24); box-shadow: 0 18px 34px rgba(34,211,238,0.10), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .hero-eyebrow { color: var(--text3); font-size: .74rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: .35rem; }
+    .hero-title, .section-title {
+        font-family: "Bebas Neue", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif !important;
+        letter-spacing: 2px; line-height: 1; color: var(--text);
+    }
+
+    .hero-title {
+        font-size: clamp(2.6rem, 6vw, 4.4rem); margin-bottom: .35rem;
+        background: linear-gradient(135deg, var(--text) 0%, var(--blue) 46%, var(--gold2) 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .hero-subtitle, .section-subtitle { color: var(--text2); font-size: .95rem; line-height: 1.65; max-width: 720px; margin: 0 auto; }
+    .section-header-card { padding: 1rem 1.1rem; margin-bottom: 1rem; }
+    .section-title { font-size: 2rem; margin-bottom: .2rem; }
+    .field-subtitle { color: var(--text2); font-size: .8rem; font-weight: 800; margin: .35rem 0 .2rem; }
+
+    .mini-stat-card { padding: .95rem 1rem; min-height: 108px; display: flex; flex-direction: column; gap: .25rem; justify-content: center; margin-bottom: .75rem; }
+    .mini-stat-card span:first-child { font-size: 1.35rem; }
+    .mini-stat-card strong { font-size: .96rem; font-weight: 800; color: var(--text); }
+    .mini-stat-card small { color: var(--text3); font-size: .8rem; line-height: 1.45; }
+
+    .glass-note { padding: 1rem 1.05rem; margin-bottom: .8rem; }
+    .glass-note--success { border-color: var(--green-border) !important; background: linear-gradient(180deg, rgba(12,32,27,0.86), rgba(10,22,18,0.92)) !important; }
+    .glass-note--gold { border-color: var(--gold-border) !important; background: linear-gradient(180deg, rgba(38,31,14,0.86), rgba(23,19,10,0.92)) !important; }
+    .glass-note__title { font-size: .76rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.4px; color: var(--blue); margin-bottom: .35rem; }
+    .glass-note--success .glass-note__title { color: var(--green); }
+    .glass-note--gold .glass-note__title { color: var(--gold); }
+    .glass-note__text { color: var(--text2); font-size: .9rem; line-height: 1.65; }
+
+    .payment-card { padding: 1rem 1.05rem; margin-bottom: .95rem; border-color: var(--gold-border) !important; }
+    .payment-card__title { font-size: .76rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: .75rem; }
+    .payment-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .7rem; margin-bottom: .8rem; }
+    .payment-grid span { display: block; color: var(--text3); font-size: .72rem; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: .2rem; }
+    .payment-grid strong { color: var(--text); font-size: .95rem; font-weight: 800; }
+    .payment-cvu-label { color: var(--gold2); font-size: .72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: .35rem; }
+    .payment-help { color: var(--text2); font-size: .84rem; line-height: 1.6; margin-top: .75rem; }
+
+    .review-shell { text-align: center; padding: 2.3rem 1.2rem; margin-bottom: 1rem; }
+    .review-shell__icon {
+        width: 88px; height: 88px; margin: 0 auto 1rem auto; border-radius: 28px; display:flex; align-items:center; justify-content:center;
+        font-size: 2.5rem; background: linear-gradient(135deg, rgba(245,199,107,0.18), rgba(110,231,255,0.12)); border: 1px solid var(--gold-border);
+    }
+
+    .info-card { padding: 1rem 1rem .95rem; min-height: 132px; margin-top: .35rem; }
+    .info-card--warm { border-color: var(--orange-border) !important; }
+    .info-card--cool { border-color: var(--blue-border) !important; }
+    .info-card__title { font-size: .82rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: .45rem; }
+    .info-card--warm .info-card__title { color: var(--orange); }
+    .info-card--cool .info-card__title { color: var(--blue); }
+    .info-card__text { color: var(--text2); font-size: .9rem; line-height: 1.6; }
+
+    .special-pill-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; background: rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:16px; padding:.85rem 1rem; margin-bottom:.55rem; }
+    .special-pill-row__left { display:flex; align-items:center; gap:.75rem; min-width:0; }
+    .special-pill-row__left span { font-size:1.2rem; }
+    .special-pill-row__left strong { font-size:.95rem; color:var(--text); }
+    .special-pill-row__right { color:var(--gold); font-weight:900; letter-spacing:.5px; font-family: Inter, sans-serif; }
+
+    .social-cta {
+        display:flex; align-items:center; justify-content:center; gap:.5rem; min-height: 44px; width:100%; margin-top: .02rem; border-radius:16px;
+        border:1px solid var(--border2); background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+        color: var(--text) !important; font-weight:800; box-shadow:0 12px 28px rgba(0,0,0,0.18);
+    }
+
     .stTextInput > div > div > input,
     .stPasswordInput > div > div > input,
     .stNumberInput input,
@@ -221,32 +300,25 @@ def inject_css():
     textarea,
     [data-baseweb="select"] > div,
     [data-baseweb="base-input"] > div,
-    [data-testid="stFileUploaderDropzone"] {{
+    [data-testid="stFileUploaderDropzone"] {
         background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
         color: var(--input-text) !important;
         border: 1.5px solid var(--border2) !important;
         border-radius: 16px !important;
-        box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important;
-    }}
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18) !important;
+    }
 
     .stTextInput > div > div > input,
     .stPasswordInput > div > div > input,
     .stNumberInput input,
     .stDateInput input,
     .stTextArea textarea,
-    textarea {{
-        padding: 0.82rem 0.95rem !important;
-        font-size: 0.98rem !important;
-        caret-color: var(--accent) !important;
-    }}
+    textarea { padding: .9rem 1rem !important; font-size: .98rem !important; caret-color: var(--accent) !important; }
 
     .stTextInput input::placeholder,
     .stPasswordInput input::placeholder,
     .stTextArea textarea::placeholder,
-    textarea::placeholder {{
-        color: var(--text3) !important;
-        opacity: 1 !important;
-    }}
+    textarea::placeholder { color: var(--text3) !important; opacity: 1 !important; }
 
     .stTextInput > div > div > input:focus,
     .stPasswordInput > div > div > input:focus,
@@ -255,10 +327,10 @@ def inject_css():
     .stTextArea textarea:focus,
     textarea:focus,
     [data-baseweb="select"] > div:focus-within,
-    [data-baseweb="base-input"] > div:focus-within {{
+    [data-baseweb="base-input"] > div:focus-within {
         border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px rgba(110,231,255,0.12), 0 10px 30px rgba(110,231,255,0.10) !important;
-    }}
+        box-shadow: 0 0 0 4px rgba(110,231,255,0.12), 0 12px 34px rgba(110,231,255,0.10) !important;
+    }
 
     .stTextInput label,
     .stPasswordInput label,
@@ -271,290 +343,153 @@ def inject_css():
     .stRadio label,
     .stCheckbox label,
     [data-testid="stWidgetLabel"],
-    [data-testid="stWidgetLabel"] * {{
+    [data-testid="stWidgetLabel"] * {
         color: var(--text2) !important;
-        -webkit-text-fill-color: var(--text2) !important;
-        font-size: 0.73rem !important;
-        font-weight: 800 !important;
+        font-size: .73rem !important;
+        font-weight: 900 !important;
         text-transform: uppercase !important;
         letter-spacing: 1.2px !important;
-    }}
+    }
 
-    /* Dropdowns */
+    [data-testid="stFileUploaderDropzone"] { min-height: 124px !important; border-style: dashed !important; }
+
     [data-baseweb="select"] > div,
     [data-baseweb="select"] > div > div,
     [data-baseweb="select"] [role="combobox"],
     [data-baseweb="select"] [aria-haspopup="listbox"],
     [data-baseweb="select"] [data-testid="stMarkdownContainer"],
-    [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {{
+    [data-baseweb="select"] [data-testid="stMarkdownContainer"] * {
         background: linear-gradient(180deg, rgba(8,18,32,0.98) 0%, rgba(11,23,41,0.98) 100%) !important;
         color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    [data-baseweb="select"] svg,
-    [data-baseweb="popover"] svg,
-    [role="listbox"] svg {{
-        fill: var(--text2) !important;
-        color: var(--text2) !important;
-    }}
+    }
 
     [data-baseweb="popover"],
     [data-baseweb="popover"] > div,
     [role="listbox"],
     ul[role="listbox"],
-    div[role="listbox"] {{
+    div[role="listbox"] {
         background: rgba(10, 19, 35, 0.985) !important;
         color: var(--text) !important;
         border: 1px solid var(--border2) !important;
         box-shadow: 0 20px 44px rgba(0,0,0,0.36) !important;
         border-radius: 16px !important;
-        backdrop-filter: blur(14px);
-    }}
-
-    [role="option"],
-    li[role="option"],
-    div[role="option"] {{
-        background: rgba(10, 19, 35, 0.985) !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    [role="option"] *,
-    li[role="option"] *,
-    div[role="option"] * {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-        background: transparent !important;
-    }}
+    }
 
     [role="option"][aria-selected="true"],
-    li[role="option"][aria-selected="true"],
     [role="option"]:hover,
     li[role="option"]:hover,
-    div[role="option"]:hover {{
-        background: rgba(110,231,255,0.14) !important;
-        color: var(--text) !important;
-    }}
+    div[role="option"]:hover { background: rgba(110,231,255,0.14) !important; }
 
-    [data-baseweb="select"] input,
-    [data-baseweb="select"] span,
-    [data-baseweb="select"] div,
-    [data-baseweb="select"] p {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    /* Buttons */
     .stButton > button,
-    .stDownloadButton > button {{
-        background: linear-gradient(135deg, rgba(110,231,255,0.18) 0%, rgba(139,92,246,0.18) 100%) !important;
+    .stDownloadButton > button,
+    .stFormSubmitButton > button {
+        min-height: 46px !important;
+        background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(110,231,255,0.08) 100%) !important;
         color: var(--text) !important;
-        border: 1px solid rgba(110,231,255,0.22) !important;
+        border: 1px solid rgba(110,231,255,0.20) !important;
         border-radius: 16px !important;
-        padding: 0.72rem 1rem !important;
-        font-weight: 800 !important;
-        letter-spacing: 0.2px !important;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important;
-        transition: all 0.2s ease !important;
-    }}
+        padding: .78rem 1rem !important;
+        font-weight: 900 !important;
+        letter-spacing: .2px !important;
+        box-shadow: 0 14px 32px rgba(0,0,0,0.18) !important;
+        transition: all .18s ease !important;
+    }
 
     .stButton > button:hover,
-    .stDownloadButton > button:hover {{
+    .stDownloadButton > button:hover,
+    .stFormSubmitButton > button:hover {
         transform: translateY(-1px);
         border-color: var(--accent) !important;
-        box-shadow: 0 16px 34px rgba(0,0,0,0.24), 0 0 0 1px rgba(110,231,255,0.12) inset !important;
-    }}
+        box-shadow: 0 18px 38px rgba(0,0,0,0.24), 0 0 0 1px rgba(110,231,255,0.10) inset !important;
+    }
 
     .stButton > button[kind="primary"],
-    .stFormSubmitButton > button,
-    .stDownloadButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, #22d3ee 0%, #8b5cf6 100%) !important;
-        color: #04111f !important;
+    .stFormSubmitButton > button[kind="primary"],
+    .stDownloadButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #5ee7ff 0%, #7c6cff 54%, #a78bfa 100%) !important;
+        color: #03111d !important;
         border: 0 !important;
-        box-shadow: 0 18px 38px rgba(34,211,238,0.18), 0 10px 24px rgba(139,92,246,0.14) !important;
-    }}
+        box-shadow: 0 18px 40px rgba(34,211,238,0.18), 0 12px 30px rgba(139,92,246,0.18) !important;
+    }
 
-    .stButton > button:focus,
-    .stFormSubmitButton > button:focus {{
-        box-shadow: 0 0 0 3px rgba(110,231,255,0.16) !important;
-    }}
-
-    /* Alerts */
-    [data-testid="stSuccess"],
-    [data-testid="stInfo"],
-    [data-testid="stWarning"],
-    [data-testid="stError"] {{
-        border-radius: 18px !important;
-        border: 1px solid var(--border) !important;
-        box-shadow: 0 12px 26px rgba(0,0,0,0.18) !important;
-        backdrop-filter: blur(10px);
-    }}
-
-    [data-testid="stSuccess"] {{ background: rgba(16, 185, 129, 0.12) !important; }}
-    [data-testid="stInfo"] {{ background: rgba(34, 211, 238, 0.10) !important; }}
-    [data-testid="stWarning"] {{ background: rgba(245, 158, 11, 0.12) !important; }}
-    [data-testid="stError"] {{ background: rgba(251, 113, 133, 0.12) !important; }}
-
-    /* Tabs */
-    button[role="tab"] {{
+    button[role="tab"] {
         background: rgba(255,255,255,0.03) !important;
         border: 1px solid var(--border) !important;
-        border-radius: 14px !important;
+        border-radius: 16px !important;
         color: var(--text2) !important;
-        padding: 0.72rem 1rem !important;
-        font-weight: 700 !important;
-        margin-right: 0.35rem !important;
-    }}
+        padding: .78rem 1rem !important;
+        font-weight: 800 !important;
+        margin-right: .35rem !important;
+    }
 
-    button[role="tab"][aria-selected="true"] {{
+    button[role="tab"][aria-selected="true"] {
         color: var(--text) !important;
         border-color: var(--accent) !important;
         background: linear-gradient(135deg, rgba(110,231,255,0.12) 0%, rgba(139,92,246,0.12) 100%) !important;
-        box-shadow: 0 10px 22px rgba(0,0,0,0.16) !important;
-    }}
+        box-shadow: 0 12px 28px rgba(0,0,0,0.16) !important;
+    }
 
-    /* Radio / Checkbox */
     .stRadio [role="radiogroup"] > label,
-    .stCheckbox > label {{
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 0.4rem 0.65rem;
-    }}
+    .stCheckbox > label { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 14px; padding: .5rem .72rem; }
 
-    /* Tables / Dataframes */
-    .stDataFrame, div[data-testid="stTable"] {{
+    [data-testid="stSuccess"],
+    [data-testid="stInfo"],
+    [data-testid="stWarning"],
+    [data-testid="stError"] {
+        border-radius: 18px !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: 0 12px 26px rgba(0,0,0,0.18) !important;
+    }
+    [data-testid="stSuccess"] { background: rgba(16, 185, 129, 0.12) !important; }
+    [data-testid="stInfo"] { background: rgba(34, 211, 238, 0.10) !important; }
+    [data-testid="stWarning"] { background: rgba(245, 158, 11, 0.12) !important; }
+    [data-testid="stError"] { background: rgba(251, 113, 133, 0.12) !important; }
+
+    .stDataFrame, div[data-testid="stTable"], .table-shell {
         background: var(--table-bg) !important;
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         overflow: hidden !important;
         box-shadow: 0 16px 34px rgba(0,0,0,0.20) !important;
-    }}
+    }
+    table { border-collapse: collapse !important; }
+    thead tr { background: var(--table-head) !important; }
+    tbody tr:nth-child(even) { background: var(--table-row) !important; }
+    th, td { border-color: rgba(143,170,214,0.12) !important; }
 
-    table {{
-        border-collapse: collapse !important;
-    }}
-
-    thead tr {{
-        background: var(--table-head) !important;
-    }}
-
-    tbody tr:nth-child(even) {{
-        background: var(--table_row) !important;
-    }}
-
-    th, td {{
-        border-color: rgba(143,170,214,0.12) !important;
-    }}
-
-    /* Expanders */
-    details {{
-        background: rgba(12, 22, 40, 0.78) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 18px !important;
-        overflow: hidden !important;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.18) !important;
-    }}
-
-    details summary {{
-        background: rgba(255,255,255,0.02) !important;
-    }}
-
-    /* Metrics */
-    div[data-testid="stMetric"] {{
-        background: linear-gradient(180deg, rgba(15,29,51,0.88) 0%, rgba(10,20,36,0.92) 100%) !important;
-        border: 1px solid var(--border) !important;
-        padding: 0.9rem 1rem !important;
-        box-shadow: 0 16px 32px rgba(0,0,0,0.18) !important;
-    }}
-
-    div[data-testid="stMetric"] label {{
+    div[data-testid="stMetric"] { padding: .95rem 1rem !important; }
+    div[data-testid="stMetric"] label {
         color: var(--text3) !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-        font-size: 0.68rem !important;
-    }}
+        font-size: .68rem !important;
+    }
+    div[data-testid="stMetricValue"] { color: var(--text) !important; }
+    .stProgress > div > div > div > div { background: linear-gradient(90deg, #22d3ee 0%, #8b5cf6 100%) !important; }
 
-    div[data-testid="stMetricValue"] {{
-        color: var(--text) !important;
-    }}
-
-    /* Progress */
-    .stProgress > div > div > div > div {{
-        background: linear-gradient(90deg, #22d3ee 0%, #8b5cf6 100%) !important;
-    }}
-
-
-
-    /* Defensive contrast fixes for light-mode browsers / mobile webviews */
-    input, textarea, select, button {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: currentColor !important;
-    }}
-
-    input:-webkit-autofill,
-    input:-webkit-autofill:hover,
-    input:-webkit-autofill:focus,
-    textarea:-webkit-autofill {{
-        -webkit-text-fill-color: var(--text) !important;
-        -webkit-box-shadow: 0 0 0px 1000px rgba(8,18,32,0.98) inset !important;
-        transition: background-color 9999s ease-out 0s;
-    }}
-
-    .stButton > button p,
-    .stDownloadButton > button p,
-    .stFormSubmitButton > button p,
-    button[role="tab"] p,
-    [role="option"] *,
-    details summary *,
-    .stAlert *,
-    .stDataFrame *,
-    div[data-testid="stTable"] *,
-    [data-testid="stMarkdownContainer"] span,
-    [data-testid="stMarkdownContainer"] strong {{
-        color: inherit !important;
-        -webkit-text-fill-color: currentColor !important;
-    }}
-
-    [data-testid="stSelectbox"] [data-baseweb="select"] * ,
-    [data-testid="stMultiSelect"] [data-baseweb="select"] * {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    /* Extra mobile/browser fixes for select menus */
-    select, option, optgroup {{
-        background-color: #0a1323 !important;
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    [role="listbox"] div,
-    [role="listbox"] span,
-    [role="listbox"] p,
-    [data-baseweb="popover"] div,
-    [data-baseweb="popover"] span,
-    [data-baseweb="popover"] p {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    [data-testid="stSidebar"] {{
+    [data-testid="stSidebar"] {
         background: linear-gradient(180deg, rgba(7,17,31,0.96) 0%, rgba(11,23,41,0.96) 100%) !important;
         border-right: 1px solid var(--border) !important;
-    }}
+    }
 
-    @media (prefers-color-scheme: light) {{
-        html, body {{
-            color-scheme: dark !important;
-        }}
-    }}
+    input, textarea, select, button { color: var(--text) !important; }
+    select, option, optgroup { background-color: #0a1323 !important; color: var(--text) !important; }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
-    ::-webkit-scrollbar-track {{ background: rgba(255,255,255,0.04); }}
-    ::-webkit-scrollbar-thumb {{ background: rgba(143,170,214,0.30); border-radius: 999px; }}
-    ::-webkit-scrollbar-thumb:hover {{ background: rgba(110,231,255,0.40); }}
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+    ::-webkit-scrollbar-thumb { background: rgba(143,170,214,0.30); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(110,231,255,0.40); }
+
+    @media (max-width: 820px) {
+        .block-container { padding-top: 1rem !important; }
+        .hero-shell { padding: 1.1rem .95rem 1rem .95rem; }
+        .hero-orb { width: 72px; height: 72px; border-radius: 22px; font-size: 2rem; }
+        .hero-title { font-size: 2.75rem; }
+        .section-title { font-size: 1.7rem; }
+        .payment-grid { grid-template-columns: 1fr; }
+    }
     </style>
-    """, unsafe_allow_html=True)
+    """
+    for k, val in v.items():
+        css = css.replace(f"__{k}__", str(val))
+    st.markdown(css, unsafe_allow_html=True)

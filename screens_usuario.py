@@ -283,7 +283,7 @@ def pantalla_usuario():
 
         if not fases_habilitadas:
             st.warning("No hay fases habilitadas aún.")
-            st.button("🚪 Cerrar sesión", key="logout_92", on_click=cerrar_sesion, use_container_width=True)
+            st.button("Salir de la cuenta", key="logout_92", on_click=cerrar_sesion, use_container_width=True)
             return
 
         labels = []
@@ -334,21 +334,21 @@ def pantalla_usuario():
                 st.markdown(
                     '<div style="background:var(--gold-dim);border:1px solid var(--gold-border);'
                     'border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:0.85rem;color:var(--gold);">'
-                    '⚠️ Pronósticos pendientes: ' + " · ".join(pendientes_info_html) + '</div>',
+                    '⏳ Te faltan cargar: ' + " · ".join(pendientes_info_html) + '</div>',
                     unsafe_allow_html=True
                 )
 
             # Menú principal — grilla 2x3
             c1, c2 = st.columns(2)
             with c1:
-                if st.button("⚽  Mis pronósticos", use_container_width=True, key="menu_prode"):
+                if st.button("🎯 Mis pronósticos", use_container_width=True, key="menu_prode"):
                     st.session_state["sub_pantalla"] = "pronosticos"; st.rerun()
-                if st.button("🏆  Ranking", use_container_width=True, key="menu_ranking"):
+                if st.button("🏆 Ver ranking", use_container_width=True, key="menu_ranking"):
                     cambiar_pantalla(6); st.rerun()
             with c2:
-                if st.button("📊  Mis puntos", use_container_width=True, key="menu_puntos"):
+                if st.button("📈 Mi rendimiento", use_container_width=True, key="menu_puntos"):
                     st.session_state["sub_pantalla"] = "puntos"; st.rerun()
-                if st.button("📊  Estadísticas", use_container_width=True, key="menu_dest"):
+                if st.button("📊 Ver estadísticas", use_container_width=True, key="menu_dest"):
                     cambiar_pantalla(12); st.rerun()
 
             st.markdown("""
@@ -390,7 +390,7 @@ def pantalla_usuario():
                 if c2b.button("Cancelar", key="main_cerrar_cancel", use_container_width=True):
                     st.session_state["confirmar_logout_main"] = False; st.rerun()
             else:
-                if st.button("🚪 Cerrar sesión", key="logout_402", use_container_width=True):
+                if st.button("Salir de la cuenta", key="logout_402", use_container_width=True):
                     st.session_state["confirmar_logout_main"] = True; st.rerun()
             return
 
@@ -404,19 +404,19 @@ def pantalla_usuario():
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
-                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Resultados acertados</div>
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Aciertos de resultado</div>
                     <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--blue);">{resumen_usuario["puntos"]}</div>
                 </div>
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
-                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Marcadores exactos</div>
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Exactos clavados</div>
                     <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--green);">{resumen_usuario["goles"]}</div>
                 </div>
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
-                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Puntos de consumo</div>
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Bonus y consumo</div>
                     <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--orange);">{resumen_usuario["consumo"]}</div>
                 </div>
                 <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
-                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Pronósticos especiales</div>
+                    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Especiales acertados</div>
                     <div style="font-family:Bebas Neue,sans-serif;font-size:2.5rem;color:var(--gold);">{resumen_usuario["especiales"]}</div>
                 </div>
             </div>
@@ -530,7 +530,7 @@ def pantalla_usuario():
             <div style="color:var(--text2); font-size:0.88rem;">Esta fase todavía no fue abierta por el admin.</div>
         </div>""", unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("🚪 Cerrar sesión", key="logout_157", on_click=cerrar_sesion, use_container_width=True)
+            st.button("Salir de la cuenta", key="logout_157", on_click=cerrar_sesion, use_container_width=True)
         return
 
     partidos = db_get_partidos(fase)
@@ -541,7 +541,7 @@ def pantalla_usuario():
             <div style="color:var(--text2); font-size:0.88rem;">El admin aún no cargó los partidos de esta fase.</div>
         </div>""", unsafe_allow_html=True)
         if not grupos_completados:
-            st.button("🚪 Cerrar sesión", key="logout_168", on_click=cerrar_sesion, use_container_width=True)
+            st.button("Salir de la cuenta", key="logout_168", on_click=cerrar_sesion, use_container_width=True)
         return
 
     prode      = db_get_prode(username, fase)
@@ -736,7 +736,7 @@ def pantalla_usuario():
                 if c2.button("Cancelar", key="wiz_cerrar_cancel", use_container_width=True):
                     st.session_state["confirmar_logout_wiz"] = False; st.rerun()
             else:
-                if st.button("🚪 Cerrar sesión", key="wiz_cerrar", use_container_width=True):
+                if st.button("Salir de la cuenta", key="wiz_cerrar", use_container_width=True):
                     st.session_state["confirmar_logout_wiz"] = True; st.rerun()
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
