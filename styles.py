@@ -384,13 +384,15 @@ def inject_css():
     .stDownloadButton > button,
     .stFormSubmitButton > button {
         min-height: 46px !important;
-        background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(110,231,255,0.08) 100%) !important;
-        color: var(--text) !important;
-        border: 1px solid rgba(110,231,255,0.20) !important;
+        background: linear-gradient(135deg, rgba(232,244,255,0.96) 0%, rgba(198,235,255,0.94) 100%) !important;
+        color: #06101d !important;
+        border: 1px solid rgba(110,231,255,0.35) !important;
         border-radius: 16px !important;
         padding: .78rem 1rem !important;
         font-weight: 900 !important;
+        font-size: 1rem !important;
         letter-spacing: .2px !important;
+        text-shadow: none !important;
         box-shadow: 0 14px 32px rgba(0,0,0,0.18) !important;
         transition: all .18s ease !important;
     }
@@ -410,6 +412,26 @@ def inject_css():
         color: #03111d !important;
         border: 0 !important;
         box-shadow: 0 18px 40px rgba(34,211,238,0.18), 0 12px 30px rgba(139,92,246,0.18) !important;
+    }
+
+    .stButton > button[kind="secondary"],
+    .stFormSubmitButton > button[kind="secondary"],
+    .stDownloadButton > button[kind="secondary"] {
+        background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(236,244,255,0.96) 100%) !important;
+        color: #06101d !important;
+        border: 1.5px solid rgba(6,16,29,0.22) !important;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.14) !important;
+    }
+
+    .stButton > button[kind="secondary"] p,
+    .stFormSubmitButton > button[kind="secondary"] p,
+    .stDownloadButton > button[kind="secondary"] p,
+    .stButton > button p,
+    .stFormSubmitButton > button p,
+    .stDownloadButton > button p {
+        color: inherit !important;
+        font-weight: 900 !important;
+        font-size: 1rem !important;
     }
 
     button[role="tab"] {
