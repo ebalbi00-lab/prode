@@ -10,6 +10,7 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
+from ui_helpers import password_input
 
 
 def cambiar_pantalla(step):
@@ -96,7 +97,7 @@ def pantalla_login():
     st.markdown('<div class="section-title" style="font-size:1.35rem;margin-top:1.1rem;">Ingresar</div>', unsafe_allow_html=True)
     with st.form("form_login"):
         usuario = st.text_input("Usuario", placeholder="Ej: enzo, juan123, mati.prode")
-        clave = st.text_input("Clave", type="password", placeholder="Tu contraseña")
+        clave = password_input("Clave", "login_clave", placeholder="Tu contraseña")
         c1, c2 = st.columns(2)
         ingresar = c1.form_submit_button("Entrar ahora", type="primary", use_container_width=True)
         registrarse = c2.form_submit_button("Crear cuenta", use_container_width=True)
@@ -216,8 +217,8 @@ def pantalla_registro_cuenta():
 
     with st.form("form_registro_cuenta"):
         usuario = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
-        clave = st.text_input("Clave", type="password", placeholder="Mínimo 4 caracteres", key="registro_clave")
-        confirmar = st.text_input("Confirmar clave", type="password", placeholder="Repetí la clave", key="registro_confirmar")
+        clave = password_input("Clave", "registro_clave", placeholder="Mínimo 4 caracteres")
+        confirmar = password_input("Confirmar clave", "registro_confirmar", placeholder="Repetí la clave")
         comprobante = st.file_uploader("Comprobante de pago")
 
         st.markdown(
