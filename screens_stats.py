@@ -334,9 +334,7 @@ def _render_tab_estadisticas_completa():
             _render_top_especiales("⚽ Goleador más elegido", goleador, "#34d399", "rgba(52,211,153,0.12)", "rgba(52,211,153,0.28)")
             _render_top_especiales("⭐ MVP más elegido", jugador, "#fb923c", "rgba(251,146,60,0.12)", "rgba(251,146,60,0.28)")
 
-    st.markdown("<div style='height:.3rem'></div>", unsafe_allow_html=True)
-    if st.button("📊 Radiografía del torneo", use_container_width=True, key="btn_torneo_shared"):
-        cambiar_pantalla(13); st.rerun()
+
 
 
 def pantalla_estadisticas():
