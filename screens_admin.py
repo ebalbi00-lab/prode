@@ -35,7 +35,7 @@ from db import (
     db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
     db_get_lista_especiales, db_set_lista_especiales_desde_texto, db_reset_lista_especiales,
 )
-from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo
+from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo, _render_tab_estadisticas_completa
 
 
 def cambiar_pantalla(step):
@@ -209,8 +209,7 @@ def pantalla_admin():
     elif sec == "usuarios" and ctx["es_admin_total"]:
         _tab_usuarios()
     elif sec == "destacados":
-        st.subheader("📊 Estadísticas")
-        render_destacados_usuarios()
+        _render_tab_estadisticas_completa()
     elif sec == "reset" and ctx["es_admin_total"]:
         _tab_reset()
     elif sec == "exportar" and ctx["es_admin_total"]:

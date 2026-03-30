@@ -286,14 +286,15 @@ def pantalla_ranking():
     st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)
 
 
-def pantalla_estadisticas():
+def _render_tab_estadisticas_completa():
+    """Contenido completo de estadísticas — igual para usuarios, admin y consumo."""
     render_destacados_usuarios()
 
     if "stats_show_people_choices" not in st.session_state:
         st.session_state["stats_show_people_choices"] = False
 
     btn_label = "Ocultar elecciones de la gente" if st.session_state["stats_show_people_choices"] else "Mostrar elecciones de la gente"
-    if st.button(btn_label, key="toggle_people_choices", use_container_width=True):
+    if st.button(btn_label, key="toggle_people_choices_shared", use_container_width=True):
         st.session_state["stats_show_people_choices"] = not st.session_state["stats_show_people_choices"]
         st.rerun()
 
@@ -334,9 +335,12 @@ def pantalla_estadisticas():
             _render_top_especiales("⭐ MVP más elegido", jugador, "#fb923c", "rgba(251,146,60,0.12)", "rgba(251,146,60,0.28)")
 
     st.markdown("<div style='height:.3rem'></div>", unsafe_allow_html=True)
-    if st.button("📊 Radiografía del torneo", use_container_width=True, key="btn_torneo_from_stats"):
+    if st.button("📊 Radiografía del torneo", use_container_width=True, key="btn_torneo_shared"):
         cambiar_pantalla(13); st.rerun()
 
+
+def pantalla_estadisticas():
+    _render_tab_estadisticas_completa()
     st.divider()
     destino = _destino_panel()
     st.button("← Volver", on_click=cambiar_pantalla, args=(destino,), use_container_width=True)
