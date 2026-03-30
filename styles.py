@@ -488,6 +488,11 @@ def inject_css():
 
 
     /* Defensive contrast fixes for light-mode browsers / mobile webviews */
+    input, textarea, select, button {{
+        color: var(--text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }}
+
     input:-webkit-autofill,
     input:-webkit-autofill:hover,
     input:-webkit-autofill:focus,
@@ -495,67 +500,6 @@ def inject_css():
         -webkit-text-fill-color: var(--text) !important;
         -webkit-box-shadow: 0 0 0px 1000px rgba(8,18,32,0.98) inset !important;
         transition: background-color 9999s ease-out 0s;
-    }}
-
-    /* Mobile-safe sizing for inputs/selects and helper buttons */
-    div[data-testid="stTextInput"],
-    div[data-testid="stNumberInput"],
-    div[data-testid="stSelectbox"],
-    div[data-testid="stMultiSelect"] {{
-        width: 100% !important;
-        min-width: 0 !important;
-    }}
-
-    div[data-testid="stTextInput"] > div,
-    div[data-testid="stNumberInput"] > div,
-    div[data-testid="stSelectbox"] > div,
-    div[data-testid="stMultiSelect"] > div {{
-        width: 100% !important;
-        min-width: 0 !important;
-    }}
-
-    div[data-testid="stTextInput"] input,
-    div[data-testid="stNumberInput"] input,
-    div[data-testid="stTextArea"] textarea {{
-        width: 100% !important;
-        min-width: 0 !important;
-        box-sizing: border-box !important;
-    }}
-
-    [data-testid="stSelectbox"] [data-baseweb="select"] > div,
-    [data-testid="stMultiSelect"] [data-baseweb="select"] > div {{
-        min-width: 0 !important;
-        box-sizing: border-box !important;
-    }}
-
-    .stButton > button,
-    .stFormSubmitButton > button,
-    .stDownloadButton > button {{
-        min-width: 0 !important;
-        box-sizing: border-box !important;
-    }}
-
-    [data-testid="column"] {{
-        min-width: 0 !important;
-    }}
-
-    div[data-testid="stSpinner"] {{
-        background: rgba(10, 20, 36, 0.88) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 16px !important;
-        padding: 10px 14px !important;
-        color: var(--text) !important;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.22) !important;
-    }}
-
-    div[data-testid="stSpinner"] * {{
-        color: var(--text) !important;
-        -webkit-text-fill-color: var(--text) !important;
-    }}
-
-    div[data-testid="stSpinner"] svg {{
-        color: var(--cyan) !important;
-        stroke: currentColor !important;
     }}
 
     .stButton > button p,

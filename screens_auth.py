@@ -10,7 +10,6 @@ from db import (
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
-from ui_helpers import password_input_with_toggle
 
 
 def cambiar_pantalla(step):
@@ -76,9 +75,9 @@ def pantalla_login():
 
     with st.form("form_login"):
         usuario = st.text_input("Usuario", placeholder="tu_usuario")
-        clave = password_input_with_toggle("Clave", "login_clave", placeholder="••••••••")
+        clave = st.text_input("Clave", type="password", placeholder="••••••••")
         col1, col2 = st.columns(2)
-        ingresar = col1.form_submit_button("Ingresar", type="primary", use_container_width=True)
+        ingresar    = col1.form_submit_button("Ingresar",    type="primary", use_container_width=True)
         registrarse = col2.form_submit_button("Registrarse", use_container_width=True)
 
     if ingresar:
@@ -143,8 +142,7 @@ def pantalla_registro_datos():
         continuar = col2.form_submit_button("Continuar", type="primary")
 
     if volver:
-        cambiar_pantalla(0)
-        st.rerun()
+        cambiar_pantalla(0); st.rerun()
     if continuar:
         try:
             nacimiento = datetime.date(año_sel, mes_sel, dia_sel)
@@ -172,9 +170,9 @@ def pantalla_registro_cuenta():
     """, unsafe_allow_html=True)
 
     with st.form("form_registro_cuenta"):
-        usuario = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
-        clave = password_input_with_toggle("Clave (mínimo 4 caracteres)", "reg_clave", placeholder="••••••••")
-        confirmar = password_input_with_toggle("Confirmar clave", "reg_confirmar", placeholder="••••••••")
+        usuario   = st.text_input("Usuario", placeholder="sin espacios, ej: juan123")
+        clave     = st.text_input("Clave (mínimo 4 caracteres)", type="password")
+        confirmar = st.text_input("Confirmar clave", type="password")
         st.markdown(f"""
         <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
                     border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
@@ -182,16 +180,16 @@ def pantalla_registro_cuenta():
                         color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
-                <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular_pago or '—'}</span>
+                <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular_pago or "—"}</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
-                <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias_pago or '—'}</span>
+                <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias_pago or "—"}</span>
             </div>
             <div style="margin-bottom:2px;">
                 <span style="color:var(--text2); font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:1px;">CVU — tocá para copiar</span>
             </div>
-            <input type="text" value="{cvu_pago or ''}" readonly onclick="this.select();" ontouchstart="this.select();"
+            <input type="text" value="{cvu_pago or ""}" readonly onclick="this.select();" ontouchstart="this.select();"
                 style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
                        color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
                        padding:8px 12px; cursor:pointer; outline:none; box-sizing:border-box;
@@ -207,8 +205,7 @@ def pantalla_registro_cuenta():
         enviar = col2.form_submit_button("Enviar solicitud", type="primary")
 
     if volver:
-        cambiar_pantalla(1)
-        st.rerun()
+        cambiar_pantalla(1); st.rerun()
 
     if enviar:
         u_strip = usuario.strip().lower()
@@ -232,7 +229,7 @@ def pantalla_registro_cuenta():
             import base64
             comprobante_b64 = base64.b64encode(comprobante.read()).decode()
             comprobante_data = f"data:{comprobante.type};base64,{comprobante_b64}"
-            with st.spinner("Enviando solicitud."):
+            with st.spinner("Enviando solicitud..."):
                 db_agregar_pendiente({
                     "username": u_strip, "clave": hash_clave(clave),
                     "comprobante": comprobante_data,
@@ -273,22 +270,101 @@ def pantalla_acerca():
     """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px 18px; margin-bottom:14px; line-height:1.75;">
-        <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--text3); margin-bottom:8px;">Cómo funciona</div>
-        <div style="color:var(--text2); font-size:0.95rem;">
-            Registrate, cargá tus pronósticos por fase y confirmalos con tu contraseña antes de que arranque cada etapa.
-            Después podés seguir el ranking, los puntos y las estadísticas del torneo desde la misma app.
+    <div style="background:var(--green-dim); border:1.5px solid var(--green-glow);
+                border-radius:12px; padding:14px 18px; margin-bottom:1rem;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+                    color:var(--green); margin-bottom:6px;">⚽ ¿Cómo funciona?</div>
+        <div style="color:var(--text2); font-size:0.92rem; line-height:1.75;">
+            Pronosticás el resultado de cada partido antes de que el admin cierre la fase.<br>
+            Se guarda automáticamente mientras navegás y al terminar confirmás todo con tu contraseña.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
+    st.divider()
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">🏆 Sistema de puntos</div>""", unsafe_allow_html=True)
+    st.markdown("Los puntos **aumentan por fase**. Cuanto más avanzada la etapa, más valen los aciertos.")
+
+    fases_pts  = FASES
+    res_pts    = [1, 2, 3, 4, 5, 6]
+    exacto_pts = [3, 6, 9, 12, 15, 18]
+    filas_pts  = ""
+    for i, fase in enumerate(fases_pts):
+        bg = "var(--surface)" if i % 2 == 0 else "transparent"
+        filas_pts += (f'<tr style="background:{bg};">'
+                      f'<td style="padding:10px 14px; color:var(--text); font-weight:600; font-size:0.92rem;">{fase}</td>'
+                      f'<td style="padding:10px 14px; color:var(--blue); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{res_pts[i]}</td>'
+                      f'<td style="padding:10px 14px; color:var(--green); font-weight:800; text-align:center; font-family:JetBrains Mono,monospace;">{exacto_pts[i]}</td></tr>')
+    st.markdown(f"""<div style="border-radius:12px;overflow:hidden;border:1.5px solid var(--border, unsafe_allow_html=True);margin-bottom:0.8rem;">
+        <table style="width:100%; border-collapse:collapse; background:var(--table-bg);">
+        <thead><tr style="background:var(--table-head); border-bottom:1px solid var(--border);">
+            <th style="padding:10px 14px; color:var(--text3); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:left;">Fase</th>
+            <th style="padding:10px 14px; color:var(--blue); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">✅ Resultado</th>
+            <th style="padding:10px 14px; color:var(--green); font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">🎯 Exacto</th>
+        </tr></thead><tbody>{filas_pts}</tbody></table></div>""", unsafe_allow_html=True)
+    st.caption("**Resultado** = acertás quién gana o si es empate. &nbsp;&nbsp;**Exacto** = acertás el marcador exacto (ambos goles).")
+
+    st.divider()
+    col_info1, col_info2 = st.columns(2)
+    with col_info1:
+        st.markdown("""<div style="background:var(--orange-dim); border:1.5px solid var(--orange-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:6px;">💰 Puntos de consumo</div>
+            <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">El admin puede sumar puntos por consumo en el local o presencia en los partidos.</div>
+        </div>""", unsafe_allow_html=True)
+    with col_info2:
+        st.markdown("""<div style="background:var(--blue-dim); border:1.5px solid var(--blue-border, unsafe_allow_html=True); border-radius:12px; padding:14px 16px;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--blue); margin-bottom:6px;">📊 Ranking</div>
+            <div style="color:var(--text2); font-size:0.88rem; line-height:1.65;">Se actualiza automáticamente. Total = resultados + goles + consumo + especiales.</div>
+        </div>""", unsafe_allow_html=True)
+
+    st.divider()
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">⭐ Pronósticos especiales</div>""", unsafe_allow_html=True)
+    st.markdown("Además de los partidos, podés ganar puntos extra acertando estos pronósticos especiales:")
+    especiales_filas = [
+        ("🏆", "Campeón del mundo", "20 pts"),
+        ("👟", "Goleador del torneo", "10 pts"),
+        ("🧤", "Mejor arquero", "8 pts"),
+        ("🌟", "Mejor jugador", "8 pts"),
+    ]
+    cards_esp = ""
+    for icono, label, pts in especiales_filas:
+        cards_esp += f"""
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    background:var(--surface); border:1px solid var(--border);
+                    border-radius:10px; padding:10px 16px; margin-bottom:6px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.2rem;">{icono}</span>
+                <span style="color:var(--text); font-weight:600; font-size:0.92rem;">{label}</span>
+            </div>
+            <span style="color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.2rem; letter-spacing:1px;">+{pts}</span>
+        </div>"""
+    st.markdown(f'<div style="margin-bottom:0.5rem;">{cards_esp}</div>', unsafe_allow_html=True)
+
+    st.divider()
+    st.markdown("""<div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+                color:var(--text3); margin-bottom:0.7rem;">🎁 Premios</div>""", unsafe_allow_html=True)
     st.markdown("""
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px 18px; margin-bottom:14px; line-height:1.75;">
-        <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--text3); margin-bottom:8px;">Fases del juego</div>
-        <div style="color:var(--text2); font-size:0.95rem;">
-            """ + " · ".join(FASES) + """
+    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
+                border-radius:12px; padding:14px 18px; margin-bottom:0.8rem;">
+        <div style="color:var(--gold); font-weight:700; font-size:0.88rem; margin-bottom:8px;">🏆 Premios para el ranking y sorpresas durante el torneo</div>
+        <div style="color:var(--text2); font-size:0.88rem; line-height:1.75;">
+            Los premios principales serán para los <strong style="color:var(--text);">primeros puestos del ranking general</strong> al finalizar la competencia.<br><br>
+            Además, durante el transcurso del torneo va a haber <strong style="color:var(--gold);">premios sorpresa</strong> en distintos momentos de la competencia.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
+    st.divider()
+    with st.expander("¿Puedo modificar mi pronóstico después de confirmarlo?"):
+        st.write("No. Una vez que confirmás con tu contraseña, el pronóstico queda bloqueado definitivamente.")
+    with st.expander("¿Qué pasa si no cargo pronósticos para una fase?"):
+        st.write("No sumás puntos para esa fase.")
+    with st.expander("¿Hasta cuándo puedo cargar mi pronóstico?"):
+        st.write("El admin controla manualmente cuándo se cierra cada fase.")
+    with st.expander("¿Olvidé mi contraseña, qué hago?"):
+        st.write("Contactá al administrador por fuera de la app para que te resetee la contraseña.")
+
+    st.divider()
     st.button("← Volver", on_click=cambiar_pantalla, args=(0,), use_container_width=True)

@@ -4,7 +4,7 @@ import streamlit as st
 def password_input_with_toggle(label: str, key: str, placeholder: str = "", value: str = "", help_text: str | None = None):
     show_key = f"{key}__show"
     shown = st.session_state.get(show_key, False)
-    cols = st.columns([0.84, 0.16], gap="small")
+    cols = st.columns([12, 2], gap="small")
     with cols[0]:
         val = st.text_input(
             label,
@@ -15,7 +15,7 @@ def password_input_with_toggle(label: str, key: str, placeholder: str = "", valu
             help=help_text,
         )
     with cols[1]:
-        st.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:1.72rem'></div>", unsafe_allow_html=True)
         if st.button("🙈" if shown else "👁️", key=f"{key}__toggle", use_container_width=True):
             st.session_state[show_key] = not shown
             st.rerun()
@@ -33,9 +33,9 @@ def integrated_stepper(label: str, key: str, value: int = 0, min_value: int = 0,
         except Exception:
             st.session_state[state_key] = int(value)
 
-    cols = st.columns([0.18, 0.64, 0.18], gap="small")
+    cols = st.columns([1.15, 2.2, 1.15], gap="small")
     with cols[0]:
-        st.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:1.72rem'></div>", unsafe_allow_html=True)
         if st.button("−", key=f"{key}__minus", use_container_width=True):
             st.session_state[state_key] = max(min_value, int(st.session_state[state_key]) - 1)
             st.rerun()
@@ -49,7 +49,7 @@ def integrated_stepper(label: str, key: str, value: int = 0, min_value: int = 0,
             label_visibility="collapsed",
         )
     with cols[2]:
-        st.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:1.72rem'></div>", unsafe_allow_html=True)
         if st.button("+", key=f"{key}__plus", use_container_width=True):
             st.session_state[state_key] = min(max_value, int(st.session_state[state_key]) + 1)
             st.rerun()
