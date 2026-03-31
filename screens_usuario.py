@@ -138,6 +138,34 @@ def nombre_equipo_display(nombre: str) -> str:
     return f"{b} {nombre}" if b else str(nombre)
 
 
+def _score_input(container, side, fase, idx, value_prev):
+    key = f"score_{side}_{fase}_{idx}"
+    current = st.session_state.get(key)
+    if current is None:
+        current = str(int(value_prev or 0))
+        st.session_state[key] = current
+
+    raw_value = container.text_input(
+        side,
+        value=current,
+        key=key,
+        label_visibility="collapsed",
+        placeholder="0",
+    )
+    cleaned = ''.join(ch for ch in str(raw_value) if ch.isdigit())
+    if cleaned == "":
+        parsed = 0
+        normalized = ""
+    else:
+        parsed = max(0, min(10, int(cleaned)))
+        normalized = str(parsed)
+
+    if raw_value != normalized:
+        st.session_state[key] = normalized
+
+    return parsed
+
+
 def _get_resumen_usuario(username, u):
     ranking_snapshot = db_get_ranking_snapshot()
     user_rank = ranking_snapshot["by_username"].get(username, {})
@@ -618,9 +646,9 @@ def pantalla_usuario():
             st.markdown(f'<div style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:10px 12px;margin:5px 0;">', unsafe_allow_html=True)
             col_local, col_gl, col_sep, col_gv, col_visita = st.columns([3, 1, 0.3, 1, 3])
             col_local.markdown(f"<div style='text-align:right;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_local}</div>", unsafe_allow_html=True)
-            gl = col_gl.number_input("L", min_value=0, max_value=10, value=int(gl_prev), key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+            gl = _score_input(col_gl, "L", fase, idx, gl_prev)
             col_sep.markdown("<div style='text-align:center;padding-top:10px;color:var(--text3);font-size:0.8rem;'>:</div>", unsafe_allow_html=True)
-            gv = col_gv.number_input("V", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+            gv = _score_input(col_gv, "V", fase, idx, gv_prev)
             col_visita.markdown(f"<div style='text-align:left;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             if gl != pred.get(idx, (0, 0))[0] or gv != pred.get(idx, (0, 0))[1]:

@@ -117,6 +117,13 @@ def _invalidar_resultado_especial(categoria):
         pass
 
 
+def _clear_cache_safe(func, *args):
+    try:
+        func.clear(*args)
+    except Exception:
+        pass
+
+
 # ─── Inicialización ───────────────────────────────────────────────────────────
 
 @st.cache_resource
@@ -757,16 +764,12 @@ def db_calcular_puntos():
             ) c
             WHERE u.username = c.username
         """)
-    try:
-        db_get_todos_usuarios.clear()
-        db_get_puntos_especiales_usuarios.clear()
-        db_get_estadisticas_usuarios.clear()
-        db_get_estadisticas_generales.clear()
-        db_get_ranking_snapshot.clear()
-        db_get_estadisticas_partidos.clear()
-        db_get_ranking_snapshot.clear()
-    except Exception:
-        pass
+    _clear_cache_safe(db_get_todos_usuarios)
+    _clear_cache_safe(db_get_puntos_especiales_usuarios)
+    _clear_cache_safe(db_get_estadisticas_usuarios)
+    _clear_cache_safe(db_get_estadisticas_generales)
+    _clear_cache_safe(db_get_estadisticas_partidos)
+    _clear_cache_safe(db_get_ranking_snapshot)
 
 
 # ─── Especiales ───────────────────────────────────────────────────────────────
@@ -841,14 +844,11 @@ def db_calcular_puntos_especiales():
     Solo invalida caches porque los especiales se leen dinámicamente
     desde db_get_puntos_especiales_usuarios().
     """
-    try:
-        db_get_todos_usuarios.clear()
-        db_get_puntos_especiales_usuarios.clear()
-        db_get_estadisticas_usuarios.clear()
-        db_get_estadisticas_generales.clear()
-        db_get_ranking_snapshot.clear()
-    except Exception:
-        pass
+    _clear_cache_safe(db_get_todos_usuarios)
+    _clear_cache_safe(db_get_puntos_especiales_usuarios)
+    _clear_cache_safe(db_get_estadisticas_usuarios)
+    _clear_cache_safe(db_get_estadisticas_generales)
+    _clear_cache_safe(db_get_ranking_snapshot)
 
 
 def db_fusionar_variantes_especial(cat, variantes, nombre_oficial):

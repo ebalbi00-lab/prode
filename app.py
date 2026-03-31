@@ -1,4 +1,5 @@
 import streamlit as st
+import textwrap
 
 st.set_page_config(
     page_title="Prode Il Baigo",
@@ -23,8 +24,11 @@ st.markdown(
 _original_markdown = st.markdown
 
 def _safe_markdown(body, *args, **kwargs):
-    if isinstance(body, str) and "<div" in body and "unsafe_allow_html" not in kwargs:
-        kwargs["unsafe_allow_html"] = True
+    if isinstance(body, str):
+        has_html = any(tag in body for tag in ("<div", "<span", "<table", "<img", "<input", "<br", "<p", "<section", "<small", "<h1", "<h2", "<h3"))
+        if has_html:
+            body = textwrap.dedent(body).strip()
+            kwargs.setdefault("unsafe_allow_html", True)
     return _original_markdown(body, *args, **kwargs)
 
 st.markdown = _safe_markdown
