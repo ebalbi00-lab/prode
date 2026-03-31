@@ -1,6 +1,3 @@
-import re
-import textwrap
-
 import streamlit as st
 
 st.set_page_config(
@@ -24,12 +21,10 @@ st.markdown(
 )
 
 _original_markdown = st.markdown
-_HTML_TAG_RE = re.compile(r"<\s*(div|span|table|img|input|br|p|section|article|header|footer|small|strong|em|ul|ol|li|h[1-6])\b", re.IGNORECASE)
 
 def _safe_markdown(body, *args, **kwargs):
-    if isinstance(body, str) and _HTML_TAG_RE.search(body):
-        body = textwrap.dedent(body).strip()
-        kwargs.setdefault("unsafe_allow_html", True)
+    if isinstance(body, str) and "<div" in body and "unsafe_allow_html" not in kwargs:
+        kwargs["unsafe_allow_html"] = True
     return _original_markdown(body, *args, **kwargs)
 
 st.markdown = _safe_markdown

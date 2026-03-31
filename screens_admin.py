@@ -138,18 +138,18 @@ def pantalla_admin():
     sec = st.session_state.get("admin_sec", "inicio")
     if ctx["es_admin_total"]:
         secciones = [
-            ("resumen", "📋", "Resumen", "Estado general y confirmaciones"),
-            ("pendientes", "👥", "Pendientes", "Aprobar o rechazar solicitudes"),
-            ("fases", "🔀", "Fases", "Habilitar fases del torneo"),
-            ("partidos", "⚽", "Partidos", "Cargar equipos de cada partido"),
-            ("resultados", "📊", "Resultados", "Ingresar marcadores reales"),
-            ("consumo", "💰", "Consumo", "Sumar puntos de consumo"),
-            ("pagos", "💳", "Pagos", "Editar datos de pago del registro"),
-            ("especiales", "⭐", "Especiales", "Resultados especiales"),
-            ("usuarios", "👤", "Usuarios", "Gestionar usuarios"),
+            ("resumen",    "📋", "Resumen",      "Estado general y confirmaciones"),
+            ("usuarios",   "👤", "Usuarios",     "Gestionar usuarios"),
+            ("pagos",      "💳", "Pagos",        "Editar datos de pago del registro"),
+            ("pendientes", "👥", "Pendientes",   "Aprobar o rechazar solicitudes"),
+            ("fases",      "🔀", "Fases",        "Habilitar fases del torneo"),
+            ("partidos",   "⚽", "Partidos",     "Cargar equipos de cada partido"),
+            ("resultados", "📊", "Resultados",   "Ingresar marcadores reales"),
             ("destacados", "📊", "Estadísticas", "Destacados y especiales más elegidos"),
-            ("reset", "⚠️", "Reset", "Resetear fases o todo"),
-            ("exportar", "📥", "Exportar", "Descargar base de datos"),
+            ("consumo",    "💰", "Consumo",      "Sumar puntos de consumo"),
+            ("especiales", "⭐", "Especiales",   "Resultados especiales"),
+            ("exportar",   "📥", "Exportar",     "Descargar base de datos"),
+            ("reset",      "⚠️", "Reset",        "Resetear fases o todo"),
         ]
     else:
         secciones = [
@@ -228,24 +228,38 @@ def _tab_resumen(panel_consumo=False):
     fases_hab  = sum(1 for v in fases.values() if v)
     total_cons = sum(u["consumo"] for u in todos)
 
-    # Cards de resumen
+    # Cards de resumen (colores inline para evitar problemas con variables CSS en markdown)
+    _bg3   = "#10203a"
+    _brd   = "rgba(143,170,214,0.18)"
+    _t3    = "#8ea4c4"
+    _green = "#34d399"
+    _blue  = "#6ee7ff"
+    _orng  = "#fb923c"
+    _red   = "#fb7185"
+    _rdbg  = "rgba(251,113,133,0.12)"
+    _rdbrd = "rgba(251,113,133,0.28)"
+
+    pend_bg  = _rdbg  if pendientes else _bg3
+    pend_brd = _rdbrd if pendientes else _brd
+    pend_clr = _red   if pendientes else _t3
+
     st.markdown(f"""
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:1rem;">
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Usuarios</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--green);">{len(todos)}</div>
+        <div style="background:{_bg3};border:1px solid {_brd};border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Usuarios</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{_green};">{len(todos)}</div>
         </div>
-        <div style="background:{'var(--red-dim)' if pendientes else 'var(--bg3)'};border:1px solid {'var(--red-border)' if pendientes else 'var(--border)'};border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Pendientes</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{'var(--red)' if pendientes else 'var(--text3)'};">{len(pendientes)}</div>
+        <div style="background:{pend_bg};border:1px solid {pend_brd};border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Pendientes</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{pend_clr};">{len(pendientes)}</div>
         </div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Fases activas</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--blue);">{fases_hab}</div>
+        <div style="background:{_bg3};border:1px solid {_brd};border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Fases activas</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{_blue};">{fases_hab}</div>
         </div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Consumo total</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:var(--orange);">{total_cons}</div>
+        <div style="background:{_bg3};border:1px solid {_brd};border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Consumo total</div>
+            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{_orng};">{total_cons}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -271,15 +285,15 @@ def _tab_resumen(panel_consumo=False):
         for fase in fases_activas:
             cnt  = _conf_map.get(fase, 0)
             pct  = int(cnt / total_u * 100)
-            color = "var(--green)" if pct == 100 else "var(--blue)" if pct > 50 else "var(--gold)"
+            bar_color = "#34d399" if pct == 100 else "#6ee7ff" if pct > 50 else "#f5c76b"
             bloques_fases.append(f"""
             <div style="margin-bottom:8px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                    <span style="font-size:0.8rem;font-weight:600;color:var(--text);">{fase}</span>
-                    <span style="font-size:0.75rem;color:var(--text3);">{cnt} / {len(todos)}</span>
+                    <span style="font-size:0.8rem;font-weight:600;color:#f5f8fc;">{fase}</span>
+                    <span style="font-size:0.75rem;color:#8ea4c4;">{cnt} / {len(todos)}</span>
                 </div>
-                <div style="background:var(--border);border-radius:4px;height:6px;">
-                    <div style="background:{color};border-radius:4px;height:100%;width:{pct}%;transition:width 0.3s;"></div>
+                <div style="background:rgba(143,170,214,0.18);border-radius:4px;height:6px;">
+                    <div style="background:{bar_color};border-radius:4px;height:100%;width:{pct}%;"></div>
                 </div>
             </div>
             """)
@@ -551,10 +565,12 @@ def _tab_resultados():
             rv = c_rv.number_input("rv", 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{idx}", label_visibility="collapsed")
             c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:var(--text);'>{bandera(p['visita'])} {p['visita']}</div>", unsafe_allow_html=True)
             if c_btn.button("💾", key=f"save_{fase_sel}_{idx}", help="Guardar resultado"):
-                with st.spinner("Guardando..."):
+                with st.spinner("Guardando y recalculando puntajes..."):
                     db_guardar_resultado(fase_sel, idx, rl, rv)
                     db_calcular_puntos()
-                st.session_state["res_ok"] = f"✅ Guardado: {p['local']} {rl} — {rv} {p['visita']}"
+                    db_calcular_puntos_especiales()
+                    st.cache_data.clear()
+                st.session_state["res_ok"] = f"✅ Guardado: {p['local']} {rl} — {rv} {p['visita']}. Puntajes y ranking actualizados."
                 st.rerun()
             if tiene_res:
                 st.caption(f"✅ Guardado: {p['local']} {rl_prev} — {rv_prev} {p['visita']}")
@@ -721,31 +737,37 @@ def _tab_pagos():
         st.rerun()
 
     st.divider()
-    st.markdown("Vista previa")
-    st.markdown(f"""
-    <div style="background:var(--gold-dim); border:1.5px solid var(--gold-border);
-                border-radius:10px; padding:12px 16px; margin:0.5rem 0;">
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
-                    color:var(--gold); margin-bottom:10px;">💰 Datos de pago</div>
+    # Recargar config guardada para la vista previa (no depender de los widgets del form)
+    pago_preview = db_get_pago_config()
+    titular_p     = pago_preview.get("titular", "")
+    alias_p       = pago_preview.get("alias", "")
+    cvu_p         = pago_preview.get("cvu", "")
+    instruc_p     = pago_preview.get("instrucciones", "")
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="color:var(--text2); font-size:0.82rem;">Titular</span>
-            <span style="color:var(--text); font-weight:700; font-size:0.88rem;">{titular}</span>
+    st.markdown("**Vista previa** (muestra los datos guardados actualmente)")
+    if not titular_p and not alias_p and not cvu_p:
+        st.info("Todavía no hay datos de pago guardados. Completá el formulario y guardá.")
+    else:
+        instruc_html = f"<div style='margin-top:10px;color:#cfdbeb;font-size:0.82rem;line-height:1.6;'>{instruc_p}</div>" if instruc_p else ""
+        st.markdown(f"""
+        <div style="background:rgba(245,199,107,0.12);border:1.5px solid rgba(245,199,107,0.32);
+                    border-radius:10px;padding:12px 16px;margin:0.5rem 0;">
+            <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+                        color:#f5c76b;margin-bottom:10px;">💰 Datos de pago</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="color:#cfdbeb;font-size:0.82rem;">Titular</span>
+                <span style="color:#f5f8fc;font-weight:700;font-size:0.88rem;">{titular_p}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="color:#cfdbeb;font-size:0.82rem;">Alias</span>
+                <span style="color:#f5f8fc;font-weight:700;font-family:monospace;font-size:0.88rem;">{alias_p}</span>
+            </div>
+            <div style="background:#10203a;border:1.5px solid rgba(143,170,214,0.28);border-radius:7px;
+                        color:#f5f8fc;font-family:monospace;font-size:0.88rem;font-weight:700;
+                        padding:8px 12px;">{cvu_p}</div>
+            {instruc_html}
         </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span style="color:var(--text2); font-size:0.82rem;">Alias</span>
-            <span style="color:var(--text); font-weight:700; font-family:JetBrains Mono,monospace; font-size:0.88rem;">{alias}</span>
-        </div>
-
-        <input type="text" value="{cvu}" readonly
-            style="width:100%; background:var(--bg3); border:1.5px solid var(--border2); border-radius:7px;
-                   color:var(--text); font-family:JetBrains Mono,monospace; font-size:0.88rem; font-weight:700;
-                   padding:8px 12px; box-sizing:border-box;" />
-
-        {f"<div style='margin-top:10px; color:var(--text2); font-size:0.82rem; line-height:1.6;'>{instrucciones}</div>" if instrucciones else ""}
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 
 

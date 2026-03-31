@@ -651,8 +651,7 @@ def db_rechazar_pendiente(pid):
         db_get_pendientes.clear()
     except Exception:
         pass
-    if username_rechazado:
-        db_feed_event(f"❌ Se rechazó la solicitud de {username_rechazado}", "usuario")
+    # No se publica en el feed para no exponer rechazos en la actividad en vivo
 
 
 # ─── Consumo ──────────────────────────────────────────────────────────────────
@@ -711,15 +710,13 @@ def db_get_consumo_log(username=None):
 
 # ─── Puntajes ─────────────────────────────────────────────────────────────────
 
-def _clear_cache_safe(func, *args):
-    try:
-        func.clear(*args)
-    except Exception:
-        pass
-
-
 def db_calcular_puntos():
     """Recalcula solo puntos de partidos y exactos. Los especiales se calculan aparte."""
+    # Limpiar cache de resultados antes de recalcular para asegurar datos frescos
+    try:
+        db_get_resultado_completo.clear()
+    except Exception:
+        pass
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -764,12 +761,16 @@ def db_calcular_puntos():
             ) c
             WHERE u.username = c.username
         """)
-    _clear_cache_safe(db_get_todos_usuarios)
-    _clear_cache_safe(db_get_puntos_especiales_usuarios)
-    _clear_cache_safe(db_get_estadisticas_usuarios)
-    _clear_cache_safe(db_get_estadisticas_generales)
-    _clear_cache_safe(db_get_ranking_snapshot)
-    _clear_cache_safe(db_get_estadisticas_partidos)
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_puntos_especiales_usuarios.clear()
+        db_get_estadisticas_usuarios.clear()
+        db_get_estadisticas_generales.clear()
+        db_get_ranking_snapshot.clear()
+        db_get_estadisticas_partidos.clear()
+        db_get_ranking_snapshot.clear()
+    except Exception:
+        pass
 
 
 # ─── Especiales ───────────────────────────────────────────────────────────────

@@ -741,8 +741,14 @@ def pantalla_usuario():
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
-        partidos_pagina = _v7_paginate(partidos, f"fase_page_{fase}", page_size=4) if not confirmado else partidos
-        for p in partidos_pagina:
+        st.markdown("""
+        <div style='background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.4);border-radius:10px;
+                    padding:10px 14px;margin-bottom:1rem;font-size:0.82rem;color:var(--text2);'>
+            ⏱️ <strong>El resultado cuenta al final de los 90 minutos más tiempo extra.</strong>
+            No se considera quién avanza en penales.
+        </div>
+        """, unsafe_allow_html=True)
+        for p in partidos:
             render_partido(p)
 
         if not confirmado:

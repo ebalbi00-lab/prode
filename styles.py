@@ -416,29 +416,6 @@ def inject_css():
         outline: none !important;
     }
 
-    /* ── Number input steppers visibles ─────────────── */
-    .stNumberInput input[type="number"] {
-        appearance: auto !important;
-        -webkit-appearance: auto !important;
-        -moz-appearance: auto !important;
-    }
-
-    .stNumberInput input[type="number"]::-webkit-outer-spin-button,
-    .stNumberInput input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: auto !important;
-        opacity: 1 !important;
-        margin: 0 !important;
-    }
-
-    div[data-testid="stNumberInput"] button,
-    [data-testid="stNumberInputStepUp"],
-    [data-testid="stNumberInputStepDown"] {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }
-
     /* ── Labels ───────────────────────────────────── */
     .stTextInput label,
     .stPasswordInput label,
