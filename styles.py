@@ -371,7 +371,6 @@ def inject_css():
     .stTextInput > div > div > input,
     .stPasswordInput > div > div > input,
     .stNumberInput input,
-    div[data-testid="stTextInputRootElement"] input,
     .stDateInput input,
     .stTextArea textarea,
     textarea,
@@ -389,7 +388,6 @@ def inject_css():
     .stTextInput > div > div > input,
     .stPasswordInput > div > div > input,
     .stNumberInput input,
-    div[data-testid="stTextInputRootElement"] input,
     .stDateInput input,
     .stTextArea textarea,
     textarea {
@@ -408,7 +406,6 @@ def inject_css():
     .stTextInput > div > div > input:focus,
     .stPasswordInput > div > div > input:focus,
     .stNumberInput input:focus,
-    div[data-testid="stTextInputRootElement"] input:focus,
     .stDateInput input:focus,
     .stTextArea textarea:focus,
     textarea:focus,
@@ -417,6 +414,29 @@ def inject_css():
         border-color: rgba(110,231,255,0.50) !important;
         box-shadow: 0 0 0 3px rgba(110,231,255,0.10), 0 4px 16px rgba(110,231,255,0.08) !important;
         outline: none !important;
+    }
+
+    /* ── Number input steppers visibles ─────────────── */
+    .stNumberInput input[type="number"] {
+        appearance: auto !important;
+        -webkit-appearance: auto !important;
+        -moz-appearance: auto !important;
+    }
+
+    .stNumberInput input[type="number"]::-webkit-outer-spin-button,
+    .stNumberInput input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: auto !important;
+        opacity: 1 !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stNumberInput"] button,
+    [data-testid="stNumberInputStepUp"],
+    [data-testid="stNumberInputStepDown"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }
 
     /* ── Labels ───────────────────────────────────── */
@@ -689,44 +709,6 @@ def inject_css():
         .payment-grid { grid-template-columns: 1fr; gap: .6rem; }
         .stForm { padding: 1.1rem .9rem .9rem .9rem !important; }
     }
-
-    /* ── Score inputs sin bug en eliminatorias ──── */
-    div[data-testid="stTextInputRootElement"] input {
-        text-align: center !important;
-        font-family: Bebas Neue, sans-serif !important;
-        font-size: 1.35rem !important;
-        font-weight: 700 !important;
-        padding-left: .55rem !important;
-        padding-right: .55rem !important;
-    }
-
-    /* ── Number input: mostrar flechas en compu y celular ── */
-    .stNumberInput input[type="number"],
-    input[type="number"] {
-        -webkit-appearance: auto !important;
-        -moz-appearance: auto !important;
-        appearance: auto !important;
-    }
-
-    .stNumberInput input[type="number"]::-webkit-inner-spin-button,
-    .stNumberInput input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: auto !important;
-        margin: 0 !important;
-        opacity: 1 !important;
-        display: block !important;
-    }
-
-    div[data-testid="stNumberInput"] button,
-    [data-testid="stNumberInputStepUp"],
-    [data-testid="stNumberInputStepDown"] {
-        display: flex !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-        opacity: 1 !important;
-    }
-
     </style>
     """
     for k, val in v.items():

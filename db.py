@@ -117,13 +117,6 @@ def _invalidar_resultado_especial(categoria):
         pass
 
 
-def _clear_cache_safe(func, *args):
-    try:
-        func.clear(*args)
-    except Exception:
-        pass
-
-
 # ─── Inicialización ───────────────────────────────────────────────────────────
 
 @st.cache_resource
@@ -718,6 +711,13 @@ def db_get_consumo_log(username=None):
 
 # ─── Puntajes ─────────────────────────────────────────────────────────────────
 
+def _clear_cache_safe(func, *args):
+    try:
+        func.clear(*args)
+    except Exception:
+        pass
+
+
 def db_calcular_puntos():
     """Recalcula solo puntos de partidos y exactos. Los especiales se calculan aparte."""
     with get_db() as conn:
@@ -768,8 +768,8 @@ def db_calcular_puntos():
     _clear_cache_safe(db_get_puntos_especiales_usuarios)
     _clear_cache_safe(db_get_estadisticas_usuarios)
     _clear_cache_safe(db_get_estadisticas_generales)
-    _clear_cache_safe(db_get_estadisticas_partidos)
     _clear_cache_safe(db_get_ranking_snapshot)
+    _clear_cache_safe(db_get_estadisticas_partidos)
 
 
 # ─── Especiales ───────────────────────────────────────────────────────────────
@@ -844,11 +844,14 @@ def db_calcular_puntos_especiales():
     Solo invalida caches porque los especiales se leen dinámicamente
     desde db_get_puntos_especiales_usuarios().
     """
-    _clear_cache_safe(db_get_todos_usuarios)
-    _clear_cache_safe(db_get_puntos_especiales_usuarios)
-    _clear_cache_safe(db_get_estadisticas_usuarios)
-    _clear_cache_safe(db_get_estadisticas_generales)
-    _clear_cache_safe(db_get_ranking_snapshot)
+    try:
+        db_get_todos_usuarios.clear()
+        db_get_puntos_especiales_usuarios.clear()
+        db_get_estadisticas_usuarios.clear()
+        db_get_estadisticas_generales.clear()
+        db_get_ranking_snapshot.clear()
+    except Exception:
+        pass
 
 
 def db_fusionar_variantes_especial(cat, variantes, nombre_oficial):
