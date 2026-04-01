@@ -139,14 +139,14 @@ def pantalla_admin():
     if ctx["es_admin_total"]:
         secciones = [
             ("resumen",    "📋", "Resumen",      "Estado general y confirmaciones"),
-            ("usuarios",   "👤", "Usuarios",     "Gestionar usuarios"),
             ("pagos",      "💳", "Pagos",        "Editar datos de pago del registro"),
+            ("usuarios",   "👤", "Usuarios",     "Gestionar usuarios"),
             ("pendientes", "👥", "Pendientes",   "Aprobar o rechazar solicitudes"),
             ("fases",      "🔀", "Fases",        "Habilitar fases del torneo"),
             ("partidos",   "⚽", "Partidos",     "Cargar equipos de cada partido"),
             ("resultados", "📊", "Resultados",   "Ingresar marcadores reales"),
-            ("destacados", "📊", "Estadísticas", "Destacados y especiales más elegidos"),
             ("consumo",    "💰", "Consumo",      "Sumar puntos de consumo"),
+            ("destacados", "📊", "Estadísticas", "Destacados y especiales más elegidos"),
             ("especiales", "⭐", "Especiales",   "Resultados especiales"),
             ("exportar",   "📥", "Exportar",     "Descargar base de datos"),
             ("reset",      "⚠️", "Reset",        "Resetear fases o todo"),
