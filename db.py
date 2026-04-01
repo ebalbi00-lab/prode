@@ -745,7 +745,7 @@ def db_calcular_puntos():
                 FROM prodes p
                 JOIN resultados r ON r.fase = p.fase AND r.partido_idx = p.partido_idx
                 JOIN mult x ON x.fase = p.fase
-                WHERE p.confirmado = 1 AND p.partido_idx >= 0
+                WHERE p.partido_idx >= 0
                 GROUP BY p.username
             )
             UPDATE usuarios u
