@@ -405,7 +405,7 @@ def db_guardar_partido(fase, idx, local, visita, fecha="", hora=""):
             fecha=EXCLUDED.fecha, hora=EXCLUDED.hora
         """, (fase, idx, local, visita, fecha, hora))
     try:
-        db_get_partidos.clear(fase)
+        db_get_partidos.clear()
         db_get_equipos_grupos.clear()
     except Exception:
         pass
@@ -442,7 +442,7 @@ def db_renombrar_equipo_global(nombre_actual, nuevo_nombre):
         db_get_resultado_especial.clear("campeon")
     except Exception:
         pass
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=0)
 def db_get_equipos_grupos():
     partidos = db_get_partidos("Grupos")
     equipos = sorted(

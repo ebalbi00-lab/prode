@@ -208,11 +208,19 @@ def pantalla_registro_cuenta():
     </div>
     """, unsafe_allow_html=True)
 
+    # file_uploader fuera del form para que no se pierda al hacer submit
+    comprobante_file = st.file_uploader("Comprobante de pago", key="reg_comprobante")
+    if comprobante_file is not None:
+        import base64 as _b64
+        st.session_state["reg_comprobante_data"] = (
+            f"data:{comprobante_file.type};base64,"
+            + _b64.b64encode(comprobante_file.read()).decode()
+        )
+
     with st.form("form_registro_cuenta"):
         usuario = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
         clave = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
         confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••", key="registro_confirmar")
-        comprobante = st.file_uploader("Comprobante de pago")
 
         st.markdown(
             """
@@ -232,11 +240,13 @@ def pantalla_registro_cuenta():
         enviar = col2.form_submit_button("Enviar solicitud", type="primary", use_container_width=True)
 
     if volver:
+        st.session_state.pop("reg_comprobante_data", None)
         cambiar_pantalla(1)
         st.rerun()
 
     if enviar:
         u_strip = usuario.strip().lower()
+        comprobante_data = st.session_state.get("reg_comprobante_data")
         if not u_strip:
             st.session_state.reg_error = "Ingresá un usuario"
         elif not re.match(r'^[a-zA-Z0-9._-]+$', u_strip):
@@ -251,12 +261,9 @@ def pantalla_registro_cuenta():
             st.session_state.reg_error = "La clave debe tener al menos 4 caracteres"
         elif clave != confirmar:
             st.session_state.reg_error = "Las claves no coinciden"
-        elif not comprobante:
+        elif not comprobante_data:
             st.session_state.reg_error = "Subí el comprobante de pago"
         else:
-            import base64
-            comprobante_b64 = base64.b64encode(comprobante.read()).decode()
-            comprobante_data = f"data:{comprobante.type};base64,{comprobante_b64}"
             with st.spinner("Enviando solicitud..."):
                 db_agregar_pendiente({
                     "username": u_strip,
@@ -264,6 +271,7 @@ def pantalla_registro_cuenta():
                     "comprobante": comprobante_data,
                     **st.session_state.registro_temp,
                 })
+            st.session_state.pop("reg_comprobante_data", None)
             st.session_state.step = 4
             st.rerun()
 
