@@ -6,7 +6,7 @@ import re
 import streamlit as st
 
 from db import (
-    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, db_get_pendientes, db_get_pago_config,
+    db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, verificar_clave, db_get_pendientes, db_get_pago_config,
     db_touch_usuario, db_get_tipo_usuario
 )
 from constants import FASES
@@ -23,7 +23,7 @@ def login(usuario, clave):
         st.rerun()
 
     u = db_get_usuario(usuario.strip().lower())
-    if not u or u["clave"] != hash_clave(clave):
+    if not u or not verificar_clave(clave, u["clave"]):
         st.session_state["login_intentos"] = intentos + 1
         st.session_state.login_error = "Usuario o clave incorrectos"
         st.rerun()
@@ -247,8 +247,8 @@ def pantalla_registro_cuenta():
             st.session_state.reg_error = "Ese usuario ya existe"
         elif any(p["username"] == u_strip for p in db_get_pendientes()):
             st.session_state.reg_error = "Ya hay una solicitud pendiente con ese usuario"
-        elif len(clave) < 4:
-            st.session_state.reg_error = "La clave debe tener al menos 4 caracteres"
+        elif len(clave) < 8:
+            st.session_state.reg_error = "La clave debe tener al menos 8 caracteres"
         elif clave != confirmar:
             st.session_state.reg_error = "Las claves no coinciden"
         elif not comprobante:

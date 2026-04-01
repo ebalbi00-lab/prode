@@ -31,7 +31,7 @@ from db import (
     db_registro_abierto, db_set_config, db_get_pago_config, db_set_pago_config,
     db_get_especial, db_get_resultado_especial, db_guardar_resultado_especial,
     db_get_todos_especiales, db_fusionar_variantes_especial,
-    db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, get_db,
+    db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, verificar_clave, get_db,
     db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
     db_get_lista_especiales, db_set_lista_especiales_desde_texto, db_reset_lista_especiales,
 )
@@ -545,7 +545,7 @@ def _tab_resultados():
 
         if limpiar_btn:
             admin_lr = db_get_usuario(st.session_state.usuario)
-            if admin_lr["clave"] != hash_clave(pw_limpiar):
+            if not verificar_clave(pw_limpiar, admin_lr["clave"]):
                 st.session_state["res_ok"] = "❌ Contraseña incorrecta."
             else:
                 if fase_sel == "Grupos":
@@ -639,7 +639,7 @@ def _tab_consumo():
         eliminar_btn   = st.form_submit_button("🗑️ Eliminar registro", type="primary")
     if eliminar_btn:
         admin = db_get_usuario(st.session_state.usuario)
-        if admin["clave"] != hash_clave(clave_admin_el):
+        if not verificar_clave(clave_admin_el, admin["clave"]):
             st.error("Contraseña incorrecta.")
         else:
             db_eliminar_consumo_log(int(id_eliminar)); db_calcular_puntos()
@@ -880,7 +880,7 @@ def _tab_especiales():
 
     if guardar_todos_esp:
         admin_esp = db_get_usuario(st.session_state.usuario)
-        if admin_esp["clave"] != hash_clave(pw_esp_adm):
+        if not verificar_clave(pw_esp_adm, admin_esp["clave"]):
             st.session_state["msg_esp_adm"] = "❌ Contraseña incorrecta."
         else:
             guardados = 0
@@ -904,7 +904,7 @@ def _tab_especiales():
             limpiar_esp   = st.form_submit_button("🗑️ Limpiar resultados especiales", type="primary")
         if limpiar_esp:
             admin_le = db_get_usuario(st.session_state.usuario)
-            if admin_le["clave"] != hash_clave(pw_limp_esp):
+            if not verificar_clave(pw_limp_esp, admin_le["clave"]):
                 st.session_state["msg_esp_adm"] = "❌ Contraseña incorrecta."
             else:
                 db_limpiar_resultados_especiales(); db_calcular_puntos()
@@ -1040,7 +1040,7 @@ def _tab_usuarios():
                 borrar_btn    = st.form_submit_button("🗑️ Borrar usuario", type="primary")
             if borrar_btn:
                 admin_u = db_get_usuario(st.session_state.usuario)
-                if admin_u["clave"] != hash_clave(clave_adm_del):
+                if not verificar_clave(clave_adm_del, admin_u["clave"]):
                     st.session_state["err_usuarios"] = "Contraseña incorrecta."
                 else:
                     db_borrar_usuario(sel_del); st.cache_data.clear()
@@ -1078,7 +1078,7 @@ def _tab_reset():
             reset_fase_btn = st.form_submit_button(f"🗑️ Resetear fase", type="primary")
         if reset_fase_btn:
             admin_rf = db_get_usuario(st.session_state.usuario)
-            if admin_rf["clave"] != hash_clave(pw_reset_f):
+            if not verificar_clave(pw_reset_f, admin_rf["clave"]):
                 st.error("Contraseña incorrecta.")
             else:
                 with get_db() as conn:
@@ -1100,7 +1100,7 @@ def _tab_reset():
         recalc_btn = st.form_submit_button("🔄 Recalcular puntajes", type="primary")
     if recalc_btn:
         admin_rc = db_get_usuario(st.session_state.usuario)
-        if admin_rc["clave"] != hash_clave(pw_recalc):
+        if not verificar_clave(pw_recalc, admin_rc["clave"]):
             st.error("Contraseña incorrecta.")
         else:
             db_calcular_puntos()
@@ -1119,7 +1119,7 @@ def _tab_reset():
         resetear_todo = st.form_submit_button("⚠️ Resetear todo", type="primary")
     if resetear_todo:
         admin = db_get_usuario(st.session_state.usuario)
-        if admin["clave"] != hash_clave(clave_admin_r):
+        if not verificar_clave(clave_admin_r, admin["clave"]):
             st.error("Contraseña incorrecta.")
         elif confirmar_r != "CONFIRMAR":
             st.error("Tenés que escribir exactamente CONFIRMAR para continuar.")

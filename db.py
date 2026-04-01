@@ -3,8 +3,9 @@ db.py — Conexión, pool y todas las funciones de acceso a la base de datos.
 Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 """
 import datetime
-import hashlib
 import os
+
+import bcrypt
 
 import psycopg2
 import psycopg2.extras
@@ -213,14 +214,27 @@ def init_db():
             "INSERT INTO usuarios (username, clave, nombre, es_admin) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING",
             ("consumo", hash_clave(consumo_pass), "Panel Consumo", 2)
         )
-        cur.execute(
-            "INSERT INTO usuarios (username, clave, nombre, es_admin) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING",
-            ("prueba", hash_clave("1234"), "Prueba", 0)
-        )
+
+        # Migrar hashes SHA-256 viejos a bcrypt (SHA-256 = hex de 64 chars, bcrypt empieza con $2b$)
+        for uname, password in [("admin", admin_pass), ("consumo", consumo_pass)]:
+            cur.execute("SELECT clave FROM usuarios WHERE username=%s", (uname,))
+            row = cur.fetchone()
+            if row and len(row[0]) == 64 and not row[0].startswith("$2"):
+                cur.execute(
+                    "UPDATE usuarios SET clave=%s WHERE username=%s",
+                    (hash_clave(password), uname)
+                )
 
 
 def hash_clave(clave: str) -> str:
-    return hashlib.sha256(clave.encode()).hexdigest()
+    return bcrypt.hashpw(clave.encode(), bcrypt.gensalt()).decode()
+
+
+def verificar_clave(clave: str, hash_guardado: str) -> bool:
+    try:
+        return bcrypt.checkpw(clave.encode(), hash_guardado.encode())
+    except Exception:
+        return False
 
 
 # ─── Config ───────────────────────────────────────────────────────────────────
