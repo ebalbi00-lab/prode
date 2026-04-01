@@ -3,10 +3,9 @@ db.py — Conexión, pool y todas las funciones de acceso a la base de datos.
 Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 """
 import datetime
-import hashlib
-import hmac
 import os
-import secrets
+
+import bcrypt
 
 import psycopg2
 import psycopg2.extras
@@ -216,11 +215,11 @@ def init_db():
             ("consumo", hash_clave(consumo_pass), "Panel Consumo", 2)
         )
 
-        # Migrar hashes SHA-256 viejos a PBKDF2 (SHA-256 viejo = hex de 64 chars sin prefijo)
+        # Migrar hashes SHA-256 viejos a bcrypt (SHA-256 = hex de 64 chars, bcrypt empieza con $2b$)
         for uname, password in [("admin", admin_pass), ("consumo", consumo_pass)]:
             cur.execute("SELECT clave FROM usuarios WHERE username=%s", (uname,))
             row = cur.fetchone()
-            if row and not row[0].startswith("pbkdf2$"):
+            if row and len(row[0]) == 64 and not row[0].startswith("$2"):
                 cur.execute(
                     "UPDATE usuarios SET clave=%s WHERE username=%s",
                     (hash_clave(password), uname)
@@ -228,23 +227,12 @@ def init_db():
 
 
 def hash_clave(clave: str) -> str:
-    """Genera hash seguro con PBKDF2-HMAC-SHA256 y salt aleatorio.
-    Formato: pbkdf2$salt_hex$hash_hex
-    """
-    salt = secrets.token_hex(16)
-    h = hashlib.pbkdf2_hmac("sha256", clave.encode(), salt.encode(), 260000).hex()
-    return f"pbkdf2${salt}${h}"
+    return bcrypt.hashpw(clave.encode(), bcrypt.gensalt()).decode()
 
 
 def verificar_clave(clave: str, hash_guardado: str) -> bool:
     try:
-        if hash_guardado.startswith("pbkdf2$"):
-            _, salt, h = hash_guardado.split("$")
-            nuevo = hashlib.pbkdf2_hmac("sha256", clave.encode(), salt.encode(), 260000).hex()
-            return hmac.compare_digest(nuevo, h)
-        # Fallback: hash SHA-256 viejo (sin salt)
-        viejo = hashlib.sha256(clave.encode()).hexdigest()
-        return hmac.compare_digest(viejo, hash_guardado)
+        return bcrypt.checkpw(clave.encode(), hash_guardado.encode())
     except Exception:
         return False
 
