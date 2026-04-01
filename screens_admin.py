@@ -228,51 +228,19 @@ def _tab_resumen(panel_consumo=False):
     fases_hab  = sum(1 for v in fases.values() if v)
     total_cons = sum(u["consumo"] for u in todos)
 
-    # Cards de resumen (colores inline para evitar problemas con variables CSS en markdown)
-    _bg3   = "#10203a"
-    _brd   = "rgba(143,170,214,0.18)"
-    _t3    = "#8ea4c4"
-    _green = "#34d399"
-    _blue  = "#6ee7ff"
-    _orng  = "#fb923c"
-    _red   = "#fb7185"
-    _rdbg  = "rgba(251,113,133,0.12)"
-    _rdbrd = "rgba(251,113,133,0.28)"
-
-    pend_bg  = _rdbg  if pendientes else _bg3
-    pend_brd = _rdbrd if pendientes else _brd
-    pend_clr = _red   if pendientes else _t3
-
-    st.markdown(f"""
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:1rem;">
-        <div style="background:{_bg3};border:1px solid {_brd};border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Usuarios</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{_green};">{len(todos)}</div>
-        </div>
-        <div style="background:{pend_bg};border:1px solid {pend_brd};border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Pendientes</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{pend_clr};">{len(pendientes)}</div>
-        </div>
-        <div style="background:{_bg3};border:1px solid {_brd};border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Fases activas</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{_blue};">{fases_hab}</div>
-        </div>
-        <div style="background:{_bg3};border:1px solid {_brd};border-radius:12px;padding:14px;text-align:center;">
-            <div style="font-size:0.6rem;color:{_t3};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Consumo total</div>
-            <div style="font-family:Bebas Neue,sans-serif;font-size:2rem;color:{_orng};">{total_cons}</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.divider()
-    _render_panel_feed(limit=8)
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("👥 Usuarios", len(todos))
+    col2.metric("⏳ Pendientes", len(pendientes))
+    col3.metric("🔀 Fases activas", fases_hab)
+    col4.metric("🍺 Consumo total", total_cons)
 
     if panel_consumo:
         st.divider()
         st.button("🏆 Ver ranking", on_click=cambiar_pantalla, args=(6,), use_container_width=True, key="consumo_rank")
         return
 
-    # Confirmaciones por fase como barras de progreso
+    st.divider()
+
     with get_db() as _conn:
         _cur = _conn.cursor()
         _cur.execute("SELECT fase, COUNT(DISTINCT username) as cnt FROM prodes WHERE confirmado=1 AND partido_idx=-1 GROUP BY fase")
@@ -281,40 +249,19 @@ def _tab_resumen(panel_consumo=False):
     total_u = len(todos) or 1
     fases_activas = [f for f in FASES if fases.get(f)]
     if fases_activas:
-        bloques_fases = []
+        st.markdown("**Confirmaciones por fase**")
         for fase in fases_activas:
-            cnt  = _conf_map.get(fase, 0)
-            pct  = int(cnt / total_u * 100)
-            bar_color = "#34d399" if pct == 100 else "#6ee7ff" if pct > 50 else "#f5c76b"
-            bloques_fases.append(f"""
-            <div style="margin-bottom:8px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                    <span style="font-size:0.8rem;font-weight:600;color:#f5f8fc;">{fase}</span>
-                    <span style="font-size:0.75rem;color:#8ea4c4;">{cnt} / {len(todos)}</span>
-                </div>
-                <div style="background:rgba(143,170,214,0.18);border-radius:4px;height:6px;">
-                    <div style="background:{bar_color};border-radius:4px;height:100%;width:{pct}%;"></div>
-                </div>
-            </div>
-            """)
-        st.markdown(
-            "<div style='margin-bottom:0.8rem;'>" + "".join(bloques_fases) + "</div>",
-            unsafe_allow_html=True,
-        )
+            cnt = _conf_map.get(fase, 0)
+            pct = cnt / total_u
+            st.write(f"{fase}  —  {cnt} / {len(todos)}")
+            st.progress(pct)
 
     st.divider()
-    col_r1, col_r2 = st.columns(2)
     registro_abierto = db_registro_abierto()
-    with col_r1:
-        nuevo_estado = st.toggle("📋 Registro abierto", value=registro_abierto, key="toggle_registro")
-        if nuevo_estado != registro_abierto:
-            db_set_config("registro_abierto", "1" if nuevo_estado else "0"); st.rerun()
-    with col_r2:
-        if st.button("🔄 Recalcular puntajes", use_container_width=True):
-            with st.spinner("Recalculando..."):
-                db_calcular_puntos()
-            st.session_state["msg_resumen"] = "✅ Puntajes recalculados."
-            st.rerun()
+    nuevo_estado = st.toggle("📋 Registro abierto", value=registro_abierto, key="toggle_registro")
+    if nuevo_estado != registro_abierto:
+        db_set_config("registro_abierto", "1" if nuevo_estado else "0")
+        st.rerun()
 
 
 def _tab_pendientes():
