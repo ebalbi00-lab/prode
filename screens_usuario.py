@@ -102,7 +102,7 @@ from db import (
     db_get_resultado_completo, db_guardar_pred, db_confirmar_prode,
     db_fase_confirmada, db_get_especial, db_guardar_especial,
     db_confirmar_especial, db_get_resultado_especial,
-    db_get_equipos_grupos, get_db, hash_clave, verificar_clave,
+    db_get_equipos_grupos, get_db, hash_clave,
     db_set_config, db_get_config, db_calcular_puntos,
     db_get_prodes_fase_todos, db_touch_usuario,
     db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
@@ -757,7 +757,7 @@ def pantalla_usuario():
                 clave_confirm = st.text_input("Ingresá tu contraseña para confirmar", type="password")
                 confirmar_btn = st.form_submit_button("🔒 Confirmar prode", type="primary", use_container_width=True)
             if confirmar_btn:
-                if not verificar_clave(clave_confirm, u["clave"]):
+                if hash_clave(clave_confirm) != u["clave"]:
                     st.error("Contraseña incorrecta")
                 else:
                     with st.spinner("Confirmando..."):
@@ -971,7 +971,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
         confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
 
     if confirmar_esp:
-        if not verificar_clave(clave_esp_final, u["clave"]):
+        if hash_clave(clave_esp_final) != u["clave"]:
             st.error("Contraseña incorrecta.")
         else:
             esp_confirmados = especiales_usuario
