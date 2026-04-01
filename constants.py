@@ -29,7 +29,8 @@ BANDERAS = {
     "Marruecos": "🇲🇦", "Senegal": "🇸🇳", "Ghana": "🇬🇭", "Nigeria": "🇳🇬",
     "Costa de Marfil": "🇨🇮", "Egipto": "🇪🇬", "Tunez": "🇹🇳", "Argelia": "🇩🇿",
     "Cabo Verde": "🇨🇻", "Sudafrica": "🇿🇦", "Camerun": "🇨🇲", "Mali": "🇲🇱",
-    "Guinea": "🇬🇳", "Tanzania": "🇹🇿", "Congo": "🇨🇬",
+    "Guinea": "🇬🇳", "Tanzania": "🇹🇿", "Congo": "🇨🇬", "RD Congo": "🇨🇩",
+    "Bosnia y Herzegovina": "🇧🇦",
     "Japon": "🇯🇵", "Corea del Sur": "🇰🇷", "Australia": "🇦🇺", "Iran": "🇮🇷",
     "Arabia Saudita": "🇸🇦", "Catar": "🇶🇦", "Uzbekistan": "🇺🇿", "Jordania": "🇯🇴",
     "Irak": "🇮🇶", "Emiratos": "🇦🇪", "Nueva Zelanda": "🇳🇿", "Fiji": "🇫🇯",
@@ -113,17 +114,17 @@ ARQUEROS_MUNDIALISTAS = sorted([
 ])
 
 GRUPOS_DEFAULT = {
-    "A": [("Mexico","Sudafrica"),("Corea del Sur","rep1"),("rep1","Sudafrica"),("Mexico","Corea del Sur"),("rep1","Mexico"),("Sudafrica","Corea del Sur")],
-    "B": [("Canada","rep2"),("Catar","Suiza"),("Suiza","rep2"),("Canada","Catar"),("Suiza","Canada"),("rep2","Catar")],
+    "A": [("Mexico","Sudafrica"),("Corea del Sur","Republica Checa"),("Republica Checa","Sudafrica"),("Mexico","Corea del Sur"),("Republica Checa","Mexico"),("Sudafrica","Corea del Sur")],
+    "B": [("Canada","Bosnia y Herzegovina"),("Catar","Suiza"),("Suiza","Bosnia y Herzegovina"),("Canada","Catar"),("Suiza","Canada"),("Bosnia y Herzegovina","Catar")],
     "C": [("Brasil","Marruecos"),("Haiti","Escocia"),("Escocia","Marruecos"),("Brasil","Haiti"),("Escocia","Brasil"),("Marruecos","Haiti")],
-    "D": [("EEUU","Paraguay"),("Australia","rep3"),("rep3","Paraguay"),("EEUU","Australia"),("rep3","EEUU"),("Paraguay","Australia")],
+    "D": [("EEUU","Paraguay"),("Australia","Turquia"),("Turquia","Paraguay"),("EEUU","Australia"),("Turquia","EEUU"),("Paraguay","Australia")],
     "E": [("Alemania","Curazao"),("Costa de Marfil","Ecuador"),("Alemania","Costa de Marfil"),("Ecuador","Curazao"),("Ecuador","Alemania"),("Curazao","Costa de Marfil")],
-    "F": [("Paises Bajos","Japon"),("rep4","Tunez"),("Tunez","Japon"),("Paises Bajos","rep4"),("Japon","rep4"),("Tunez","Paises Bajos")],
+    "F": [("Paises Bajos","Japon"),("Suecia","Tunez"),("Tunez","Japon"),("Paises Bajos","Suecia"),("Japon","Suecia"),("Tunez","Paises Bajos")],
     "G": [("Belgica","Egipto"),("Iran","Nueva Zelanda"),("Belgica","Iran"),("Nueva Zelanda","Egipto"),("Egipto","Iran"),("Nueva Zelanda","Belgica")],
     "H": [("España","Cabo Verde"),("Arabia Saudita","Uruguay"),("España","Arabia Saudita"),("Uruguay","Cabo Verde"),("Cabo Verde","Arabia Saudita"),("Uruguay","España")],
-    "I": [("Francia","Senegal"),("rep5","Noruega"),("Francia","rep5"),("Noruega","Senegal"),("Noruega","Francia"),("Senegal","rep5")],
+    "I": [("Francia","Senegal"),("Irak","Noruega"),("Francia","Irak"),("Noruega","Senegal"),("Noruega","Francia"),("Senegal","Irak")],
     "J": [("Austria","Jordania"),("Argentina","Argelia"),("Argentina","Austria"),("Jordania","Argelia"),("Argelia","Austria"),("Jordania","Argentina")],
-    "K": [("Portugal","rep6"),("Uzbekistan","Colombia"),("Portugal","Uzbekistan"),("Colombia","rep6"),("Colombia","Portugal"),("rep6","Uzbekistan")],
+    "K": [("Portugal","RD Congo"),("Uzbekistan","Colombia"),("Portugal","Uzbekistan"),("Colombia","RD Congo"),("Colombia","Portugal"),("RD Congo","Uzbekistan")],
     "L": [("Inglaterra","Croacia"),("Ghana","Panama"),("Inglaterra","Ghana"),("Panama","Croacia"),("Panama","Inglaterra"),("Croacia","Ghana")],
 }
 

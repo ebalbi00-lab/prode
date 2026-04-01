@@ -331,7 +331,7 @@ def _tab_partidos():
             set([
                 *equipos_existentes,
                 *[eq for partido in defaults for eq in partido if eq],
-                *[f"rep{i}" for i in range(1, 7)],
+                *["Republica Checa", "Bosnia y Herzegovina", "Turquia", "Suecia", "Irak", "RD Congo"],
             ]),
             key=lambda x: str(x).lower()
         )
