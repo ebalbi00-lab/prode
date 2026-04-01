@@ -164,16 +164,18 @@ def pantalla_admin():
         st.session_state["admin_sec"] = "inicio"
 
     if sec == "inicio":
-        cols_menu = st.columns(2)
         for i, (key, icono, titulo, desc) in enumerate(secciones):
             badge = f' <span style="background:var(--red);color:#fff;font-size:0.65rem;padding:1px 7px;border-radius:10px;font-family:Outfit,sans-serif;">{_pend_count}</span>' if key == "pendientes" and _pend_count > 0 else ""
-            with cols_menu[i % 2]:
+            col_card, col_btn = st.columns([4, 1])
+            with col_card:
                 st.markdown(f"""<div style="background:var(--bg3);border:1px solid var(--border);
                     border-radius:12px;padding:14px 16px;margin-bottom:2px;">
                     <div style="font-size:1.1rem;margin-bottom:3px;">{icono}</div>
                     <div style="font-weight:700;color:var(--text);font-size:0.9rem;">{titulo}{badge}</div>
                     <div style="color:var(--text3);font-size:0.72rem;margin-top:1px;">{desc}</div>
                 </div>""", unsafe_allow_html=True)
+            with col_btn:
+                st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
                 if st.button("Abrir", key=f"menu_{key}", use_container_width=True):
                     st.session_state["admin_sec"] = key
                     st.rerun()
