@@ -540,7 +540,6 @@ def db_limpiar_resultados_especiales():
         cur.execute("DELETE FROM especiales_resultados")
     try:
         db_get_estadisticas_especiales.clear()
-        db_get_estadisticas_elecciones_especiales.clear()
     except Exception:
         pass
     for cat in CATEGORIAS_ESPECIALES:
@@ -825,7 +824,6 @@ def db_calcular_puntos():
         db_get_puntos_especiales_usuarios.clear()
         db_get_estadisticas_usuarios.clear()
         db_get_estadisticas_generales.clear()
-        db_get_estadisticas_elecciones_especiales.clear()
         db_get_ranking_snapshot.clear()
         db_get_estadisticas_partidos.clear()
         db_get_ranking_snapshot.clear()
@@ -910,7 +908,6 @@ def db_calcular_puntos_especiales():
         db_get_puntos_especiales_usuarios.clear()
         db_get_estadisticas_usuarios.clear()
         db_get_estadisticas_generales.clear()
-        db_get_estadisticas_elecciones_especiales.clear()
         db_get_ranking_snapshot.clear()
     except Exception:
         pass
@@ -927,7 +924,6 @@ def db_fusionar_variantes_especial(cat, variantes, nombre_oficial):
         )
     try:
         db_get_estadisticas_especiales.clear()
-        db_get_estadisticas_elecciones_especiales.clear()
     except Exception:
         pass
 
@@ -937,30 +933,6 @@ def db_get_todos_especiales():
         cur = conn.cursor()
         cur.execute("SELECT username, categoria, eleccion, confirmado FROM especiales ORDER BY username, categoria")
         return [dict(r) for r in cur.fetchall()]
-
-
-@st.cache_data(ttl=60)
-def db_get_estadisticas_elecciones_especiales():
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            """
-            SELECT categoria, eleccion, COUNT(*)::int AS votos
-            FROM especiales
-            WHERE confirmado = 1
-              AND COALESCE(TRIM(eleccion), '') <> ''
-            GROUP BY categoria, eleccion
-            ORDER BY categoria, votos DESC, eleccion ASC
-            """
-        )
-        rows = cur.fetchall()
-
-    result = {"campeon": [], "goleador": [], "arquero": [], "jugador": []}
-    for r in rows:
-        cat = (r["categoria"] or "").strip().lower()
-        if cat in result:
-            result[cat].append({"eleccion": r["eleccion"], "votos": int(r["votos"] or 0)})
-    return result
 
 
 def db_limpiar_especiales(username):

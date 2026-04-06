@@ -1,6 +1,7 @@
 """
 screens_stats.py — Pantallas de ranking, destacados y estadísticas.
 """
+from collections import Counter
 import streamlit as st
 from constants import bandera
 
@@ -11,8 +12,8 @@ except Exception:
 
 from db import (
     db_get_estadisticas_usuarios, db_get_estadisticas_partidos,
-    db_get_partidos_por_fase, db_get_ranking_snapshot, db_get_tipo_usuario,
-    db_get_estadisticas_elecciones_especiales,
+    db_get_partidos, db_get_ranking_snapshot, db_get_tipo_usuario,
+    db_get_todos_especiales,
 )
 
 
@@ -300,11 +301,25 @@ def _render_tab_estadisticas_completa():
     st.button(btn_label, key="toggle_people_choices_shared", use_container_width=True, on_click=_set_stats_state, args=("stats_show_people_choices", not st.session_state["stats_show_people_choices"]))
 
     if st.session_state["stats_show_people_choices"]:
-        stats_especiales = db_get_estadisticas_elecciones_especiales() or {}
-        campeon = {x["eleccion"]: x["votos"] for x in stats_especiales.get("campeon", [])}
-        goleador = {x["eleccion"]: x["votos"] for x in stats_especiales.get("goleador", [])}
-        arquero = {x["eleccion"]: x["votos"] for x in stats_especiales.get("arquero", [])}
-        jugador = {x["eleccion"]: x["votos"] for x in stats_especiales.get("jugador", [])}
+        especiales = db_get_todos_especiales() or []
+        campeon = Counter()
+        goleador = Counter()
+        arquero = Counter()
+        jugador = Counter()
+
+        for e in especiales:
+            cat = (e.get("categoria") or "").strip().lower()
+            eleccion = (e.get("eleccion") or "").strip()
+            if not eleccion:
+                continue
+            if cat == "campeon":
+                campeon[eleccion] += 1
+            elif cat == "goleador":
+                goleador[eleccion] += 1
+            elif cat == "arquero":
+                arquero[eleccion] += 1
+            elif cat == "jugador":
+                jugador[eleccion] += 1
 
         st.markdown("""
         <div style="margin:0.8rem 0 1rem 0;">
@@ -347,9 +362,8 @@ def pantalla_estadisticas_torneo():
                 por_fase[f] = []
             por_fase[f].append(r)
 
-        partidos_por_fase = db_get_partidos_por_fase()
         for fase, partidos_stats in por_fase.items():
-            partidos_info = partidos_por_fase.get(fase, [])
+            partidos_info = db_get_partidos(fase)
             info_map = {p["idx"]: p for p in partidos_info}
 
             st.markdown(f"""<div style="font-family:Bebas Neue,sans-serif;font-size:1.1rem;

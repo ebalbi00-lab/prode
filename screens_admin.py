@@ -47,23 +47,6 @@ def _set_admin_state(key, value):
     st.session_state[key] = value
 
 
-def _set_admin_choice(cat, value):
-    st.session_state[f"adm_elegido_{cat}"] = value
-    st.session_state[f"adm_cambiar_{cat}"] = False
-    st.session_state[f"adm_busq_{cat}"] = ""
-    st.session_state[f"adm_busq_aplicada_{cat}"] = ""
-
-
-def _armar_busqueda_especial(cat):
-    st.session_state[f"adm_busq_aplicada_{cat}"] = (st.session_state.get(f"adm_busq_{cat}", "") or "").strip()
-
-
-def _activar_cambio_especial(cat):
-    st.session_state[f"adm_cambiar_{cat}"] = True
-    st.session_state[f"adm_busq_{cat}"] = ""
-    st.session_state[f"adm_busq_aplicada_{cat}"] = ""
-
-
 def cerrar_sesion_admin():
     db_logout_usuario(st.session_state.get("usuario"))
     claves_a_limpiar = [k for k in list(st.session_state.keys()) if k not in ("db_initialized",)]
@@ -338,11 +321,11 @@ def _tab_pendientes():
                 with st.spinner("Aprobando..."):
                     db_aprobar_pendiente(pend["id"])
                 st.session_state["msg_pendientes"] = f"✅ {pend['username']} aprobado."
- 
+                st.rerun()
             if c2.button("❌ Rechazar", key=f"re_{pend['id']}"):
                 db_rechazar_pendiente(pend["id"])
                 st.session_state["msg_pendientes"] = f"⚠️ {pend['username']} rechazado."
- 
+                st.rerun()
 
 
 def _tab_fases():
@@ -419,7 +402,7 @@ def _tab_partidos():
                         del st.session_state[k]
 
                 st.session_state["msg_grupos"] = f"✅ {equipo_actual} ahora es {nombre_limpio}."
- 
+                st.rerun()
 
         st.divider()
 
@@ -472,7 +455,7 @@ def _tab_partidos():
                         if l and v:
                             db_guardar_partido("Grupos", idx_global, l, v)
                 st.session_state["msg_grupos"] = f"✅ Grupo {letra} guardado."
- 
+                st.rerun()
 
         if guardar_todos:
             with st.spinner("Guardando todos los grupos..."):
@@ -481,6 +464,7 @@ def _tab_partidos():
                     for j, (loc, vis) in enumerate(partidos_gr):
                         db_guardar_partido("Grupos", ini_gr + j, loc, vis)
             st.session_state["msg_grupos"] = "✅ Todos los grupos guardados con los equipos por defecto."
+            st.rerun()
 
     else:
         cant = {"Dieciseisavos": 16, "Octavos": 8, "Cuartos": 4, "Semifinal": 2, "Final": 1}[fase_sel]
@@ -568,7 +552,7 @@ def _tab_resultados():
                     db_calcular_puntos_especiales()
                     st.cache_data.clear()
                 st.session_state["res_ok"] = f"✅ Guardado: {p['local']} {rl} — {rv} {p['visita']}. Puntajes y ranking actualizados."
- 
+                st.rerun()
             if tiene_res:
                 st.caption(f"✅ Guardado: {p['local']} {rl_prev} — {rv_prev} {p['visita']}")
         else:
@@ -630,7 +614,7 @@ def _tab_consumo():
             if sumar:
                 db_sumar_consumo(sel, pts, desc); db_calcular_puntos()
                 st.session_state["msg_consumo"] = f"✅ Se sumaron {pts} puntos de consumo a {opts[sel]}."
- 
+                st.rerun()
         else:
             st.warning("No se encontró ningún usuario.")
 
@@ -878,6 +862,11 @@ def _tab_especiales():
             cambiar_key = f"adm_cambiar_{cat}"
             input_key = f"adm_busq_{cat}"
             applied_key = f"adm_busq_aplicada_{cat}"
+            reset_key = f"adm_busq_reset_{cat}"
+
+            if st.session_state.pop(reset_key, False):
+                st.session_state[input_key] = ""
+                st.session_state[applied_key] = ""
 
             sel_actual = st.session_state.get(sel_key, resultado_actual)
             if sel_actual:
@@ -885,26 +874,39 @@ def _tab_especiales():
             selecciones_adm[cat] = sel_actual
 
             if st.session_state.get(cambiar_key, not bool(sel_actual)):
-                st.text_input(
-                    f"Buscar {label_adm}",
-                    key=input_key,
-                    placeholder="Escribí el nombre (con o sin acento)...",
-                    on_change=_armar_busqueda_especial,
-                    args=(cat,),
-                )
+                col_busq, col_btn = st.columns([5, 1])
+                with col_busq:
+                    st.text_input(
+                        f"Buscar {label_adm}",
+                        key=input_key,
+                        placeholder="Escribí el nombre (con o sin acento)...",
+                    )
+                with col_btn:
+                    st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
+                    if st.button("🔎", key=f"adm_lupa_{cat}", use_container_width=True):
+                        st.session_state[applied_key] = (st.session_state.get(input_key, "") or "").strip()
+                        st.rerun()
 
-                busqueda_aplicada = (st.session_state.get(applied_key) or st.session_state.get(input_key, "") or "").strip()
+                busqueda_aplicada = (st.session_state.get(applied_key, "") or "").strip()
                 if busqueda_aplicada:
                     filtrados_adm = [j for j in lista_adm if _norm(busqueda_aplicada) in _norm(j)][:8]
                     if not filtrados_adm:
                         st.caption(f"No se encontró ningún {label_adm}.")
                     else:
                         for jug in filtrados_adm:
-                            st.button(jug, key=f"adm_jug_{cat}_{jug}", use_container_width=True, on_click=_set_admin_choice, args=(cat, jug))
+                            if st.button(jug, key=f"adm_jug_{cat}_{jug}", use_container_width=True):
+                                st.session_state[sel_key] = jug
+                                st.session_state[cambiar_key] = False
+                                st.session_state[reset_key] = True
+                                selecciones_adm[cat] = jug
+                                st.rerun()
                 else:
-                    st.caption(f"Escribí el nombre para buscar {label_adm}.")
+                    st.caption(f"Escribí el nombre y tocá la lupa para buscar {label_adm}.")
             else:
-                st.button(f"✏️ Cambiar {label_adm}", key=f"adm_cambiar_btn_{cat}", on_click=_activar_cambio_especial, args=(cat,))
+                if st.button(f"✏️ Cambiar {label_adm}", key=f"adm_cambiar_btn_{cat}"):
+                    st.session_state[cambiar_key] = True
+                    st.session_state[reset_key] = True
+                    st.rerun()
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
     st.divider()
@@ -925,7 +927,7 @@ def _tab_especiales():
                 if guardados:
                     db_calcular_puntos_especiales()
             st.session_state["msg_esp_adm"] = f"✅ {guardados} resultado(s) guardado(s) y puntos aplicados." if guardados else "⚠️ No seleccionaste ningún ganador."
-
+        st.rerun()
 
     # Limpiar especiales
     st.divider()
@@ -942,7 +944,7 @@ def _tab_especiales():
             else:
                 db_limpiar_resultados_especiales(); db_calcular_puntos()
                 st.session_state["msg_esp_adm"] = "🗑️ Resultados especiales eliminados y puntajes recalculados."
-
+            st.rerun()
 
 
 def _tab_usuarios():
@@ -995,6 +997,7 @@ def _tab_usuarios():
                                     (u_strip, hash_clave(nu_pass), nu_nombre.strip(), nu_mail.strip(), nu_cel.strip(), nu_loc.strip(), nu_nac, 1 if nu_admin else 0))
                     st.cache_data.clear()
                 st.session_state["msg_usuarios"] = f"✅ Usuario **{u_strip}** creado."
+                st.rerun()
 
     elif accion == "✏️ Editar":
         busq_ed = st.text_input("Buscar usuario", key="busq_editar", placeholder="Nombre o username...")
@@ -1032,6 +1035,7 @@ def _tab_usuarios():
                                         (ed_nombre.strip(), ed_mail.strip(), ed_cel.strip(), ed_loc.strip(), ed_nac, sel_ed))
                         st.cache_data.clear()
                         st.session_state["msg_usuarios"] = f"✅ Datos de **{sel_ed}** actualizados."
+                        st.rerun()
         elif busq_ed:
             st.info("No se encontró ningún usuario.")
 
@@ -1053,6 +1057,7 @@ def _tab_usuarios():
                 else:
                     db_reset_clave(sel_pw, nueva_pw)
                     st.session_state["msg_usuarios"] = f"✅ Contraseña de **{sel_pw}** actualizada."
+                    st.rerun()
         elif busq_pw:
             st.info("No se encontró ningún usuario.")
 
@@ -1075,7 +1080,7 @@ def _tab_usuarios():
                 else:
                     db_borrar_usuario(sel_del); st.cache_data.clear()
                     st.session_state["msg_usuarios"] = f"✅ Usuario **{sel_del}** borrado."
- 
+                st.rerun()
         elif busq_del:
             st.info("No se encontró ningún usuario.")
 
@@ -1118,7 +1123,7 @@ def _tab_reset():
                 db_calcular_puntos()
                 st.cache_data.clear()
                 st.success(f"✅ Fase {fase_reset} reseteada.")
- 
+                st.rerun()
 
     st.divider()
 
@@ -1136,6 +1141,7 @@ def _tab_reset():
             db_calcular_puntos()
             st.cache_data.clear()
             st.success("✅ Puntajes recalculados correctamente.")
+            st.rerun()
 
     st.divider()
 
