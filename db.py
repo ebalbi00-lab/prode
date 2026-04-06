@@ -127,12 +127,13 @@ def init_tablas():
         CREATE TABLE IF NOT EXISTS usuarios (
             username TEXT PRIMARY KEY, clave TEXT NOT NULL, nombre TEXT,
             nacimiento TEXT, localidad TEXT, celular TEXT, mail TEXT,
+            desde TEXT,
             puntos INTEGER DEFAULT 0, goles INTEGER DEFAULT 0,
             consumo INTEGER DEFAULT 0, es_admin INTEGER DEFAULT 0
         );
         CREATE TABLE IF NOT EXISTS pendientes (
             id SERIAL PRIMARY KEY, username TEXT, clave TEXT, nombre TEXT,
-            nacimiento TEXT, localidad TEXT, celular TEXT, mail TEXT, comprobante TEXT
+            nacimiento TEXT, localidad TEXT, celular TEXT, mail TEXT, desde TEXT, comprobante TEXT
         );
         CREATE TABLE IF NOT EXISTS fases (
             nombre TEXT PRIMARY KEY, habilitada INTEGER DEFAULT 0, orden INTEGER DEFAULT 0
@@ -184,6 +185,12 @@ def init_tablas():
         CREATE INDEX IF NOT EXISTS idx_actividad_feed_created_at ON actividad_feed (created_at DESC, id DESC);
         CREATE INDEX IF NOT EXISTS idx_actividad_usuarios_last_seen ON actividad_usuarios (last_seen DESC);
         """)
+        # Migraciones para columnas agregadas en versiones posteriores
+        for migration in [
+            "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS desde TEXT",
+            "ALTER TABLE pendientes ADD COLUMN IF NOT EXISTS desde TEXT",
+        ]:
+            cur.execute(migration)
         for i, f in enumerate(FASES):
             cur.execute(
                 "INSERT INTO fases (nombre, habilitada, orden) VALUES (%s, %s, %s) ON CONFLICT (nombre) DO NOTHING",
@@ -298,7 +305,7 @@ def db_get_tipo_usuario(username):
 def db_get_todos_usuarios():
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM usuarios WHERE es_admin=0")
+        cur.execute("SELECT username, clave, nombre, nacimiento, localidad, celular, mail, desde, puntos, goles, consumo, es_admin FROM usuarios WHERE es_admin=0")
         return [dict(r) for r in cur.fetchall()]
 
 
@@ -622,10 +629,10 @@ def db_aprobar_pendiente(pid):
             return
         username_aprobado = row["username"]
         cur.execute("""
-            INSERT INTO usuarios (username, clave, nombre, nacimiento, localidad, celular, mail)
-            VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT (username) DO NOTHING
+            INSERT INTO usuarios (username, clave, nombre, nacimiento, localidad, celular, mail, desde)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (username) DO NOTHING
         """, (row["username"], row["clave"], row["nombre"], row["nacimiento"],
-              row["localidad"], row["celular"], row["mail"]))
+              row["localidad"], row["celular"], row["mail"], row.get("desde", "")))
         cur.execute("DELETE FROM pendientes WHERE id=%s", (pid,))
     try:
         db_get_pendientes.clear()

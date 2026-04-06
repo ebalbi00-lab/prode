@@ -1145,6 +1145,7 @@ def _tab_exportar():
     rows_exp = [{"Usuario": u.get("username",""), "Nombre": u.get("nombre",""),
                  "Nacimiento": u.get("nacimiento",""), "Localidad": u.get("localidad",""),
                  "Celular": u.get("celular",""), "Mail": u.get("mail",""),
+                 "Desde": u.get("desde",""),
                  "Puntos": u.get("puntos",0), "Goles": u.get("goles",0),
                  "Consumo": u.get("consumo",0),
                  "Total": u.get("puntos",0)+u.get("goles",0)+u.get("consumo",0)} for u in todos_exp]
@@ -1173,10 +1174,10 @@ def _tab_exportar():
         st.dataframe(df_filtrado[["Usuario","Nombre","Nacimiento","Localidad","Celular","Mail"]], use_container_width=True, hide_index=True)
     st.divider()
 
-    cols_registro = ["Usuario", "Nombre", "Nacimiento", "Localidad", "Celular", "Mail"]
+    cols_registro = ["Usuario", "Nombre", "Nacimiento", "Localidad", "Celular", "Mail", "Desde"]
     csv_completo  = df_exp[cols_registro].to_csv(index=False, sep=";").encode("utf-8-sig")
     csv_filtrado  = df_filtrado[cols_registro].to_csv(index=False, sep=";").encode("utf-8-sig")
     col_d1, col_d2 = st.columns(2)
     col_d1.download_button("⬇️ Descargar todos (CSV)",     csv_completo, "usuarios_prode_completo.csv", "text/csv", use_container_width=True)
     col_d2.download_button("⬇️ Descargar filtrados (CSV)", csv_filtrado, "usuarios_prode_filtrado.csv", "text/csv", use_container_width=True)
-    st.caption("El CSV incluye: usuario, nombre, nacimiento, localidad, celular y mail.")
+    st.caption("El CSV incluye: usuario, nombre, nacimiento, localidad, celular, mail y cómo llegaron al prode.")
