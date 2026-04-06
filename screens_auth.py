@@ -42,7 +42,7 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
     elif not mail_valido:
         st.session_state.reg_error = "El mail no tiene un formato válido"
     else:
-        st.session_state.registro_temp = {
+        datos_personales = {
             "nombre": nombre.strip(),
             "nacimiento": str(nacimiento),
             "localidad": localidad.strip(),
@@ -50,7 +50,15 @@ def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde
             "mail": mail.strip(),
             "desde": desde.strip(),
         }
-        st.session_state.step = 2
+        cuenta = st.session_state.get("reg_cuenta_temp", {})
+        with st.spinner("Enviando solicitud..."):
+            db_agregar_pendiente({
+                **cuenta,
+                **datos_personales,
+            })
+        st.session_state.pop("reg_comprobante_data", None)
+        st.session_state.pop("reg_cuenta_temp", None)
+        st.session_state.step = 4
 
 
 def _hero(title: str, eyebrow: str, subtitle: str, icon: str = "⚽"):
@@ -129,7 +137,7 @@ def pantalla_login():
 
 def pantalla_registro_datos():
     _step_header(
-        "Paso 1 de 2",
+        "Paso 2 de 2",
         "Tus datos",
         "Completá la base del registro. Lo justo y necesario para validar la inscripción.",
     )
@@ -165,10 +173,10 @@ def pantalla_registro_datos():
 
         col1, col2 = st.columns(2)
         volver = col1.form_submit_button("← Volver", use_container_width=True)
-        continuar = col2.form_submit_button("Seguir con la cuenta", type="primary", use_container_width=True)
+        continuar = col2.form_submit_button("Enviar solicitud", type="primary", use_container_width=True)
 
     if volver:
-        cambiar_pantalla(0)
+        cambiar_pantalla(1)
         st.rerun()
 
     if continuar:
@@ -187,21 +195,24 @@ def pantalla_registro_cuenta():
     alias_pago = pago.get("alias", "prode.mundial.2026")
     cvu_pago = pago.get("cvu", "0000003100000000000000")
     instrucciones_pago = pago.get("instrucciones", "")
+    monto_pago = pago.get("monto", "")
 
     _step_header(
-        "Paso 2 de 2",
+        "Paso 1 de 2",
         "Cuenta y pago",
         "Elegí tus credenciales, hacé el pago y subí el comprobante para que revisen tu ingreso.",
     )
 
+    monto_html = f'<div style="font-size:1.45rem;font-weight:900;color:#f5c76b;letter-spacing:0.5px;margin-bottom:0.6rem;">💵 Inscripción: {monto_pago}</div>' if monto_pago else ""
     st.markdown(f"""
     <div class="payment-card">
         <div class="payment-card__title">💳 Datos para transferir</div>
+        {monto_html}
         <div class="payment-grid">
             <div><span>Titular</span><strong>{titular_pago or '—'}</strong></div>
             <div><span>Alias</span><strong>{alias_pago or '—'}</strong></div>
         </div>
-        <div class="payment-cvu-label">CVU · tocá para copiar</div>
+        <div class="payment-cvu-label">CBU/CVU · tocá para copiar</div>
         <input type="text" value="{cvu_pago or ''}" readonly onclick="this.select();" ontouchstart="this.select();"
             style="width:100%;background:rgba(4,17,31,0.88);border:1px solid var(--gold-border);border-radius:14px;color:var(--text);font-family:JetBrains Mono,monospace;font-size:0.95rem;font-weight:800;padding:0.9rem 1rem;box-sizing:border-box;" />
         {f'<div class="payment-help">{instrucciones_pago}</div>' if instrucciones_pago else ''}
@@ -223,7 +234,7 @@ def pantalla_registro_cuenta():
     st.markdown(
         """
         <div class="glass-note" style="margin-top:0.45rem;">
-            <div class="glass-note__title">Antes de enviar</div>
+            <div class="glass-note__title">Antes de continuar</div>
             <div class="glass-note__text">Revisá que el usuario quede bien escrito. Es el que vas a usar para entrar durante todo el torneo.</div>
         </div>
         """,
@@ -235,11 +246,11 @@ def pantalla_registro_cuenta():
 
     col1, col2 = st.columns(2)
     volver = col1.button("← Volver", use_container_width=True, key="reg_volver")
-    enviar = col2.button("Enviar solicitud", type="primary", use_container_width=True, key="reg_enviar")
+    enviar = col2.button("Seguir con mis datos", type="primary", use_container_width=True, key="reg_enviar")
 
     if volver:
         st.session_state.pop("reg_comprobante_data", None)
-        cambiar_pantalla(1)
+        cambiar_pantalla(0)
         st.rerun()
 
     if enviar:
@@ -272,15 +283,12 @@ def pantalla_registro_cuenta():
             st.session_state.reg_error = "Subí el comprobante de pago"
             st.rerun()
         else:
-            with st.spinner("Enviando solicitud..."):
-                db_agregar_pendiente({
-                    "username": u_strip,
-                    "clave": hash_clave(clave_val),
-                    "comprobante": comprobante_data,
-                    **st.session_state.registro_temp,
-                })
-            st.session_state.pop("reg_comprobante_data", None)
-            st.session_state.step = 4
+            st.session_state["reg_cuenta_temp"] = {
+                "username": u_strip,
+                "clave": hash_clave(clave_val),
+                "comprobante": comprobante_data,
+            }
+            st.session_state.step = 2
             st.rerun()
 
 

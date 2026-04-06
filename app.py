@@ -72,8 +72,8 @@ inject_css()
 
 PANTALLAS = {
     0: pantalla_login,
-    1: pantalla_registro_datos,
-    2: pantalla_registro_cuenta,
+    1: pantalla_registro_cuenta,
+    2: pantalla_registro_datos,
     4: pantalla_en_revision,
     5: pantalla_usuario,
     6: pantalla_ranking,

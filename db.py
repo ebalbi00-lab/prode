@@ -255,14 +255,16 @@ def db_get_pago_config():
         "alias": db_get_config("pago_alias", "prode.mundial.2026"),
         "cvu": db_get_config("pago_cvu", "0000003100000000000000"),
         "instrucciones": db_get_config("pago_instrucciones", ""),
+        "monto": db_get_config("pago_monto", ""),
     }
 
 
-def db_set_pago_config(titular, alias, cvu, instrucciones=""):
+def db_set_pago_config(titular, alias, cvu, instrucciones="", monto=""):
     db_set_config("pago_titular", (titular or "").strip())
     db_set_config("pago_alias", (alias or "").strip())
     db_set_config("pago_cvu", (cvu or "").strip())
     db_set_config("pago_instrucciones", (instrucciones or "").strip())
+    db_set_config("pago_monto", (monto or "").strip())
     try:
         db_get_pago_config.clear()
     except Exception:

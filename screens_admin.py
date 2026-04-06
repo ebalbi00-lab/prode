@@ -281,7 +281,10 @@ def _tab_pendientes():
             st.write(f"**Nacimiento:** {pend.get('nacimiento', '—')}")
             comp = pend.get('comprobante', '')
             if comp and comp.startswith('data:'):
-                st.markdown(f'<img src="{comp}" style="max-width:100%; max-height:300px; border-radius:8px; margin-top:6px;" />', unsafe_allow_html=True)
+                if 'pdf' in comp[:30]:
+                    st.markdown(f'<a href="{comp}" download="comprobante_{pend["username"]}.pdf" style="display:inline-block;margin-top:6px;padding:0.45rem 1rem;background:var(--accent,#E50914);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">⬇️ Descargar comprobante PDF</a>', unsafe_allow_html=True)
+                else:
+                    st.markdown(f'<img src="{comp}" style="max-width:100%; max-height:300px; border-radius:8px; margin-top:6px;" />', unsafe_allow_html=True)
             elif comp:
                 st.write(f"**Comprobante:** {comp}")
             c1, c2 = st.columns(2)
@@ -662,6 +665,7 @@ def _tab_pagos():
         titular = st.text_input("Titular", value=pago.get("titular", ""))
         alias = st.text_input("Alias", value=pago.get("alias", ""))
         cvu = st.text_input("CVU", value=pago.get("cvu", ""))
+        monto = st.text_input("Monto de inscripción", value=pago.get("monto", ""), placeholder="Ej: $5000")
         instrucciones = st.text_area(
             "Texto adicional",
             value=pago.get("instrucciones", ""),
@@ -681,7 +685,7 @@ def _tab_pagos():
             st.error("Completá el CVU.")
             return
 
-        db_set_pago_config(titular, alias, cvu, instrucciones)
+        db_set_pago_config(titular, alias, cvu, instrucciones, monto)
         st.session_state["msg_pagos"] = "✅ Datos de pago actualizados."
         st.rerun()
 
@@ -692,17 +696,24 @@ def _tab_pagos():
     alias_p       = pago_preview.get("alias", "")
     cvu_p         = pago_preview.get("cvu", "")
     instruc_p     = pago_preview.get("instrucciones", "")
+    monto_p       = pago_preview.get("monto", "")
 
     st.markdown("**Vista previa** (muestra los datos guardados actualmente)")
     if not titular_p and not alias_p and not cvu_p:
         st.info("Todavía no hay datos de pago guardados. Completá el formulario y guardá.")
     else:
         instruc_html = f"<div style='margin-top:10px;color:#cfdbeb;font-size:0.82rem;line-height:1.6;'>{instruc_p}</div>" if instruc_p else ""
+        monto_html = f"""
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="color:#cfdbeb;font-size:0.82rem;">Inscripción</span>
+                <span style="color:#f5c76b;font-weight:800;font-size:1rem;">{monto_p}</span>
+            </div>""" if monto_p else ""
         st.markdown(f"""
         <div style="background:rgba(245,199,107,0.12);border:1.5px solid rgba(245,199,107,0.32);
                     border-radius:10px;padding:12px 16px;margin:0.5rem 0;">
             <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
                         color:#f5c76b;margin-bottom:10px;">💰 Datos de pago</div>
+            {monto_html}
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <span style="color:#cfdbeb;font-size:0.82rem;">Titular</span>
                 <span style="color:#f5f8fc;font-weight:700;font-size:0.88rem;">{titular_p}</span>
