@@ -233,8 +233,8 @@ def pantalla_registro_cuenta():
             + _b64.b64encode(comprobante_file.read()).decode()
         )
         st.session_state["reg_comprobante_nombre"] = comprobante_file.name
-    elif st.session_state.get("reg_comprobante_data"):
-        st.success("✅ Comprobante cargado: " + st.session_state.get("reg_comprobante_nombre", "archivo"))
+    if st.session_state.get("reg_comprobante_nombre") and comprobante_file is None:
+        st.success("✅ " + st.session_state["reg_comprobante_nombre"] + " listo para enviar")
 
     usuario  = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123", key="reg_usuario")
     clave    = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
