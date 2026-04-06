@@ -233,15 +233,6 @@ def pantalla_registro_cuenta():
             + _b64.b64encode(comprobante_file.read()).decode()
         )
 
-    st.markdown(
-        """
-        <div style="margin-top:0.75rem;padding:0.7rem 1rem;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.4);border-radius:10px;color:#ff6b6b;font-size:0.88rem;font-weight:600;">
-        ⚠️ Asegurate de haber realizado el pago antes de continuar con el registro.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     usuario  = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123", key="reg_usuario")
     clave    = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
     confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••", key="registro_confirmar")

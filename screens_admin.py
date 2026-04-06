@@ -282,7 +282,8 @@ def _tab_pendientes():
             comp = pend.get('comprobante', '')
             if comp and comp.startswith('data:'):
                 if 'pdf' in comp[:30]:
-                    st.markdown(f'<a href="{comp}" download="comprobante_{pend["username"]}.pdf" style="display:inline-block;margin-top:6px;padding:0.45rem 1rem;background:var(--accent,#E50914);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">⬇️ Descargar comprobante PDF</a>', unsafe_allow_html=True)
+                    username = pend["username"]
+                    st.markdown('<a href="' + comp + '" download="comprobante_' + username + '.pdf" style="display:inline-block;margin-top:6px;padding:0.55rem 1.2rem;background:#E50914;color:#ffffff;border-radius:8px;text-decoration:none;font-weight:700;font-size:0.95rem;">⬇️ Descargar comprobante PDF</a>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<img src="{comp}" style="max-width:100%; max-height:300px; border-radius:8px; margin-top:6px;" />', unsafe_allow_html=True)
             elif comp:
@@ -702,32 +703,25 @@ def _tab_pagos():
     if not titular_p and not alias_p and not cvu_p:
         st.info("Todavía no hay datos de pago guardados. Completá el formulario y guardá.")
     else:
-        instruc_html = f"<div style='margin-top:10px;color:#cfdbeb;font-size:0.82rem;line-height:1.6;'>{instruc_p}</div>" if instruc_p else ""
-        monto_html = f"""
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <span style="color:#cfdbeb;font-size:0.82rem;">Inscripción</span>
-                <span style="color:#f5c76b;font-weight:800;font-size:1rem;">{monto_p}</span>
-            </div>""" if monto_p else ""
-        st.markdown(f"""
-        <div style="background:rgba(245,199,107,0.12);border:1.5px solid rgba(245,199,107,0.32);
-                    border-radius:10px;padding:12px 16px;margin:0.5rem 0;">
-            <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-                        color:#f5c76b;margin-bottom:10px;">💰 Datos de pago</div>
-            {monto_html}
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <span style="color:#cfdbeb;font-size:0.82rem;">Titular</span>
-                <span style="color:#f5f8fc;font-weight:700;font-size:0.88rem;">{titular_p}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <span style="color:#cfdbeb;font-size:0.82rem;">Alias</span>
-                <span style="color:#f5f8fc;font-weight:700;font-family:monospace;font-size:0.88rem;">{alias_p}</span>
-            </div>
-            <div style="background:#10203a;border:1.5px solid rgba(143,170,214,0.28);border-radius:7px;
-                        color:#f5f8fc;font-family:monospace;font-size:0.88rem;font-weight:700;
-                        padding:8px 12px;">{cvu_p}</div>
-            {instruc_html}
-        </div>
-        """, unsafe_allow_html=True)
+        instruc_html = '<div style="margin-top:10px;color:#cfdbeb;font-size:0.82rem;line-height:1.6;">' + instruc_p + '</div>' if instruc_p else ""
+        monto_html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="color:#cfdbeb;font-size:0.82rem;">Inscripción</span><span style="color:#f5c76b;font-weight:800;font-size:1rem;">' + monto_p + '</span></div>' if monto_p else ""
+        preview_html = (
+            '<div style="background:rgba(245,199,107,0.12);border:1.5px solid rgba(245,199,107,0.32);border-radius:10px;padding:12px 16px;margin:0.5rem 0;">'
+            '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#f5c76b;margin-bottom:10px;">💰 Datos de pago</div>'
+            + monto_html +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+            '<span style="color:#cfdbeb;font-size:0.82rem;">Titular</span>'
+            '<span style="color:#f5f8fc;font-weight:700;font-size:0.88rem;">' + titular_p + '</span>'
+            '</div>'
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+            '<span style="color:#cfdbeb;font-size:0.82rem;">Alias</span>'
+            '<span style="color:#f5f8fc;font-weight:700;font-family:monospace;font-size:0.88rem;">' + alias_p + '</span>'
+            '</div>'
+            '<div style="background:#10203a;border:1.5px solid rgba(143,170,214,0.28);border-radius:7px;color:#f5f8fc;font-family:monospace;font-size:0.88rem;font-weight:700;padding:8px 12px;">' + cvu_p + '</div>'
+            + instruc_html +
+            '</div>'
+        )
+        st.markdown(preview_html, unsafe_allow_html=True)
 
 
 
