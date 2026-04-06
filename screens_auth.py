@@ -225,37 +225,28 @@ def pantalla_registro_cuenta():
     )
     st.markdown(payment_html, unsafe_allow_html=True)
 
-    usuario  = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123", key="reg_usuario")
-    clave    = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
-    confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••", key="registro_confirmar")
+    with st.form("form_registro_cuenta"):
+        usuario   = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
+        clave     = st.text_input("Clave", type="password", placeholder="••••••••")
+        confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••")
+        comprobante_file = st.file_uploader("Comprobante de pago", key="reg_comprobante")
 
-    comprobante_file = st.file_uploader("Comprobante de pago", key="reg_comprobante")
-    if comprobante_file is not None:
-        import base64 as _b64
-        st.session_state["reg_comprobante_data"] = (
-            f"data:{comprobante_file.type};base64,"
-            + _b64.b64encode(comprobante_file.read()).decode()
+        st.markdown(
+            """
+            <div class="glass-note" style="margin-top:0.45rem;">
+                <div class="glass-note__title">Antes de continuar</div>
+                <div class="glass-note__text">Revisá que el usuario quede bien escrito. Es el que vas a usar para entrar durante todo el torneo.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-        st.session_state["reg_comprobante_nombre"] = comprobante_file.name
-    if st.session_state.get("reg_comprobante_nombre") and comprobante_file is None:
-        st.success("✅ " + st.session_state["reg_comprobante_nombre"] + " listo para enviar")
 
-    st.markdown(
-        """
-        <div class="glass-note" style="margin-top:0.45rem;">
-            <div class="glass-note__title">Antes de continuar</div>
-            <div class="glass-note__text">Revisá que el usuario quede bien escrito. Es el que vas a usar para entrar durante todo el torneo.</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        if "reg_error" in st.session_state:
+            st.error(st.session_state.pop("reg_error"))
 
-    if "reg_error" in st.session_state:
-        st.error(st.session_state.pop("reg_error"))
-
-    col1, col2 = st.columns(2)
-    volver = col1.button("← Volver", use_container_width=True, key="reg_volver")
-    enviar = col2.button("Seguir con mis datos", type="primary", use_container_width=True, key="reg_enviar")
+        col1, col2 = st.columns(2)
+        volver = col1.form_submit_button("← Volver", use_container_width=True)
+        enviar = col2.form_submit_button("Seguir con mis datos", type="primary", use_container_width=True)
 
     if volver:
         st.session_state.pop("reg_comprobante_data", None)
@@ -264,10 +255,14 @@ def pantalla_registro_cuenta():
         st.rerun()
 
     if enviar:
-        u_strip = (st.session_state.get("reg_usuario") or "").strip().lower()
-        clave_val = st.session_state.get("registro_clave", "")
-        confirmar_val = st.session_state.get("registro_confirmar", "")
-        comprobante_data = st.session_state.get("reg_comprobante_data")
+        u_strip = (usuario or "").strip().lower()
+        comprobante_data = None
+        if comprobante_file is not None:
+            import base64 as _b64
+            comprobante_data = (
+                f"data:{comprobante_file.type};base64,"
+                + _b64.b64encode(comprobante_file.read()).decode()
+            )
         if not u_strip:
             st.session_state.reg_error = "Ingresá un usuario"
             st.rerun()
@@ -283,10 +278,10 @@ def pantalla_registro_cuenta():
         elif any(p["username"] == u_strip for p in db_get_pendientes()):
             st.session_state.reg_error = "Ya hay una solicitud pendiente con ese usuario"
             st.rerun()
-        elif len(clave_val) < 4:
+        elif len(clave) < 4:
             st.session_state.reg_error = "La clave debe tener al menos 4 caracteres"
             st.rerun()
-        elif clave_val != confirmar_val:
+        elif clave != confirmar:
             st.session_state.reg_error = "Las claves no coinciden"
             st.rerun()
         elif not comprobante_data:
@@ -295,7 +290,7 @@ def pantalla_registro_cuenta():
         else:
             st.session_state["reg_cuenta_temp"] = {
                 "username": u_strip,
-                "clave": hash_clave(clave_val),
+                "clave": hash_clave(clave),
                 "comprobante": comprobante_data,
             }
             st.session_state.step = 2
