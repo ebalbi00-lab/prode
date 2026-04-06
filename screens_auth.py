@@ -225,6 +225,10 @@ def pantalla_registro_cuenta():
     )
     st.markdown(payment_html, unsafe_allow_html=True)
 
+    usuario  = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123", key="reg_usuario")
+    clave    = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
+    confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••", key="registro_confirmar")
+
     comprobante_file = st.file_uploader("Comprobante de pago", key="reg_comprobante")
     if comprobante_file is not None:
         import base64 as _b64
@@ -235,10 +239,6 @@ def pantalla_registro_cuenta():
         st.session_state["reg_comprobante_nombre"] = comprobante_file.name
     if st.session_state.get("reg_comprobante_nombre") and comprobante_file is None:
         st.success("✅ " + st.session_state["reg_comprobante_nombre"] + " listo para enviar")
-
-    usuario  = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123", key="reg_usuario")
-    clave    = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
-    confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••", key="registro_confirmar")
 
     st.markdown(
         """
