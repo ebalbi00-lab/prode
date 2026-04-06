@@ -7,13 +7,27 @@ import streamlit as st
 
 from db import (
     db_get_usuario, db_agregar_pendiente, db_registro_abierto, hash_clave, db_get_pendientes, db_get_pago_config,
-    db_touch_usuario, db_get_tipo_usuario
+    db_touch_usuario, guardar_comprobante_archivo
 )
 from constants import FASES
 
 
 def cambiar_pantalla(step):
     st.session_state.step = step
+
+
+def _tipo_usuario_desde_row(u):
+    nivel = int((u or {}).get("es_admin", 0) or 0)
+    if nivel == 1:
+        return "admin"
+    if nivel == 2:
+        return "consumo"
+    return "usuario"
+
+
+def _celular_valido(valor: str) -> bool:
+    digitos = re.sub(r"\D", "", valor or "")
+    return 8 <= len(digitos) <= 15
 
 
 def login(usuario, clave):
@@ -30,32 +44,53 @@ def login(usuario, clave):
 
     st.session_state["login_intentos"] = 0
     st.session_state.usuario = usuario.strip().lower()
+    st.session_state["usuario_data"] = u
+    st.session_state["usuario_tipo"] = _tipo_usuario_desde_row(u)
     db_touch_usuario(st.session_state.usuario)
-    st.session_state.step = 9 if db_get_tipo_usuario(st.session_state.usuario) in ("admin", "consumo") else 5
+    st.session_state.step = 9 if st.session_state["usuario_tipo"] in ("admin", "consumo") else 5
     st.rerun()
 
 
 def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde=""):
+    hoy = datetime.date.today()
     mail_valido = re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", mail.strip())
-    if not (nombre.strip() and localidad.strip() and celular.strip() and mail.strip() and desde.strip()):
+    nombre = (nombre or "").strip()
+    localidad = (localidad or "").strip()
+    celular = (celular or "").strip()
+    mail = (mail or "").strip()
+    desde = (desde or "").strip()
+
+    if not (nombre and localidad and celular and mail and desde):
         st.session_state.reg_error = "Completá todos los campos obligatorios"
+    elif len(nombre) < 3:
+        st.session_state.reg_error = "Ingresá nombre y apellido válidos"
+    elif nacimiento > hoy:
+        st.session_state.reg_error = "La fecha de nacimiento no puede ser futura"
+    elif nacimiento.year < 1930 or (hoy.year - nacimiento.year) > 120:
+        st.session_state.reg_error = "La fecha de nacimiento no parece válida"
     elif not mail_valido:
         st.session_state.reg_error = "El mail no tiene un formato válido"
+    elif not _celular_valido(celular):
+        st.session_state.reg_error = "El celular no parece válido"
     else:
         datos_personales = {
-            "nombre": nombre.strip(),
+            "nombre": nombre,
             "nacimiento": str(nacimiento),
-            "localidad": localidad.strip(),
-            "celular": celular.strip(),
-            "mail": mail.strip(),
-            "desde": desde.strip(),
+            "localidad": localidad,
+            "celular": celular,
+            "mail": mail.lower(),
+            "desde": desde,
         }
         cuenta = st.session_state.get("reg_cuenta_temp", {})
-        with st.spinner("Enviando solicitud..."):
-            db_agregar_pendiente({
-                **cuenta,
-                **datos_personales,
-            })
+        try:
+            with st.spinner("Enviando solicitud..."):
+                db_agregar_pendiente({
+                    **cuenta,
+                    **datos_personales,
+                })
+        except Exception as e:
+            st.session_state.reg_error = str(e) or "No se pudo enviar la solicitud"
+            return
         st.session_state.pop("reg_comprobante_data", None)
         st.session_state.pop("reg_cuenta_temp", None)
         st.session_state.step = 4
@@ -226,7 +261,7 @@ def pantalla_registro_cuenta():
     st.markdown(payment_html, unsafe_allow_html=True)
 
     with st.form("form_registro_cuenta"):
-        comprobante_file = st.file_uploader("Comprobante de pago", key="reg_comprobante")
+        comprobante_file = st.file_uploader("Comprobante de pago", type=["png", "jpg", "jpeg", "pdf", "webp"], key="reg_comprobante")
         usuario   = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
         clave     = st.text_input("Clave", type="password", placeholder="••••••••")
         confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••")
@@ -257,14 +292,11 @@ def pantalla_registro_cuenta():
     if enviar:
         u_strip = (usuario or "").strip().lower()
         comprobante_data = None
-        if comprobante_file is not None:
-            import base64 as _b64
-            comprobante_data = (
-                f"data:{comprobante_file.type};base64,"
-                + _b64.b64encode(comprobante_file.read()).decode()
-            )
         if not u_strip:
             st.session_state.reg_error = "Ingresá un usuario"
+            st.rerun()
+        elif " " in u_strip:
+            st.session_state.reg_error = "El usuario no puede tener espacios"
             st.rerun()
         elif not re.match(r'^[a-zA-Z0-9._-]+$', u_strip):
             st.session_state.reg_error = "El usuario solo puede llevar letras, números, puntos, guiones o guiones bajos"
@@ -284,10 +316,17 @@ def pantalla_registro_cuenta():
         elif clave != confirmar:
             st.session_state.reg_error = "Las claves no coinciden"
             st.rerun()
-        elif not comprobante_data:
+        elif comprobante_file is None:
             st.session_state.reg_error = "Subí el comprobante de pago"
             st.rerun()
+        elif (getattr(comprobante_file, "type", "") or "").lower() not in {"image/png", "image/jpeg", "image/jpg", "application/pdf", "image/webp"}:
+            st.session_state.reg_error = "El comprobante tiene que ser PNG, JPG, WEBP o PDF"
+            st.rerun()
+        elif getattr(comprobante_file, "size", 0) and comprobante_file.size > 8 * 1024 * 1024:
+            st.session_state.reg_error = "El comprobante no puede pesar más de 8 MB"
+            st.rerun()
         else:
+            comprobante_data = guardar_comprobante_archivo(comprobante_file, u_strip)
             st.session_state["reg_cuenta_temp"] = {
                 "username": u_strip,
                 "clave": hash_clave(clave),

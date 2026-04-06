@@ -4,7 +4,10 @@ Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 """
 import datetime
 import hashlib
+import mimetypes
 import os
+import re
+from pathlib import Path
 
 import psycopg2
 import psycopg2.extras
@@ -13,6 +16,47 @@ import streamlit as st
 from contextlib import contextmanager
 
 from constants import FASES, CATEGORIAS_ESPECIALES, JUGADORES_MUNDIALISTAS, ARQUEROS_MUNDIALISTAS, GRUPOS_DEFAULT
+
+BASE_DIR = Path(__file__).resolve().parent
+COMPROBANTES_DIR = BASE_DIR / "uploads" / "comprobantes"
+COMPROBANTES_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _safe_filename(value: str) -> str:
+    value = re.sub(r"[^a-zA-Z0-9._-]+", "_", str(value or "").strip())
+    return value.strip("._") or "archivo"
+
+
+def guardar_comprobante_archivo(uploaded_file, username: str) -> str:
+    username = _safe_filename(username or "usuario")
+    original = _safe_filename(getattr(uploaded_file, "name", "comprobante"))
+    ext = Path(original).suffix.lower()[:10]
+    if not ext:
+        guessed = mimetypes.guess_extension(getattr(uploaded_file, "type", "") or "")
+        ext = guessed or ".bin"
+    filename = f"{username}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S_%f')}{ext}"
+    path = COMPROBANTES_DIR / filename
+    path.write_bytes(uploaded_file.getbuffer())
+    return str(path)
+
+
+def leer_comprobante(path_or_data: str):
+    valor = str(path_or_data or "").strip()
+    if not valor:
+        return None
+    if valor.startswith("data:"):
+        return {"kind": "data_url", "value": valor, "name": "comprobante"}
+    path = Path(valor)
+    if path.exists() and path.is_file():
+        mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        return {
+            "kind": "file",
+            "path": str(path),
+            "name": path.name,
+            "mime": mime,
+            "bytes": path.read_bytes(),
+        }
+    return {"kind": "text", "value": valor, "name": Path(valor).name or "comprobante"}
 
 
 # ─── Conexión ────────────────────────────────────────────────────────────────
@@ -284,7 +328,7 @@ def db_registro_abierto():
 def db_get_usuario(username):
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM usuarios WHERE username=%s", (username,))
+        cur.execute("SELECT username, clave, nombre, nacimiento, localidad, celular, mail, desde, puntos, goles, consumo, es_admin FROM usuarios WHERE username=%s", (username,))
         row = cur.fetchone()
         return dict(row) if row else None
 
@@ -352,7 +396,7 @@ def db_resetear_todos_puntajes():
 def db_get_fases():
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM fases ORDER BY orden")
+        cur.execute("SELECT nombre, habilitada FROM fases ORDER BY orden")
         return {r["nombre"]: bool(r["habilitada"]) for r in cur.fetchall()}
 
 
@@ -396,7 +440,7 @@ def db_get_partidos(fase):
                     faltantes,
                 )
 
-        cur.execute("SELECT * FROM partidos WHERE fase=%s ORDER BY idx", (fase,))
+        cur.execute("SELECT idx, fase, local, visita, fecha, hora FROM partidos WHERE fase=%s ORDER BY idx", (fase,))
         return [dict(r) for r in cur.fetchall()]
 
 
@@ -447,7 +491,7 @@ def db_renombrar_equipo_global(nombre_actual, nuevo_nombre):
         db_get_resultado_especial.clear("campeon")
     except Exception:
         pass
-@st.cache_data(ttl=0)
+@st.cache_data(ttl=120)
 def db_get_equipos_grupos():
     partidos = db_get_partidos("Grupos")
     equipos = sorted(
@@ -479,7 +523,7 @@ def db_guardar_resultado(fase, idx, gl, gv):
 def db_get_resultado_completo(fase):
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM resultados WHERE fase=%s", (fase,))
+        cur.execute("SELECT partido_idx, goles_local, goles_visita FROM resultados WHERE fase=%s", (fase,))
         return {r["partido_idx"]: (r["goles_local"], r["goles_visita"]) for r in cur.fetchall()}
 
 
@@ -508,7 +552,7 @@ def db_limpiar_resultados_especiales():
 def db_get_prode(username, fase):
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM prodes WHERE username=%s AND fase=%s", (username, fase))
+        cur.execute("SELECT partido_idx, goles_local, goles_visita, confirmado FROM prodes WHERE username=%s AND fase=%s", (username, fase))
         rows = cur.fetchall()
         if not rows:
             return {"pred": {}, "confirmado": False}
@@ -602,13 +646,22 @@ def db_resetear_prodes_fase(fase):
 def db_get_pendientes():
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM pendientes ORDER BY id")
+        cur.execute("SELECT id, username, nombre, nacimiento, localidad, celular, mail, desde, comprobante FROM pendientes ORDER BY id DESC")
         return [dict(r) for r in cur.fetchall()]
 
 
 def db_agregar_pendiente(data):
+    username = str((data or {}).get("username", "")).strip().lower()
+    if not username:
+        raise ValueError("Falta el usuario")
     with get_db() as conn:
         cur = conn.cursor()
+        cur.execute("SELECT 1 FROM usuarios WHERE username=%s LIMIT 1", (username,))
+        if cur.fetchone():
+            raise ValueError("Ese usuario ya existe")
+        cur.execute("SELECT 1 FROM pendientes WHERE username=%s LIMIT 1", (username,))
+        if cur.fetchone():
+            raise ValueError("Ya hay una solicitud pendiente con ese usuario")
         cur.execute("""
             INSERT INTO pendientes (username, clave, nombre, nacimiento, localidad, celular, mail, desde, comprobante)
             VALUES (%(username)s, %(clave)s, %(nombre)s, %(nacimiento)s, %(localidad)s, %(celular)s, %(mail)s, %(desde)s, %(comprobante)s)
@@ -623,7 +676,7 @@ def db_aprobar_pendiente(pid):
     username_aprobado = None
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM pendientes WHERE id=%s", (pid,))
+        cur.execute("SELECT id, username, clave, nombre, nacimiento, localidad, celular, mail, desde FROM pendientes WHERE id=%s", (pid,))
         row = cur.fetchone()
         if not row:
             return
@@ -684,7 +737,7 @@ def db_eliminar_consumo_log(log_id):
     deleted = None
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM consumo_log WHERE id=%s", (log_id,))
+        cur.execute("SELECT id, username, puntos, descripcion, fecha FROM consumo_log WHERE id=%s", (log_id,))
         row = cur.fetchone()
         if row:
             deleted = dict(row)
@@ -707,9 +760,9 @@ def db_get_consumo_log(username=None):
     with get_db() as conn:
         cur = conn.cursor()
         if username:
-            cur.execute("SELECT * FROM consumo_log WHERE username=%s ORDER BY id DESC", (username,))
+            cur.execute("SELECT id, username, puntos, descripcion, fecha FROM consumo_log WHERE username=%s ORDER BY id DESC", (username,))
         else:
-            cur.execute("SELECT * FROM consumo_log ORDER BY id DESC")
+            cur.execute("SELECT id, username, puntos, descripcion, fecha FROM consumo_log ORDER BY id DESC")
         return [dict(r) for r in cur.fetchall()]
 
 
@@ -784,7 +837,7 @@ def db_calcular_puntos():
 def db_get_especial(username, categoria):
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM especiales WHERE username=%s AND categoria=%s", (username, categoria))
+        cur.execute("SELECT username, categoria, eleccion, confirmado FROM especiales WHERE username=%s AND categoria=%s", (username, categoria))
         row = cur.fetchone()
         return dict(row) if row else None
 
@@ -878,7 +931,7 @@ def db_fusionar_variantes_especial(cat, variantes, nombre_oficial):
 def db_get_todos_especiales():
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM especiales ORDER BY username, categoria")
+        cur.execute("SELECT username, categoria, eleccion, confirmado FROM especiales ORDER BY username, categoria")
         return [dict(r) for r in cur.fetchall()]
 
 

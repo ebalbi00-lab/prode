@@ -34,6 +34,7 @@ from db import (
     db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, get_db,
     db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
     db_get_lista_especiales, db_set_lista_especiales_desde_texto, db_reset_lista_especiales,
+    leer_comprobante,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo, _render_tab_estadisticas_completa
 
@@ -66,8 +67,10 @@ def _fmt_equipo(nombre: str) -> str:
 
 def _get_panel_context():
     username = st.session_state.get("usuario")
-    u = db_get_usuario(username) or {}
+    u = st.session_state.get("usuario_data") or db_get_usuario(username) or {}
+    st.session_state["usuario_data"] = u
     nivel = int(u.get("es_admin", 0) or 0)
+    st.session_state["usuario_tipo"] = "admin" if nivel == 1 else "consumo" if nivel == 2 else "usuario"
     es_admin_total = nivel == 1
     es_panel_consumo = nivel == 2
     return {
@@ -273,25 +276,50 @@ def _tab_pendientes():
     pendientes = db_get_pendientes()
     if not pendientes:
         st.info("No hay solicitudes pendientes.")
-    for pend in pendientes:
-        with st.expander(f"👤 {pend['username']} — {pend.get('nombre', '')}"):
+        return
+
+    page_size = 8
+    total = len(pendientes)
+    total_paginas = max(1, (total - 1) // page_size + 1)
+    pagina = st.number_input("Página de pendientes", min_value=1, max_value=total_paginas, value=1, step=1, key="pendientes_page")
+    inicio = (pagina - 1) * page_size
+    fin = inicio + page_size
+    st.caption(f"Mostrando {inicio + 1}-{min(fin, total)} de {total} solicitudes")
+
+    for pend in pendientes[inicio:fin]:
+        titulo = f"👤 {pend['username']} — {pend.get('nombre', '')}"
+        with st.expander(titulo):
             st.write(f"**Mail:** {pend.get('mail', '—')}")
             st.write(f"**Celular:** {pend.get('celular', '—')}")
             st.write(f"**Localidad:** {pend.get('localidad', '—')}")
             st.write(f"**Nacimiento:** {pend.get('nacimiento', '—')}")
-            comp = pend.get('comprobante', '')
-            if comp and comp.startswith('data:'):
+            st.write(f"**Desde:** {pend.get('desde', '—')}")
+            comp_info = leer_comprobante(pend.get('comprobante', ''))
+            if comp_info and comp_info.get('kind') == 'file':
+                if str(comp_info.get('mime', '')).startswith('image/'):
+                    st.image(comp_info['bytes'], caption=comp_info['name'], use_container_width=True)
+                else:
+                    st.download_button(
+                        "⬇️ Descargar comprobante",
+                        comp_info['bytes'],
+                        file_name=comp_info['name'],
+                        mime=comp_info.get('mime', 'application/octet-stream'),
+                        key=f"dl_comp_{pend['id']}"
+                    )
+            elif comp_info and comp_info.get('kind') == 'data_url':
+                comp = comp_info['value']
                 if 'pdf' in comp[:30]:
                     username = pend["username"]
                     st.markdown('<a href="' + comp + '" download="comprobante_' + username + '.pdf" style="display:inline-block;margin-top:6px;padding:0.55rem 1.2rem;background:#E50914;color:#ffffff;border-radius:8px;text-decoration:none;font-weight:700;font-size:0.95rem;">⬇️ Descargar comprobante PDF</a>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<img src="{comp}" style="max-width:100%; max-height:300px; border-radius:8px; margin-top:6px;" />', unsafe_allow_html=True)
-            elif comp:
-                st.write(f"**Comprobante:** {comp}")
+            elif comp_info:
+                st.write(f"**Comprobante:** {comp_info.get('value', '—')}")
+
             c1, c2 = st.columns(2)
             if c1.button("✅ Aprobar", key=f"ap_{pend['id']}"):
                 with st.spinner("Aprobando..."):
-                    db_aprobar_pendiente(pend["id"]); st.cache_data.clear()
+                    db_aprobar_pendiente(pend["id"])
                 st.session_state["msg_pendientes"] = f"✅ {pend['username']} aprobado."
                 st.rerun()
             if c2.button("❌ Rechazar", key=f"re_{pend['id']}"):

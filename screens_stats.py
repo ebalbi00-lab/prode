@@ -22,6 +22,9 @@ def cambiar_pantalla(step):
 
 
 def _destino_panel():
+    tipo = st.session_state.get("usuario_tipo")
+    if tipo:
+        return 9 if tipo in ("admin", "consumo") else 5
     usuario = st.session_state.get("usuario")
     return 9 if db_get_tipo_usuario(usuario) in ("admin", "consumo") else 5
 

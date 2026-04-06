@@ -264,8 +264,9 @@ def pantalla_usuario():
     username = st.session_state.usuario
     db_touch_usuario(username)
     usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
-    u = db_get_usuario(username)
-    nombre_display = u.get('nombre', username)
+    u = st.session_state.get("usuario_data") or db_get_usuario(username)
+    st.session_state["usuario_data"] = u
+    nombre_display = (u or {}).get('nombre', username)
 
     _render_scroll_top()
     _render_header(nombre_display, usuarios_en_linea)
