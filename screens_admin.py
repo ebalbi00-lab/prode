@@ -34,6 +34,7 @@ from db import (
     db_get_equipos_grupos, db_renombrar_equipo_global, hash_clave, get_db,
     db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
     db_get_lista_especiales, db_set_lista_especiales_desde_texto, db_reset_lista_especiales,
+    db_get_prode, db_get_especiales_usuario, db_get_resultados_especiales,
     leer_comprobante,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo, _render_tab_estadisticas_completa
@@ -947,16 +948,136 @@ def _tab_especiales():
             st.rerun()
 
 
+def _render_admin_ver_pronosticos_usuario():
+    st.markdown("### 👁️ Ver pronósticos por usuario")
+    st.caption("Podés revisar fase por fase todo lo que cargó un usuario, incluyendo especiales.")
+
+    busq_view = st.text_input(
+        "Buscar usuario",
+        key="busq_ver_pronosticos",
+        placeholder="Nombre o username...",
+    )
+    todos_view = db_get_todos_usuarios()
+    if busq_view:
+        term = busq_view.lower().strip()
+        todos_view = [
+            u for u in todos_view
+            if term in u["username"].lower() or term in (u.get("nombre") or "").lower()
+        ]
+
+    if not busq_view:
+        st.info("Escribí un nombre o username para ver sus pronósticos.")
+        return
+
+    if not todos_view:
+        st.warning("No se encontró ningún usuario.")
+        return
+
+    opts_view = {u["username"]: f"{u.get('nombre') or u['username']} (@{u['username']})" for u in todos_view}
+    sel_view = st.selectbox(
+        "Usuario",
+        list(opts_view.keys()),
+        format_func=lambda x: opts_view[x],
+        key="sel_ver_pronosticos",
+    )
+
+    u_view = db_get_usuario(sel_view) or {}
+    nombre_view = u_view.get("nombre") or sel_view
+    st.markdown(
+        f"""<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin:8px 0 14px 0;">
+        <div style="font-weight:700;color:var(--text);font-size:0.98rem;">{nombre_view}</div>
+        <div style="color:var(--text3);font-size:0.8rem;">@{sel_view}</div>
+        </div>""",
+        unsafe_allow_html=True,
+    )
+
+    resultados_especiales = db_get_resultados_especiales() or {}
+    especiales_usuario = db_get_especiales_usuario(sel_view) or {}
+
+    for fase in FASES:
+        partidos = db_get_partidos(fase) or []
+        prode_data = db_get_prode(sel_view, fase) or {"pred": {}, "confirmado": False}
+        pred = prode_data.get("pred") or {}
+        confirmado = bool(prode_data.get("confirmado"))
+        total_cargados = len([idx for idx in pred.keys() if int(idx) >= 0])
+        total_partidos = len(partidos)
+        badge = "✅ Confirmado" if confirmado else "🕓 Sin confirmar"
+        titulo = f"{fase} · {total_cargados}/{total_partidos} partido(s) · {badge}"
+
+        with st.expander(titulo, expanded=fase == "Grupos"):
+            if not partidos:
+                st.info("No hay partidos cargados en esta fase.")
+                continue
+
+            filas = []
+            resultados_fase = db_get_resultado_completo(fase) or {}
+            for idx, p in enumerate(partidos):
+                pr = pred.get(idx)
+                rl, rv = resultados_fase.get(idx, (None, None))
+                estado = "—"
+                if pr is not None and rl is not None and rv is not None:
+                    if pr[0] == rl and pr[1] == rv:
+                        estado = "🎯 Exacto"
+                    elif ((pr[0] > pr[1] and rl > rv) or (pr[0] < pr[1] and rl < rv) or (pr[0] == pr[1] and rl == rv)):
+                        estado = "✅ Resultado"
+                    else:
+                        estado = "❌ Falló"
+                elif pr is not None:
+                    estado = "📝 Pronosticado"
+
+                filas.append({
+                    "#": idx + 1,
+                    "Partido": f"{_fmt_equipo(p.get('local'))} vs {_fmt_equipo(p.get('visita'))}",
+                    "Pronóstico": f"{pr[0]} - {pr[1]}" if pr is not None else "—",
+                    "Resultado real": f"{rl} - {rv}" if rl is not None and rv is not None else "—",
+                    "Estado": estado,
+                })
+
+            df_fase = pd.DataFrame(filas)
+            st.dataframe(df_fase, use_container_width=True, hide_index=True)
+
+    st.markdown("### ⭐ Especiales")
+    filas_esp = []
+    for cat, info in CATEGORIAS_ESPECIALES.items():
+        item = especiales_usuario.get(cat) or {}
+        eleccion = item.get("eleccion") or "—"
+        confirmado_esp = bool(item.get("confirmado"))
+        real = resultados_especiales.get(cat)
+        pts = int(info.get("puntos", 0) or 0)
+
+        if eleccion == "—":
+            estado = "—"
+        elif real is None:
+            estado = "✅ Confirmado" if confirmado_esp else "🕓 Sin confirmar"
+        elif eleccion == real:
+            estado = f"🏆 +{pts} pts"
+        else:
+            estado = "❌ No acertó"
+
+        filas_esp.append({
+            "Especial": info.get("label", cat.title()),
+            "Pronóstico": eleccion,
+            "Resultado real": real or "—",
+            "Estado": estado,
+        })
+
+    st.dataframe(pd.DataFrame(filas_esp), use_container_width=True, hide_index=True)
+
+
+
 def _tab_usuarios():
     st.subheader("👤 Gestión de usuarios")
     if "msg_usuarios" in st.session_state: st.success(st.session_state.pop("msg_usuarios"))
     if "err_usuarios" in st.session_state: st.error(st.session_state.pop("err_usuarios"))
 
-    accion = st.radio("Acción", ["➕ Crear", "✏️ Editar", "🔑 Contraseña", "🗑️ Borrar"], horizontal=True, key="accion_usuarios")
+    accion = st.radio("Acción", ["👁️ Ver pronósticos", "➕ Crear", "✏️ Editar", "🔑 Contraseña", "🗑️ Borrar"], horizontal=True, key="accion_usuarios")
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     meses_es_adm = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
-    if accion == "➕ Crear":
+    if accion == "👁️ Ver pronósticos":
+        _render_admin_ver_pronosticos_usuario()
+
+    elif accion == "➕ Crear":
         with st.form("form_crear_usuario"):
             nu_user  = st.text_input("Username")
             nu_pass  = st.text_input("Contraseña", type="password")
