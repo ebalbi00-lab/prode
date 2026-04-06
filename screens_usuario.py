@@ -3,16 +3,12 @@
 def _v10_nav():
     import streamlit as st
     if "_v10_step" not in st.session_state:
-        st.session_state["_v10_step"]=0
-    c1,c2,c3 = st.columns([1,2,1])
+        st.session_state["_v10_step"] = 0
+    c1, c2, c3 = st.columns([1, 2, 1])
     with c1:
-        if st.button("◀ Paso"):
-            st.session_state["_v10_step"]=max(0,st.session_state["_v10_step"]-1)
-            st.rerun()
+        st.button("◀ Paso", on_click=lambda: st.session_state.__setitem__("_v10_step", max(0, st.session_state.get("_v10_step", 0) - 1)))
     with c3:
-        if st.button("Paso ▶"):
-            st.session_state["_v10_step"]=st.session_state["_v10_step"]+1
-            st.rerun()
+        st.button("Paso ▶", on_click=lambda: st.session_state.__setitem__("_v10_step", st.session_state.get("_v10_step", 0) + 1))
     return st.session_state["_v10_step"]
 # --- END V10 ---
 
@@ -31,17 +27,13 @@ def _v7_paginate(items, page_key, page_size=4):
     total = len(items)
     pages = max(1, math.ceil(total / page_size))
     p = st.session_state.get(page_key, 0)
-    c1,c2,c3 = st.columns([1,2,1])
+    c1, c2, c3 = st.columns([1, 2, 1])
     with c1:
-        if st.button("◀", key=page_key+"_prev") and p>0:
-            st.session_state[page_key]=p-1
-            st.rerun()
+        st.button("◀", key=page_key + "_prev", disabled=(p <= 0), on_click=lambda: st.session_state.__setitem__(page_key, max(0, st.session_state.get(page_key, 0) - 1)))
     with c3:
-        if st.button("▶", key=page_key+"_next") and p<pages-1:
-            st.session_state[page_key]=p+1
-            st.rerun()
-    start = p*page_size
-    return items[start:start+page_size]
+        st.button("▶", key=page_key + "_next", disabled=(p >= pages - 1), on_click=lambda: st.session_state.__setitem__(page_key, min(pages - 1, st.session_state.get(page_key, 0) + 1)))
+    start = st.session_state.get(page_key, 0) * page_size
+    return items[start:start + page_size]
 
 def _v7_buffer():
     import streamlit as st
@@ -114,6 +106,20 @@ from db import (
 
 def cambiar_pantalla(step):
     st.session_state.step = step
+
+
+def _set_state(key, value):
+    st.session_state[key] = value
+
+
+def _set_many_state(**kwargs):
+    for key, value in kwargs.items():
+        st.session_state[key] = value
+
+
+def _set_wizard_pos(username, pos):
+    st.session_state.grupo_wizard = pos
+    db_set_config(f'wizard_pos_{username}', str(pos))
 
 
 def cerrar_sesion():
@@ -342,15 +348,11 @@ def pantalla_usuario():
             # Menú principal — grilla 2x3
             c1, c2 = st.columns(2)
             with c1:
-                if st.button("🎯 Mis pronósticos", use_container_width=True, key="menu_prode"):
-                    st.session_state["sub_pantalla"] = "pronosticos"; st.rerun()
-                if st.button("🏆 Ver ranking", use_container_width=True, key="menu_ranking"):
-                    cambiar_pantalla(6); st.rerun()
+                st.button("🎯 Mis pronósticos", use_container_width=True, key="menu_prode", on_click=_set_state, args=("sub_pantalla", "pronosticos"))
+                st.button("🏆 Ver ranking", use_container_width=True, key="menu_ranking", on_click=cambiar_pantalla, args=(6,))
             with c2:
-                if st.button("📈 Mi rendimiento", use_container_width=True, key="menu_puntos"):
-                    st.session_state["sub_pantalla"] = "puntos"; st.rerun()
-                if st.button("📊 Ver estadísticas", use_container_width=True, key="menu_dest"):
-                    cambiar_pantalla(12); st.rerun()
+                st.button("📈 Mi rendimiento", use_container_width=True, key="menu_puntos", on_click=_set_state, args=("sub_pantalla", "puntos"))
+                st.button("📊 Ver estadísticas", use_container_width=True, key="menu_dest", on_click=cambiar_pantalla, args=(12,))
 
             st.markdown("""
             <div style="
@@ -386,19 +388,15 @@ def pantalla_usuario():
             if st.session_state.get("confirmar_logout_main"):
                 st.warning("¿Seguro que querés cerrar sesión?")
                 c1b, c2b = st.columns(2)
-                if c1b.button("Sí, cerrar", key="main_cerrar_ok", type="primary", use_container_width=True):
-                    cerrar_sesion(); st.rerun()
-                if c2b.button("Cancelar", key="main_cerrar_cancel", use_container_width=True):
-                    st.session_state["confirmar_logout_main"] = False; st.rerun()
+                c1b.button("Sí, cerrar", key="main_cerrar_ok", type="primary", use_container_width=True, on_click=cerrar_sesion)
+                c2b.button("Cancelar", key="main_cerrar_cancel", use_container_width=True, on_click=_set_state, args=("confirmar_logout_main", False))
             else:
-                if st.button("Salir de la cuenta", key="logout_402", use_container_width=True):
-                    st.session_state["confirmar_logout_main"] = True; st.rerun()
+                st.button("Salir de la cuenta", key="logout_402", use_container_width=True, on_click=_set_state, args=("confirmar_logout_main", True))
             return
 
         # ── Sub-pantalla puntos ──
         if sub == "puntos":
-            if st.button("← Volver", key="back_puntos"):
-                st.session_state["sub_pantalla"] = "inicio"; st.rerun()
+            st.button("← Volver", key="back_puntos", on_click=_set_state, args=("sub_pantalla", "inicio"))
             st.markdown(f"""
             <div style="margin:0.5rem 0 1rem 0;">
                 <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);">📊 Mis puntos</div>
@@ -432,8 +430,7 @@ def pantalla_usuario():
 
         # ── Sub-pantalla ver pronósticos de otros ──
         if sub == "otros":
-            if st.button("← Volver", key="back_otros"):
-                st.session_state["sub_pantalla"] = "inicio"; st.rerun()
+            st.button("← Volver", key="back_otros", on_click=_set_state, args=("sub_pantalla", "inicio"))
             st.markdown("#### 👀 Pronósticos de todos")
 
             fases_cerradas = [f for f in fases_habilitadas if fases_confirmadas.get(f)]
@@ -489,8 +486,7 @@ def pantalla_usuario():
             return
 
         # ── Sub-pantalla pronósticos — continúa abajo con el código existente ──
-        if st.button("← Volver al inicio", key="back_prode"):
-            st.session_state["sub_pantalla"] = "inicio"; st.rerun()
+        st.button("← Volver al inicio", key="back_prode", on_click=_set_state, args=("sub_pantalla", "inicio"))
         st.markdown(f"""<div style="margin:0.5rem 0 1rem 0;">
             <div style="font-family:Bebas Neue,sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);">⚽ Mis pronósticos</div>
         </div>""", unsafe_allow_html=True)
@@ -510,16 +506,14 @@ def pantalla_usuario():
             cols_fases = st.columns(len(fases_habilitadas))
             for i, (col, f, lbl) in enumerate(zip(cols_fases, fases_habilitadas, labels)):
                 es_activa = (i == fase_idx)
-                if col.button(lbl, key=f"fase_btn_{f}", use_container_width=True,
-                              type="primary" if es_activa else "secondary"):
-                    st.session_state["fase_sel_idx"] = i
-                    st.rerun()
+                col.button(lbl, key=f"fase_btn_{f}", use_container_width=True,
+                              type="primary" if es_activa else "secondary", on_click=_set_state, args=("fase_sel_idx", i))
         else:
             sel_fase = st.selectbox("Fase", labels, index=fase_idx, key="fase_sel_box", label_visibility="collapsed")
             nuevo_idx = labels.index(sel_fase)
             if nuevo_idx != fase_idx:
                 st.session_state["fase_sel_idx"] = nuevo_idx
-                st.rerun()
+                return
 
         st.divider()
 
@@ -665,7 +659,7 @@ def pantalla_usuario():
             )
             if dest_conf != gi_conf:
                 st.session_state["gi_conf"] = dest_conf
-                st.rerun()
+                return
         else:
             if "grupo_wizard" not in st.session_state:
                 # Recuperar último grupo visitado de la DB
@@ -698,18 +692,18 @@ def pantalla_usuario():
                     if nav1.button("← Anterior", key="grupo_prev", use_container_width=True):
                         with st.spinner("Guardando..."):
                             _persistir_cambios()
-                        st.session_state.grupo_wizard = gi - 1; db_set_config(f'wizard_pos_{username}', str(gi - 1)); st.rerun()
+                        _set_wizard_pos(username, gi - 1); return
 
                 if gi < total - 1:
                     if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
                         with st.spinner("Guardando..."):
                             _persistir_cambios()
-                        st.session_state.grupo_wizard = gi + 1; db_set_config(f'wizard_pos_{username}', str(gi + 1)); st.rerun()
+                        _set_wizard_pos(username, gi + 1); return
                 else:
                     if nav3.button("Siguiente → Especiales ⭐", key="grupo_to_especiales", type="primary", use_container_width=True):
                         with st.spinner("Guardando..."):
                             _persistir_cambios()
-                        st.session_state.grupo_wizard = 12; db_set_config(f'wizard_pos_{username}', '12'); st.rerun()
+                        _set_wizard_pos(username, 12); return
 
                 # ── Slider de navegación ──
                 pasos = grupos_con_partidos + ["⭐"]
@@ -725,20 +719,17 @@ def pantalla_usuario():
                 if dest_slider != gi:
                     with st.spinner("Guardando..."):
                             _persistir_cambios()
-                    st.session_state.grupo_wizard = dest_slider
-                    db_set_config(f'wizard_pos_{username}', str(dest_slider)); st.rerun()
+                    _set_wizard_pos(username, dest_slider)
+                    return
 
             st.divider()
             if st.session_state.get("confirmar_logout_wiz"):
                 st.warning("¿Seguro que querés cerrar sesión? Los pronósticos no confirmados pueden perderse.")
                 c1, c2 = st.columns(2)
-                if c1.button("Sí, cerrar", key="wiz_cerrar_ok", type="primary", use_container_width=True):
-                    cerrar_sesion(); st.rerun()
-                if c2.button("Cancelar", key="wiz_cerrar_cancel", use_container_width=True):
-                    st.session_state["confirmar_logout_wiz"] = False; st.rerun()
+                c1.button("Sí, cerrar", key="wiz_cerrar_ok", type="primary", use_container_width=True, on_click=cerrar_sesion)
+                c2.button("Cancelar", key="wiz_cerrar_cancel", use_container_width=True, on_click=_set_state, args=("confirmar_logout_wiz", False))
             else:
-                if st.button("Salir de la cuenta", key="wiz_cerrar", use_container_width=True):
-                    st.session_state["confirmar_logout_wiz"] = True; st.rerun()
+                st.button("Salir de la cuenta", key="wiz_cerrar", use_container_width=True, on_click=_set_state, args=("confirmar_logout_wiz", True))
 
     # ── Fases eliminatorias ───────────────────────────────────────────────────
     else:
@@ -818,8 +809,7 @@ def pantalla_usuario():
 
     # ── 5) Botones de navegación ──────────────────────────────────────────────
     st.divider()
-    if st.button("← Volver al inicio", key="logout_402", use_container_width=True):
-        st.session_state["sub_pantalla"] = "inicio"; st.rerun()
+    st.button("← Volver al inicio", key="logout_402", use_container_width=True, on_click=_set_state, args=("sub_pantalla", "inicio"))
 
 
 # ─── Paso 13: Especiales dentro del wizard de grupos ─────────────────────────
@@ -870,7 +860,6 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 if selecciones_esp[cat]:
                     esp_buffer[cat] = selecciones_esp[cat]
             else:
-                lista_w = db_get_lista_especiales("arqueros") if cat == "arquero" else db_get_lista_especiales("jugadores")
                 label_w = "arquero" if cat == "arquero" else "jugador"
 
                 sel_key = f"esp_elegido_{cat}"
@@ -898,12 +887,11 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                         )
                     with col_btn:
                         st.markdown("<div style='height:1.75rem'></div>", unsafe_allow_html=True)
-                        if st.button("🔎", key=f"esp_lupa_{cat}", use_container_width=True):
-                            st.session_state[applied_key] = (st.session_state.get(input_key, "") or "").strip()
-                            st.rerun()
+                        st.button("🔎", key=f"esp_lupa_{cat}", use_container_width=True, on_click=lambda ak=applied_key, ik=input_key: st.session_state.__setitem__(ak, (st.session_state.get(ik, "") or "").strip()))
 
                     busqueda_aplicada = (st.session_state.get(applied_key, "") or "").strip()
-                    if busqueda_aplicada:
+                    if busqueda_aplicada and len(busqueda_aplicada) >= 2:
+                        lista_w = db_get_lista_especiales("arqueros") if cat == "arquero" else db_get_lista_especiales("jugadores")
                         filtrados_w = [j for j in lista_w if normalizar(busqueda_aplicada) in normalizar(j)][:8]
                         if not filtrados_w:
                             st.caption(f"No se encontró ningún {label_w}.")
@@ -915,14 +903,11 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                                     st.session_state[reset_key] = True
                                     selecciones_esp[cat] = jug
                                     esp_buffer[cat] = jug
-                                    st.rerun()
+                                    return
                     else:
-                        st.caption(f"Escribí el nombre y tocá la lupa para buscar {label_w}.")
+                        st.caption(f"Escribí al menos 2 letras y tocá la lupa para buscar {label_w}.")
                 else:
-                    if st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}"):
-                        st.session_state[cambiar_key] = True
-                        st.session_state[reset_key] = True
-                        st.rerun()
+                    st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}", on_click=_set_many_state, kwargs={cambiar_key: True, reset_key: True})
 
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
@@ -959,11 +944,9 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
                 db_set_config(f"wizard_pos_{username}", "0")
                 st.session_state["mostrar_dialogo_confirm_esp"] = False
-                st.rerun()
+                return
         
-        if c2.button("No, volver atrás", key="btn_cancelar_confirm_esp"):
-            st.session_state["mostrar_dialogo_confirm_esp"] = False
-            st.rerun()
+        c2.button("No, volver atrás", key="btn_cancelar_confirm_esp", on_click=_set_state, args=("mostrar_dialogo_confirm_esp", False))
         return
 
     # ── Formulario de confirmación ──
@@ -997,7 +980,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 st.session_state["wizard_grupos_completo"] = True
                 st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
                 db_set_config(f"wizard_pos_{username}", "0")
-                st.rerun()
+                return
 
     esp_buffer = _get_special_buffer(username)
     for cat, elec in selecciones_esp.items():
@@ -1010,5 +993,4 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
 
     st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
     nav1_e, _, _ = st.columns([1, 2, 1])
-    if nav1_e.button("← Grupo L", key="esp_back", use_container_width=True):
-        st.session_state.grupo_wizard = total - 1; st.rerun()
+    nav1_e.button("← Grupo L", key="esp_back", use_container_width=True, on_click=_set_state, args=("grupo_wizard", total - 1))
