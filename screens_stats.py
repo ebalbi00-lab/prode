@@ -21,10 +21,6 @@ def cambiar_pantalla(step):
     st.session_state.step = step
 
 
-def _set_stats_state(key, value):
-    st.session_state[key] = value
-
-
 def _destino_panel():
     tipo = st.session_state.get("usuario_tipo")
     if tipo:
@@ -253,15 +249,18 @@ def pantalla_ranking():
         st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
         col_pg1, col_pg2, col_pg3 = st.columns([1, 3, 1])
         with col_pg1:
-            if page > 0:
-                st.button("← Anterior", key="rank_prev", on_click=_set_stats_state, args=("ranking_page", page - 1))
+            if page > 0 and st.button("← Anterior", key="rank_prev"):
+                st.session_state["ranking_page"] = page - 1
+                st.rerun()
         with col_pg2:
             st.markdown(
                 f"<div style='text-align:center; color:var(--text3); font-size:0.78rem; padding-top:8px;'>{page+1} / {total_pages} &nbsp;·&nbsp; {len(rows)} jugadores</div>",
                 unsafe_allow_html=True,
             )
         with col_pg3:
-            st.button("Siguiente →", key="rank_next", disabled=(page >= total_pages - 1), on_click=_set_stats_state, args=("ranking_page", page + 1))
+            if st.button("Siguiente →", key="rank_next", disabled=(page >= total_pages - 1)):
+                st.session_state["ranking_page"] = page + 1
+                st.rerun()
 
         if username_actual and username_actual != "admin":
             pos_actual = next((r["_pos"] for r in rows if r["_username"] == username_actual), None)
@@ -298,7 +297,9 @@ def _render_tab_estadisticas_completa():
         st.session_state["stats_show_people_choices"] = False
 
     btn_label = "Ocultar elecciones de la gente" if st.session_state["stats_show_people_choices"] else "Mostrar elecciones de la gente"
-    st.button(btn_label, key="toggle_people_choices_shared", use_container_width=True, on_click=_set_stats_state, args=("stats_show_people_choices", not st.session_state["stats_show_people_choices"]))
+    if st.button(btn_label, key="toggle_people_choices_shared", use_container_width=True):
+        st.session_state["stats_show_people_choices"] = not st.session_state["stats_show_people_choices"]
+        st.rerun()
 
     if st.session_state["stats_show_people_choices"]:
         especiales = db_get_todos_especiales() or []

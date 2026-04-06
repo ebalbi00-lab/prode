@@ -43,10 +43,6 @@ def cambiar_pantalla(step):
     st.session_state.step = step
 
 
-def _set_admin_state(key, value):
-    st.session_state[key] = value
-
-
 def cerrar_sesion_admin():
     db_logout_usuario(st.session_state.get("usuario"))
     claves_a_limpiar = [k for k in list(st.session_state.keys()) if k not in ("db_initialized",)]
@@ -183,7 +179,9 @@ def pantalla_admin():
                 </div>""", unsafe_allow_html=True)
             with col_btn:
                 st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-                st.button("Abrir", key=f"menu_{key}", use_container_width=True, on_click=_set_admin_state, args=("admin_sec", key))
+                if st.button("Abrir", key=f"menu_{key}", use_container_width=True):
+                    st.session_state["admin_sec"] = key
+                    st.rerun()
 
         st.divider()
         _render_panel_feed(limit=6)
@@ -193,7 +191,9 @@ def pantalla_admin():
         c2.button("🚪 Cerrar sesión", on_click=cerrar_sesion_admin, use_container_width=True, key="admin_logout")
         return
 
-    st.button("← Volver al menú", key="admin_back", on_click=_set_admin_state, args=("admin_sec", "inicio"))
+    if st.button("← Volver al menú", key="admin_back"):
+        st.session_state["admin_sec"] = "inicio"
+        st.rerun()
 
     if sec == "resumen":
         _tab_resumen(panel_consumo=ctx["es_panel_consumo"])
@@ -266,7 +266,7 @@ def _tab_resumen(panel_consumo=False):
     nuevo_estado = st.toggle("📋 Registro abierto", value=registro_abierto, key="toggle_registro")
     if nuevo_estado != registro_abierto:
         db_set_config("registro_abierto", "1" if nuevo_estado else "0")
-        return
+        st.rerun()
 
 
 def _tab_pendientes():
