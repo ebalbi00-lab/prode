@@ -203,21 +203,30 @@ def pantalla_registro_cuenta():
         "Elegí tus credenciales, hacé el pago y subí el comprobante para que revisen tu ingreso.",
     )
 
-    monto_html = f'<div style="font-size:1.45rem;font-weight:900;color:#f5c76b;letter-spacing:0.5px;margin-bottom:0.6rem;">💵 Inscripción: {monto_pago}</div>' if monto_pago else ""
-    st.markdown(f"""
-    <div class="payment-card">
-        <div class="payment-card__title">💳 Datos para transferir</div>
-        {monto_html}
-        <div class="payment-grid">
-            <div><span>Titular</span><strong>{titular_pago or '—'}</strong></div>
-            <div><span>Alias</span><strong>{alias_pago or '—'}</strong></div>
-        </div>
-        <div class="payment-cvu-label">CBU/CVU · tocá para copiar</div>
-        <input type="text" value="{cvu_pago or ''}" readonly onclick="this.select();" ontouchstart="this.select();"
-            style="width:100%;background:rgba(4,17,31,0.88);border:1px solid var(--gold-border);border-radius:14px;color:var(--text);font-family:JetBrains Mono,monospace;font-size:0.95rem;font-weight:800;padding:0.9rem 1rem;box-sizing:border-box;" />
-        {f'<div class="payment-help">{instrucciones_pago}</div>' if instrucciones_pago else ''}
-    </div>
-    """, unsafe_allow_html=True)
+    monto_html = ('<div style="font-size:1.45rem;font-weight:900;color:#f5c76b;letter-spacing:0.5px;margin-bottom:0.6rem;">💵 Inscripción: ' + monto_pago + '</div>') if monto_pago else ""
+    instruc_html = ('<div class="payment-help">' + instrucciones_pago + '</div>') if instrucciones_pago else ""
+    titular_str = titular_pago if titular_pago else "—"
+    alias_str = alias_pago if alias_pago else "—"
+    cvu_str = cvu_pago if cvu_pago else ""
+
+    payment_html = (
+        '<div class="payment-card">'
+        '<div class="payment-card__title">💳 Datos para transferir</div>'
+        + monto_html +
+        '<div class="payment-grid">'
+        '<div><span>Titular</span><strong>' + titular_str + '</strong></div>'
+        '<div><span>Alias</span><strong>' + alias_str + '</strong></div>'
+        '</div>'
+        '<div class="payment-cvu-label">CBU/CVU · tocá para copiar</div>'
+        '<input type="text" value="' + cvu_str + '" readonly onclick="this.select();" ontouchstart="this.select();" '
+        'style="width:100%;background:rgba(4,17,31,0.88);border:1px solid var(--gold-border);border-radius:14px;color:var(--text);font-family:JetBrains Mono,monospace;font-size:0.95rem;font-weight:800;padding:0.9rem 1rem;box-sizing:border-box;" />'
+        + instruc_html +
+        '</div>'
+        '<div style="margin-top:0.75rem;padding:0.7rem 1rem;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.4);border-radius:10px;color:#ff6b6b;font-size:0.88rem;font-weight:600;">'
+        '⚠️ Asegurate de haber realizado el pago antes de continuar con el registro.'
+        '</div>'
+    )
+    st.markdown(payment_html, unsafe_allow_html=True)
 
     usuario  = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123", key="reg_usuario")
     clave    = st.text_input("Clave", type="password", placeholder="••••••••", key="registro_clave")
