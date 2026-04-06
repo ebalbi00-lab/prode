@@ -37,7 +37,7 @@ def login(usuario, clave):
 
 def avanzar_datos_personales(nombre, nacimiento, localidad, celular, mail, desde=""):
     mail_valido = re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", mail.strip())
-    if not (nombre.strip() and localidad.strip() and celular.strip() and mail.strip()):
+    if not (nombre.strip() and localidad.strip() and celular.strip() and mail.strip() and desde.strip()):
         st.session_state.reg_error = "Completá todos los campos obligatorios"
     elif not mail_valido:
         st.session_state.reg_error = "El mail no tiene un formato válido"
@@ -222,9 +222,6 @@ def pantalla_registro_cuenta():
         'style="width:100%;background:rgba(4,17,31,0.88);border:1px solid var(--gold-border);border-radius:14px;color:var(--text);font-family:JetBrains Mono,monospace;font-size:0.95rem;font-weight:800;padding:0.9rem 1rem;box-sizing:border-box;" />'
         + instruc_html +
         '</div>'
-        '<div style="margin-top:0.75rem;padding:0.7rem 1rem;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.4);border-radius:10px;color:#ff6b6b;font-size:0.88rem;font-weight:600;">'
-        '⚠️ Asegurate de haber realizado el pago antes de continuar con el registro.'
-        '</div>'
     )
     st.markdown(payment_html, unsafe_allow_html=True)
 
@@ -245,6 +242,9 @@ def pantalla_registro_cuenta():
         <div class="glass-note" style="margin-top:0.45rem;">
             <div class="glass-note__title">Antes de continuar</div>
             <div class="glass-note__text">Revisá que el usuario quede bien escrito. Es el que vas a usar para entrar durante todo el torneo.</div>
+        </div>
+        <div style="margin-top:0.75rem;padding:0.7rem 1rem;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.4);border-radius:10px;color:#ff6b6b;font-size:0.88rem;font-weight:600;">
+        ⚠️ Asegurate de haber realizado el pago antes de continuar con el registro.
         </div>
         """,
         unsafe_allow_html=True,
