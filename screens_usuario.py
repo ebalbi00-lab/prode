@@ -860,6 +860,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                 if selecciones_esp[cat]:
                     esp_buffer[cat] = selecciones_esp[cat]
             else:
+                lista_w = db_get_lista_especiales("arqueros") if cat == "arquero" else db_get_lista_especiales("jugadores")
                 label_w = "arquero" if cat == "arquero" else "jugador"
 
                 sel_key = f"esp_elegido_{cat}"
@@ -890,8 +891,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                         st.button("🔎", key=f"esp_lupa_{cat}", use_container_width=True, on_click=lambda ak=applied_key, ik=input_key: st.session_state.__setitem__(ak, (st.session_state.get(ik, "") or "").strip()))
 
                     busqueda_aplicada = (st.session_state.get(applied_key, "") or "").strip()
-                    if busqueda_aplicada and len(busqueda_aplicada) >= 2:
-                        lista_w = db_get_lista_especiales("arqueros") if cat == "arquero" else db_get_lista_especiales("jugadores")
+                    if busqueda_aplicada:
                         filtrados_w = [j for j in lista_w if normalizar(busqueda_aplicada) in normalizar(j)][:8]
                         if not filtrados_w:
                             st.caption(f"No se encontró ningún {label_w}.")
@@ -905,7 +905,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
                                     esp_buffer[cat] = jug
                                     return
                     else:
-                        st.caption(f"Escribí al menos 2 letras y tocá la lupa para buscar {label_w}.")
+                        st.caption(f"Escribí el nombre y tocá la lupa para buscar {label_w}.")
                 else:
                     st.button(f"✏️ Cambiar {label_w}", key=f"esp_cambiar_btn_{cat}", on_click=_set_many_state, kwargs={cambiar_key: True, reset_key: True})
 

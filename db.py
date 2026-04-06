@@ -651,64 +651,6 @@ def db_get_pendientes():
         return [dict(r) for r in cur.fetchall()]
 
 
-@st.cache_data(ttl=15)
-def db_get_pendientes_count(query=""):
-    query = str(query or "").strip()
-    like = f"%{query.lower()}%"
-    with get_db() as conn:
-        cur = conn.cursor()
-        if query:
-            cur.execute(
-                """
-                SELECT COUNT(*) AS total
-                FROM pendientes
-                WHERE LOWER(COALESCE(username,'')) LIKE %s
-                   OR LOWER(COALESCE(nombre,'')) LIKE %s
-                   OR LOWER(COALESCE(mail,'')) LIKE %s
-                """,
-                (like, like, like),
-            )
-        else:
-            cur.execute("SELECT COUNT(*) AS total FROM pendientes")
-        row = cur.fetchone()
-        return int((row or {}).get("total", 0) or 0)
-
-
-@st.cache_data(ttl=15)
-def db_get_pendientes_page(page=1, page_size=8, query=""):
-    page = max(1, int(page or 1))
-    page_size = max(1, min(int(page_size or 8), 100))
-    offset = (page - 1) * page_size
-    query = str(query or "").strip()
-    like = f"%{query.lower()}%"
-    with get_db() as conn:
-        cur = conn.cursor()
-        if query:
-            cur.execute(
-                """
-                SELECT id, username, nombre, nacimiento, localidad, celular, mail, desde, comprobante
-                FROM pendientes
-                WHERE LOWER(COALESCE(username,'')) LIKE %s
-                   OR LOWER(COALESCE(nombre,'')) LIKE %s
-                   OR LOWER(COALESCE(mail,'')) LIKE %s
-                ORDER BY id DESC
-                LIMIT %s OFFSET %s
-                """,
-                (like, like, like, page_size, offset),
-            )
-        else:
-            cur.execute(
-                """
-                SELECT id, username, nombre, nacimiento, localidad, celular, mail, desde, comprobante
-                FROM pendientes
-                ORDER BY id DESC
-                LIMIT %s OFFSET %s
-                """,
-                (page_size, offset),
-            )
-        return [dict(r) for r in cur.fetchall()]
-
-
 def db_agregar_pendiente(data):
     username = str((data or {}).get("username", "")).strip().lower()
     if not username:
@@ -727,8 +669,6 @@ def db_agregar_pendiente(data):
         """, data)
     try:
         db_get_pendientes.clear()
-        db_get_pendientes_count.clear()
-        db_get_pendientes_page.clear()
     except Exception:
         pass
 
@@ -768,8 +708,6 @@ def db_rechazar_pendiente(pid):
         cur.execute("DELETE FROM pendientes WHERE id=%s", (pid,))
     try:
         db_get_pendientes.clear()
-        db_get_pendientes_count.clear()
-        db_get_pendientes_page.clear()
     except Exception:
         pass
     # No se publica en el feed para no exponer rechazos en la actividad en vivo
@@ -1103,28 +1041,6 @@ def db_get_estadisticas_especiales():
         result[cat].append({"eleccion": r["eleccion"], "votos": r["votos"]})
     return result
 
-
-
-
-@st.cache_data(ttl=120)
-def db_get_partidos_por_fase():
-    with get_conn() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute("""
-            SELECT fase, idx, local, visita
-            FROM partidos
-            ORDER BY fase, idx
-        """)
-        rows = cur.fetchall()
-    out = {}
-    for r in rows:
-        fase = r["fase"]
-        out.setdefault(fase, []).append({
-            "idx": r["idx"],
-            "local": r["local"],
-            "visita": r["visita"],
-        })
-    return out
 
 @st.cache_data(ttl=60)
 def db_get_estadisticas_partidos():

@@ -20,7 +20,7 @@ from constants import (
     ARQUEROS_MUNDIALISTAS,
 )
 from db import (
-    db_get_usuario, db_get_todos_usuarios, db_get_pendientes, db_get_pendientes_count, db_get_pendientes_page,
+    db_get_usuario, db_get_todos_usuarios, db_get_pendientes,
     db_get_fases, db_toggle_fase, db_get_partidos, db_guardar_partido,
     db_get_resultado_completo, db_guardar_resultado, db_limpiar_resultados_fase,
     db_limpiar_resultados_especiales,
@@ -132,7 +132,7 @@ def pantalla_admin():
 
     db_touch_usuario(ctx["username"])
     usuarios_en_linea = db_get_cantidad_usuarios_en_linea()
-    _pend_count = db_get_pendientes_count() if ctx["es_admin_total"] else 0
+    _pend_count = len(db_get_pendientes()) if ctx["es_admin_total"] else 0
 
     header_left, header_right = st.columns([0.72, 0.28])
     with header_left:
@@ -245,14 +245,14 @@ def _tab_resumen(panel_consumo=False):
         st.success(st.session_state.pop("msg_resumen"))
 
     todos      = db_get_todos_usuarios()
-    pendientes_total = db_get_pendientes_count()
+    pendientes = db_get_pendientes()
     fases      = db_get_fases()
     fases_hab  = sum(1 for v in fases.values() if v)
     total_cons = sum(u["consumo"] for u in todos)
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("👥 Usuarios", len(todos))
-    col2.metric("⏳ Pendientes", pendientes_total)
+    col2.metric("⏳ Pendientes", len(pendientes))
     col3.metric("🔀 Fases activas", fases_hab)
     col4.metric("🍺 Consumo total", total_cons)
 
@@ -290,36 +290,20 @@ def _tab_pendientes():
     st.subheader("Solicitudes pendientes")
     if "msg_pendientes" in st.session_state:
         st.success(st.session_state.pop("msg_pendientes"))
-
-    filtros = st.columns([3, 1])
-    with filtros[0]:
-        query = st.text_input("Buscar pendiente", key="pendientes_query", placeholder="Usuario, nombre o mail")
-    with filtros[1]:
-        page_size = st.selectbox("Por página", [5, 8, 12, 20], index=1, key="pendientes_page_size")
-
-    total = db_get_pendientes_count(query)
-    if total <= 0:
-        st.info("No hay solicitudes pendientes." if not query else "No hay resultados para esa búsqueda.")
+    pendientes = db_get_pendientes()
+    if not pendientes:
+        st.info("No hay solicitudes pendientes.")
         return
 
+    page_size = 8
+    total = len(pendientes)
     total_paginas = max(1, (total - 1) // page_size + 1)
-    pagina = int(st.session_state.get("pendientes_page", 1) or 1)
-    if pagina > total_paginas:
-        pagina = 1
-        st.session_state["pendientes_page"] = 1
+    pagina = st.number_input("Página de pendientes", min_value=1, max_value=total_paginas, value=1, step=1, key="pendientes_page")
+    inicio = (pagina - 1) * page_size
+    fin = inicio + page_size
+    st.caption(f"Mostrando {inicio + 1}-{min(fin, total)} de {total} solicitudes")
 
-    col_prev, col_info, col_next = st.columns([1, 2, 1])
-    with col_prev:
-        st.button("← Anterior", key="pend_prev", disabled=pagina <= 1, on_click=_set_admin_state, args=("pendientes_page", max(1, pagina - 1)))
-    with col_info:
-        inicio = (pagina - 1) * page_size + 1
-        fin = min(pagina * page_size, total)
-        st.markdown(f"<div style='text-align:center;color:var(--text3);padding-top:8px;'>{pagina} / {total_paginas} · {inicio}-{fin} de {total}</div>", unsafe_allow_html=True)
-    with col_next:
-        st.button("Siguiente →", key="pend_next", disabled=pagina >= total_paginas, on_click=_set_admin_state, args=("pendientes_page", min(total_paginas, pagina + 1)))
-
-    pendientes = db_get_pendientes_page(pagina, page_size, query)
-    for pend in pendientes:
+    for pend in pendientes[inicio:fin]:
         titulo = f"👤 {pend['username']} — {pend.get('nombre', '')}"
         with st.expander(titulo):
             st.write(f"**Mail:** {pend.get('mail', '—')}")
@@ -336,29 +320,32 @@ def _tab_pendientes():
                         "⬇️ Descargar comprobante",
                         comp_info['bytes'],
                         file_name=comp_info['name'],
-                        mime=comp_info['mime'],
-                        key=f"dl_pend_{pend['id']}",
-                        use_container_width=True,
+                        mime=comp_info.get('mime', 'application/octet-stream'),
+                        key=f"dl_comp_{pend['id']}"
                     )
             elif comp_info and comp_info.get('kind') == 'data_url':
-                st.caption("Comprobante en formato legado")
-                st.code(comp_info['value'][:120] + ('...' if len(comp_info['value']) > 120 else ''), language=None)
-            elif comp_info and comp_info.get('kind') == 'text':
-                st.caption(f"Comprobante: {comp_info['value']}")
+                comp = comp_info['value']
+                if 'pdf' in comp[:30]:
+                    username = pend["username"]
+                    st.markdown('<a href="' + comp + '" download="comprobante_' + username + '.pdf" style="display:inline-block;margin-top:6px;padding:0.55rem 1.2rem;background:#E50914;color:#ffffff;border-radius:8px;text-decoration:none;font-weight:700;font-size:0.95rem;">⬇️ Descargar comprobante PDF</a>', unsafe_allow_html=True)
+                else:
+                    st.markdown(f'<img src="{comp}" style="max-width:100%; max-height:300px; border-radius:8px; margin-top:6px;" />', unsafe_allow_html=True)
+            elif comp_info:
+                st.write(f"**Comprobante:** {comp_info.get('value', '—')}")
 
             c1, c2 = st.columns(2)
-            if c1.button("✅ Aprobar", key=f"aprobar_{pend['id']}", use_container_width=True):
-                db_aprobar_pendiente(pend['id'])
+            if c1.button("✅ Aprobar", key=f"ap_{pend['id']}"):
+                with st.spinner("Aprobando..."):
+                    db_aprobar_pendiente(pend["id"])
                 st.session_state["msg_pendientes"] = f"✅ {pend['username']} aprobado."
-                return
-            if c2.button("❌ Rechazar", key=f"rechazar_{pend['id']}", use_container_width=True):
-                db_rechazar_pendiente(pend['id'])
+ 
+            if c2.button("❌ Rechazar", key=f"re_{pend['id']}"):
+                db_rechazar_pendiente(pend["id"])
                 st.session_state["msg_pendientes"] = f"⚠️ {pend['username']} rechazado."
-                return
+ 
 
 
-def _tab_fases(
-):
+def _tab_fases():
     st.subheader("Habilitar / Deshabilitar fases")
     fases = db_get_fases()
     cols  = st.columns(len(FASES))
@@ -846,7 +833,7 @@ def _tab_especiales():
     if "msg_esp_adm" in st.session_state:
         st.success(st.session_state.pop("msg_esp_adm"))
 
-    with st.expander("🗂️ Listas de jugadores y arqueros para especiales", expanded=False):
+    with st.expander("🗂️ Listas de jugadores y arqueros para especiales", expanded=True):
         st.markdown("Cuando guardás una lista nueva, reemplaza completa la anterior y se refleja tanto en admin como en usuario.")
         _render_admin_lista_especiales("jugadores", "Jugadores", "Sirve para goleador y mejor jugador.")
         _render_admin_lista_especiales("arqueros", "Arqueros", "Sirve para mejor arquero.")
@@ -855,8 +842,6 @@ def _tab_especiales():
     equipos_adm  = db_get_equipos_grupos() or sorted(BANDERAS.keys())
     todos_esp    = db_get_todos_especiales()
     df_esp       = pd.DataFrame(todos_esp) if todos_esp else pd.DataFrame()
-    lista_jugadores = db_get_lista_especiales('jugadores')
-    lista_arqueros = db_get_lista_especiales('arqueros')
 
     # Variantes manuales
     variantes_por_cat = {}
@@ -886,7 +871,7 @@ def _tab_especiales():
             sel_adm = st.selectbox("Nuevo campeón real", ops_adm, index=idx_adm, key=f"adm_sel_{cat}")
             selecciones_adm[cat] = d2n_adm.get(sel_adm, sel_adm)
         else:
-            lista_adm = lista_arqueros if cat == 'arquero' else lista_jugadores
+            lista_adm = db_get_lista_especiales('arqueros') if cat == 'arquero' else db_get_lista_especiales('jugadores')
             label_adm = "arquero" if cat == "arquero" else "jugador"
 
             sel_key = f"adm_elegido_{cat}"
@@ -909,7 +894,7 @@ def _tab_especiales():
                 )
 
                 busqueda_aplicada = (st.session_state.get(applied_key) or st.session_state.get(input_key, "") or "").strip()
-                if busqueda_aplicada and len(busqueda_aplicada) >= 2:
+                if busqueda_aplicada:
                     filtrados_adm = [j for j in lista_adm if _norm(busqueda_aplicada) in _norm(j)][:8]
                     if not filtrados_adm:
                         st.caption(f"No se encontró ningún {label_adm}.")
@@ -917,7 +902,7 @@ def _tab_especiales():
                         for jug in filtrados_adm:
                             st.button(jug, key=f"adm_jug_{cat}_{jug}", use_container_width=True, on_click=_set_admin_choice, args=(cat, jug))
                 else:
-                    st.caption(f"Escribí al menos 2 letras para buscar {label_adm}.")
+                    st.caption(f"Escribí el nombre para buscar {label_adm}.")
             else:
                 st.button(f"✏️ Cambiar {label_adm}", key=f"adm_cambiar_btn_{cat}", on_click=_activar_cambio_especial, args=(cat,))
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
