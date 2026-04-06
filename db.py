@@ -213,10 +213,6 @@ def init_db():
             "INSERT INTO usuarios (username, clave, nombre, es_admin) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING",
             ("consumo", hash_clave(consumo_pass), "Panel Consumo", 2)
         )
-        cur.execute(
-            "INSERT INTO usuarios (username, clave, nombre, es_admin) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING",
-            ("prueba", hash_clave("1234"), "Prueba", 0)
-        )
 
 
 def hash_clave(clave: str) -> str:
