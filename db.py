@@ -1104,6 +1104,28 @@ def db_get_estadisticas_especiales():
     return result
 
 
+
+
+@st.cache_data(ttl=120)
+def db_get_partidos_por_fase():
+    with get_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("""
+            SELECT fase, idx, local, visita
+            FROM partidos
+            ORDER BY fase, idx
+        """)
+        rows = cur.fetchall()
+    out = {}
+    for r in rows:
+        fase = r["fase"]
+        out.setdefault(fase, []).append({
+            "idx": r["idx"],
+            "local": r["local"],
+            "visita": r["visita"],
+        })
+    return out
+
 @st.cache_data(ttl=60)
 def db_get_estadisticas_partidos():
     with get_db() as conn:
