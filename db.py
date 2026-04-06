@@ -610,8 +610,8 @@ def db_agregar_pendiente(data):
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO pendientes (username, clave, nombre, nacimiento, localidad, celular, mail, comprobante)
-            VALUES (%(username)s, %(clave)s, %(nombre)s, %(nacimiento)s, %(localidad)s, %(celular)s, %(mail)s, %(comprobante)s)
+            INSERT INTO pendientes (username, clave, nombre, nacimiento, localidad, celular, mail, desde, comprobante)
+            VALUES (%(username)s, %(clave)s, %(nombre)s, %(nacimiento)s, %(localidad)s, %(celular)s, %(mail)s, %(desde)s, %(comprobante)s)
         """, data)
     try:
         db_get_pendientes.clear()

@@ -226,10 +226,10 @@ def pantalla_registro_cuenta():
     st.markdown(payment_html, unsafe_allow_html=True)
 
     with st.form("form_registro_cuenta"):
+        comprobante_file = st.file_uploader("Comprobante de pago", key="reg_comprobante")
         usuario   = st.text_input("Usuario", placeholder="Sin espacios. Ej: juan123")
         clave     = st.text_input("Clave", type="password", placeholder="••••••••")
         confirmar = st.text_input("Confirmar clave", type="password", placeholder="••••••••")
-        comprobante_file = st.file_uploader("Comprobante de pago", key="reg_comprobante")
 
         st.markdown(
             """
