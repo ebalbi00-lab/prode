@@ -617,44 +617,33 @@ def pantalla_usuario():
             """, unsafe_allow_html=True)
         else:
             st.markdown(f'<div style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:10px 12px;margin:5px 0;">', unsafe_allow_html=True)
-            col_local, col_gl, col_sep, col_gv, col_visita = st.columns([3, 1.2, 0.3, 1.2, 3])
-            col_local.markdown(f"<div style='text-align:right;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_local}</div>", unsafe_allow_html=True)
+            col_act, col_local, col_gl, col_sep, col_gv, col_visita = st.columns([0.8, 3, 1.1, 0.3, 1.1, 3])
 
-            opciones_gol = [None] + list(range(0, 11))
             pred_actual = pred_ui.get(idx) if idx in pred_ui else pred.get(idx)
-            gl_inicial = pred_actual[0] if pred_actual is not None else None
-            gv_inicial = pred_actual[1] if pred_actual is not None else None
-            idx_gl = opciones_gol.index(gl_inicial) if gl_inicial in opciones_gol else 0
-            idx_gv = opciones_gol.index(gv_inicial) if gv_inicial in opciones_gol else 0
+            pred_guardado = pred.get(idx)
+            activo_inicial = pred_actual is not None
+            gl_inicial = int(pred_actual[0]) if pred_actual is not None else 0
+            gv_inicial = int(pred_actual[1]) if pred_actual is not None else 0
 
-            gl = col_gl.selectbox(
-                "L",
-                opciones_gol,
-                index=idx_gl,
-                key=f"gl_{fase}_{idx}",
-                format_func=lambda x: "—" if x is None else str(x),
+            activo = col_act.checkbox(
+                "Usar",
+                value=activo_inicial,
+                key=f"usar_{fase}_{idx}",
                 label_visibility="collapsed",
+                help="Marcá para cargar este pronóstico. Así 0-0 se guarda correctamente.",
             )
+            col_local.markdown(f"<div style='text-align:right;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_local}</div>", unsafe_allow_html=True)
+            gl = col_gl.number_input("L", min_value=0, max_value=10, value=gl_inicial, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
             col_sep.markdown("<div style='text-align:center;padding-top:10px;color:var(--text3);font-size:0.8rem;'>:</div>", unsafe_allow_html=True)
-            gv = col_gv.selectbox(
-                "V",
-                opciones_gol,
-                index=idx_gv,
-                key=f"gv_{fase}_{idx}",
-                format_func=lambda x: "—" if x is None else str(x),
-                label_visibility="collapsed",
-            )
+            gv = col_gv.number_input("V", min_value=0, max_value=10, value=gv_inicial, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
             col_visita.markdown(f"<div style='text-align:left;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-            pred_guardado = pred.get(idx)
-            if gl is None and gv is None:
-                pred_buffer.pop(idx, None)
-            elif gl is None or gv is None:
+            if not activo:
                 pred_buffer.pop(idx, None)
             else:
                 nuevo = (int(gl), int(gv))
-                if pred_guardado != nuevo:
+                if pred_guardado is None or pred_guardado != nuevo:
                     pred_buffer[idx] = nuevo
                 else:
                     pred_buffer.pop(idx, None)
