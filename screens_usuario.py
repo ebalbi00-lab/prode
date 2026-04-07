@@ -74,9 +74,21 @@ def _merge_predicciones(base_pred, pred_buffer):
 
 def _flush_pred_buffer(username, fase):
     pred_buffer = _get_pred_buffer(username, fase)
-    if not pred_buffer:
+    prode_actual = db_get_prode(username, fase) or {"pred": {}}
+    pred_actual = dict(prode_actual.get("pred") or {})
+
+    payload_map = dict(pred_actual)
+    payload_map.update(pred_buffer or {})
+
+    for p in db_get_partidos(fase) or []:
+        idx = int(p.get("idx"))
+        if idx not in payload_map:
+            payload_map[idx] = (0, 0)
+
+    if not payload_map:
         return 0
-    payload = [(idx, gl, gv) for idx, (gl, gv) in sorted(pred_buffer.items())]
+
+    payload = [(idx, gl, gv) for idx, (gl, gv) in sorted(payload_map.items()) if int(idx) >= 0]
     db_guardar_preds_lote(username, fase, payload)
     pred_buffer.clear()
     return len(payload)
@@ -617,36 +629,17 @@ def pantalla_usuario():
             """, unsafe_allow_html=True)
         else:
             st.markdown(f'<div style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:10px 12px;margin:5px 0;">', unsafe_allow_html=True)
-            col_act, col_local, col_gl, col_sep, col_gv, col_visita = st.columns([0.8, 3, 1.1, 0.3, 1.1, 3])
-
-            pred_actual = pred_ui.get(idx) if idx in pred_ui else pred.get(idx)
-            pred_guardado = pred.get(idx)
-            activo_inicial = pred_actual is not None
-            gl_inicial = int(pred_actual[0]) if pred_actual is not None else 0
-            gv_inicial = int(pred_actual[1]) if pred_actual is not None else 0
-
-            activo = col_act.checkbox(
-                "Usar",
-                value=activo_inicial,
-                key=f"usar_{fase}_{idx}",
-                label_visibility="collapsed",
-                help="Marcá para cargar este pronóstico. Así 0-0 se guarda correctamente.",
-            )
+            col_local, col_gl, col_sep, col_gv, col_visita = st.columns([3, 1, 0.3, 1, 3])
             col_local.markdown(f"<div style='text-align:right;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_local}</div>", unsafe_allow_html=True)
-            gl = col_gl.number_input("L", min_value=0, max_value=10, value=gl_inicial, key=f"gl_{fase}_{idx}", label_visibility="collapsed")
+            gl = col_gl.number_input("L", min_value=0, max_value=10, value=int(gl_prev), key=f"gl_{fase}_{idx}", label_visibility="collapsed")
             col_sep.markdown("<div style='text-align:center;padding-top:10px;color:var(--text3);font-size:0.8rem;'>:</div>", unsafe_allow_html=True)
-            gv = col_gv.number_input("V", min_value=0, max_value=10, value=gv_inicial, key=f"gv_{fase}_{idx}", label_visibility="collapsed")
+            gv = col_gv.number_input("V", min_value=0, max_value=10, value=int(gv_prev), key=f"gv_{fase}_{idx}", label_visibility="collapsed")
             col_visita.markdown(f"<div style='text-align:left;font-weight:700;font-size:0.88rem;padding-top:10px;color:var(--text);line-height:1.2;'>{nom_visita}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
-
-            if not activo:
-                pred_buffer.pop(idx, None)
+            if gl != pred.get(idx, (0, 0))[0] or gv != pred.get(idx, (0, 0))[1]:
+                pred_buffer[idx] = (gl, gv)
             else:
-                nuevo = (int(gl), int(gv))
-                if pred_guardado is None or pred_guardado != nuevo:
-                    pred_buffer[idx] = nuevo
-                else:
-                    pred_buffer.pop(idx, None)
+                pred_buffer.pop(idx, None)
 
     # ── Fase Grupos con wizard ────────────────────────────────────────────────
     if fase == "Grupos":
@@ -870,7 +863,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
 
         if res_real_w is not None:
             acierto_w = elec_w == res_real_w
-            st.markdown(f"<div style='color:var(--text2); font-size:0.9rem; margin-bottom:8px;'>Resultado oficial: <b style='color:var(--text)'>{res_real_w}</b> {'🎯' if acierto_w else '❌'} — Tu pronóstico: <b style='color:var(--text)'>{elec_w if elec_w is not None else '—'}</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='color:var(--text2); font-size:0.9rem; margin-bottom:8px;'>Resultado oficial: <b style='color:var(--text)'>{res_real_w}</b> {'🎯' if acierto_w else '❌'} — Tu pronóstico: <b style='color:var(--text)'>{elec_w or '—'}</b></div>", unsafe_allow_html=True)
             selecciones_esp[cat] = elec_w
         elif esp_w and esp_w["confirmado"]:
             st.markdown(f"<div style='color:var(--green); font-size:0.9rem; margin-bottom:8px;'>✅ Confirmado: <b>{elec_w}</b></div>", unsafe_allow_html=True)
