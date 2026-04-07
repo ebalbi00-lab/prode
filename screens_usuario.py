@@ -567,7 +567,9 @@ def pantalla_usuario():
                     'border:1px solid var(--green-glow);margin-left:8px;">Confirmado ✓</span>') if confirmado else ""
 
     titulo_fase = fase if grupos_completados else "Grupos"
-    st.markdown(f"""<div style="margin:0.8rem 0 0.5rem 0;">
+    _gi_now = st.session_state.get("grupo_wizard", 0) if not grupos_completados else 1
+    if _gi_now != 0:
+        st.markdown(f"""<div style="margin:0.8rem 0 0.5rem 0;">
         <span style="font-family:Bebas Neue,sans-serif; font-size:1.4rem; letter-spacing:2px; color:var(--text);">
             Pronósticos — {titulo_fase}</span>{estado_badge}
     </div>""", unsafe_allow_html=True)
@@ -869,7 +871,6 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
         <div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:var(--gold); letter-spacing:3px;'>⭐ ESPECIALES</div>
         <div style='height:1px; flex:1; background:var(--surface2);'></div>
     </div>
-    <div style='text-align:center; color:var(--text3); font-size:0.75rem; margin-bottom:0.8rem; letter-spacing:1px;'>PASO 1 DE {total+1}</div>
     """, unsafe_allow_html=True)
 
     eq_wiz = db_get_equipos_grupos() or sorted(BANDERAS.keys())
@@ -1015,6 +1016,6 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
 
     st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
     nav1_e, _, nav3_e = st.columns([1, 2, 1])
-    if nav3_e.button("Siguiente → Grupo A", key="esp_next", type="primary", use_container_width=True):
+    if nav3_e.button("Siguiente → Pasar a grupos", key="esp_next", type="primary", use_container_width=True):
         st.session_state.grupo_wizard = 1; db_set_config(f"wizard_pos_{username}", "1"); st.rerun()
 
