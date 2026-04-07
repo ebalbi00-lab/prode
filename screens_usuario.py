@@ -724,14 +724,25 @@ def pantalla_usuario():
                 if gi == total:
                     st.divider()
                     _esp_ya_confirmados = db_get_especiales_usuario(username)
+                    _grupos_ok = db_fase_confirmada(username, "Grupos")
                     _todos_esp_ok = all(
                         (_esp_ya_confirmados.get(cat) or {}).get("confirmado")
                         for cat in CATEGORIAS_ESPECIALES
                     )
-                    _grupos_ok = db_fase_confirmada(username, "Grupos")
                     if _todos_esp_ok and _grupos_ok:
                         st.success("✅ ¡Todo confirmado! Grupos y especiales guardados.")
                     else:
+                        # Calcular qué especiales faltan elegir (no tienen eleccion en DB ni en buffer)
+                        _esp_buf = _get_special_buffer(username)
+                        _sin_elegir = [
+                            info["label"]
+                            for cat, info in CATEGORIAS_ESPECIALES.items()
+                            if not (_esp_ya_confirmados.get(cat, {}) or {}).get("eleccion")
+                            and not _esp_buf.get(cat)
+                        ]
+                        if _sin_elegir:
+                            st.warning(f"⚠️ Antes de confirmar, elegí los especiales que faltan: {', '.join(_sin_elegir)}")
+
                         with st.form("form_confirmar_especiales"):
                             clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
                             confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
@@ -739,25 +750,27 @@ def pantalla_usuario():
                         if confirmar_esp:
                             if hash_clave(clave_esp_final) != u["clave"]:
                                 st.error("Contraseña incorrecta.")
+                            elif _sin_elegir:
+                                st.error(f"⚠️ Falta elegir: {', '.join(_sin_elegir)}")
                             else:
-                                sin_elegir = [
-                                    info["label"]
-                                    for cat, info in CATEGORIAS_ESPECIALES.items()
-                                    if not ((_esp_ya_confirmados.get(cat) or {}).get("confirmado"))
-                                ]
-                                if sin_elegir:
-                                    st.error(f"⚠️ Falta confirmar especiales: {', '.join(sin_elegir)}")
-                                else:
-                                    with st.spinner("Confirmando pronósticos..."):
-                                        _persistir_cambios()
-                                        _flush_pred_buffer(username, fase)
-                                        db_confirmar_prode(username, fase)
-                                        _get_special_buffer(username).clear()
-                                        db_calcular_puntos()
-                                    st.session_state["wizard_grupos_completo"] = True
-                                    st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
-                                    db_set_config(f"wizard_pos_{username}", "0")
-                                    st.rerun()
+                                with st.spinner("Confirmando pronósticos..."):
+                                    _persistir_cambios()
+                                    _flush_pred_buffer(username, fase)
+                                    db_confirmar_prode(username, fase)
+                                    # Guardar y confirmar todos los especiales del buffer
+                                    _esp_buf2 = _get_special_buffer(username)
+                                    for cat in CATEGORIAS_ESPECIALES:
+                                        esp_db = (_esp_ya_confirmados.get(cat) or {})
+                                        elec = _esp_buf2.get(cat) or esp_db.get("eleccion")
+                                        if elec and not esp_db.get("confirmado"):
+                                            db_guardar_especial(username, cat, elec)
+                                            db_confirmar_especial(username, cat)
+                                    _get_special_buffer(username).clear()
+                                    db_calcular_puntos()
+                                st.session_state["wizard_grupos_completo"] = True
+                                st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
+                                db_set_config(f"wizard_pos_{username}", "0")
+                                st.rerun()
 
                 # ── Slider de navegación ──
                 pasos = ["⭐"] + grupos_con_partidos
