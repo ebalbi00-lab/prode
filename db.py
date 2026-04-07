@@ -424,6 +424,7 @@ def db_set_config(clave, valor):
     try:
         db_get_config.clear()
         db_get_pago_config.clear()
+        db_registro_abierto.clear()
     except Exception:
         pass
 
@@ -451,8 +452,13 @@ def db_set_pago_config(titular, alias, cvu, instrucciones="", monto=""):
         pass
 
 
+@st.cache_data(ttl=5)
 def db_registro_abierto():
-    return db_get_config("registro_abierto", "1") == "1"
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT valor FROM config WHERE clave='registro_abierto'")
+        row = cur.fetchone()
+        return (row["valor"] if row else "1") == "1"
 
 
 # ─── Usuarios ─────────────────────────────────────────────────────────────────
