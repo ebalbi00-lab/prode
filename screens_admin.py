@@ -2,6 +2,7 @@
 screens_admin.py — Panel de administración completo.
 """
 import datetime
+import json
 import re
 import unicodedata
 import pandas as pd
@@ -35,7 +36,8 @@ from db import (
     db_touch_usuario, db_get_cantidad_usuarios_en_linea, db_logout_usuario, db_get_feed,
     db_get_lista_especiales, db_set_lista_especiales_desde_texto, db_reset_lista_especiales,
     db_get_prode, db_get_especiales_usuario, db_get_resultados_especiales,
-    leer_comprobante,
+    leer_comprobante, db_generar_backup, db_guardar_backup_generado,
+    db_listar_backups, db_restaurar_backup,
 )
 from screens_stats import render_destacados_usuarios, pantalla_estadisticas_torneo, _render_tab_estadisticas_completa
 
@@ -1134,10 +1136,11 @@ def _tab_usuarios():
                 try:    nac_date = datetime.date.fromisoformat(nac_str); nac_anio, nac_mes, nac_dia = nac_date.year, nac_date.month, nac_date.day
                 except: nac_anio, nac_mes, nac_dia = 1990, 1, 1
                 with st.form("form_editar_usuario"):
-                    ed_nombre = st.text_input("Nombre y apellido", value=u_ed.get("nombre") or "")
-                    ed_mail   = st.text_input("Mail",     value=u_ed.get("mail")     or "")
-                    ed_cel    = st.text_input("Celular",  value=u_ed.get("celular")  or "")
-                    ed_loc    = st.text_input("Localidad",value=u_ed.get("localidad")or "")
+                    ed_username = st.text_input("Username", value=u_ed.get("username") or sel_ed)
+                    ed_nombre   = st.text_input("Nombre y apellido", value=u_ed.get("nombre") or "")
+                    ed_mail     = st.text_input("Mail",     value=u_ed.get("mail")     or "")
+                    ed_cel      = st.text_input("Celular",  value=u_ed.get("celular")  or "")
+                    ed_loc      = st.text_input("Localidad",value=u_ed.get("localidad")or "")
                     col_y2, col_m2, col_d2 = st.columns(3)
                     ed_anio = col_y2.selectbox("Año", list(range(1930, datetime.date.today().year+1))[::-1],
                                                index=list(range(1930, datetime.date.today().year+1))[::-1].index(nac_anio) if nac_anio in range(1930, datetime.date.today().year+1) else 0, key="ed_anio")
@@ -1145,18 +1148,47 @@ def _tab_usuarios():
                     ed_dia  = col_d2.selectbox("Día", list(range(1,32)), index=nac_dia-1, key="ed_dia")
                     guardar_ed = st.form_submit_button("💾 Guardar cambios", type="primary")
                 if guardar_ed:
+                    nuevo_username = str(ed_username or "").strip().lower()
                     try:    ed_nac = str(datetime.date(ed_anio, ed_mes, ed_dia))
                     except: ed_nac = nac_str
-                    if not ed_nombre.strip():
+                    if len(nuevo_username) < 3:
+                        st.session_state["err_usuarios"] = "El username debe tener al menos 3 caracteres."
+                    elif not re.match(r'^[a-zA-Z0-9._-]+$', nuevo_username):
+                        st.session_state["err_usuarios"] = "Username solo puede tener letras, números, puntos, guiones."
+                    elif not ed_nombre.strip():
                         st.session_state["err_usuarios"] = "El nombre no puede estar vacío."
                     else:
                         with get_db() as conn:
                             cur = conn.cursor()
-                            cur.execute("UPDATE usuarios SET nombre=%s, mail=%s, celular=%s, localidad=%s, nacimiento=%s WHERE username=%s",
-                                        (ed_nombre.strip(), ed_mail.strip(), ed_cel.strip(), ed_loc.strip(), ed_nac, sel_ed))
+                            if nuevo_username != sel_ed:
+                                cur.execute("SELECT 1 FROM usuarios WHERE username=%s LIMIT 1", (nuevo_username,))
+                                existe_otro = cur.fetchone() is not None
+                            else:
+                                existe_otro = False
+                            if existe_otro:
+                                st.session_state["err_usuarios"] = f"El username '{nuevo_username}' ya existe."
+                            else:
+                                if nuevo_username != sel_ed:
+                                    cur.execute("UPDATE prodes SET username=%s WHERE username=%s", (nuevo_username, sel_ed))
+                                    cur.execute("UPDATE especiales SET username=%s WHERE username=%s", (nuevo_username, sel_ed))
+                                    cur.execute("UPDATE consumo_log SET username=%s WHERE username=%s", (nuevo_username, sel_ed))
+                                    cur.execute("UPDATE actividad_usuarios SET username=%s WHERE username=%s", (nuevo_username, sel_ed))
+                                cur.execute("UPDATE usuarios SET username=%s, nombre=%s, mail=%s, celular=%s, localidad=%s, nacimiento=%s WHERE username=%s",
+                                            (nuevo_username, ed_nombre.strip(), ed_mail.strip(), ed_cel.strip(), ed_loc.strip(), ed_nac, sel_ed))
+                                if st.session_state.get("usuario") == sel_ed:
+                                    st.session_state["usuario"] = nuevo_username
+                                    usuario_data = dict(st.session_state.get("usuario_data") or {})
+                                    usuario_data["username"] = nuevo_username
+                                    usuario_data["nombre"] = ed_nombre.strip()
+                                    usuario_data["mail"] = ed_mail.strip()
+                                    usuario_data["celular"] = ed_cel.strip()
+                                    usuario_data["localidad"] = ed_loc.strip()
+                                    usuario_data["nacimiento"] = ed_nac
+                                    st.session_state["usuario_data"] = usuario_data
                         st.cache_data.clear()
-                        st.session_state["msg_usuarios"] = f"✅ Datos de **{sel_ed}** actualizados."
-                        st.rerun()
+                        if "err_usuarios" not in st.session_state:
+                            st.session_state["msg_usuarios"] = f"✅ Datos de **{sel_ed}** actualizados a **{nuevo_username}**."
+                            st.rerun()
         elif busq_ed:
             st.info("No se encontró ningún usuario.")
 
@@ -1285,7 +1317,138 @@ def _tab_reset():
 
 
 def _tab_exportar():
-    st.subheader("📥 Base de datos de usuarios")
+    st.subheader("📥 Exportar y respaldar base de datos")
+    st.caption("Podés descargar backups manuales, restaurarlos y revisar los automáticos generados al cerrar una fase.")
+
+    if "msg_backup" in st.session_state:
+        st.success(st.session_state.pop("msg_backup"))
+    if "err_backup" in st.session_state:
+        st.error(st.session_state.pop("err_backup"))
+
+    backup_todos = db_generar_backup()
+    counts = backup_todos.get("counts", {})
+    stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Usuarios", counts.get("usuarios", 0))
+    c2.metric("Pronósticos", counts.get("prodes", 0))
+    c3.metric("Especiales", counts.get("especiales", 0))
+
+    st.markdown("### Backup completo")
+    st.caption("Incluye usuarios, pendientes, fases, partidos, resultados, prodes, consumo, especiales, configuración y actividad.")
+    json_completo = json.dumps(backup_todos, ensure_ascii=False, indent=2).encode("utf-8")
+    col_b1, col_b2 = st.columns([1.3, 1])
+    with col_b1:
+        st.download_button(
+            "⬇️ Descargar backup completo (JSON)",
+            data=json_completo,
+            file_name=f"backup_prode_completo_{stamp}.json",
+            mime="application/json",
+            use_container_width=True,
+            key="backup_full_json",
+        )
+    with col_b2:
+        if st.button("💾 Guardar copia en historial", use_container_width=True, key="save_full_backup_hist"):
+            info = db_guardar_backup_generado(origen='manual_panel')
+            st.session_state["msg_backup"] = f"Backup completo guardado en historial. ID #{info['id']}."
+            st.rerun()
+
+    st.divider()
+    st.markdown("### Backup por fase")
+    fase_sel = st.selectbox("Elegí la fase a respaldar", FASES, key="backup_fase_sel")
+    backup_fase = db_generar_backup(fase_sel)
+    counts_fase = backup_fase.get("counts", {})
+    cf1, cf2, cf3 = st.columns(3)
+    cf1.metric("Partidos", counts_fase.get("partidos", 0))
+    cf2.metric("Resultados", counts_fase.get("resultados", 0))
+    cf3.metric("Pronósticos", counts_fase.get("prodes", 0))
+
+    json_fase = json.dumps(backup_fase, ensure_ascii=False, indent=2).encode("utf-8")
+    col_fa1, col_fa2 = st.columns([1.3, 1])
+    with col_fa1:
+        st.download_button(
+            f"⬇️ Descargar backup de {fase_sel} (JSON)",
+            data=json_fase,
+            file_name=f"backup_prode_{fase_sel.lower().replace(' ', '_')}_{stamp}.json",
+            mime="application/json",
+            use_container_width=True,
+            key="backup_phase_json",
+        )
+    with col_fa2:
+        if st.button(f"💾 Guardar {fase_sel} en historial", use_container_width=True, key="save_phase_backup_hist"):
+            info = db_guardar_backup_generado(fase_sel, origen='manual_panel')
+            st.session_state["msg_backup"] = f"Backup de {fase_sel} guardado en historial. ID #{info['id']}."
+            st.rerun()
+
+    st.info("Al cerrar una fase, ahora se genera un backup automático de esa fase y queda guardado en el historial.")
+
+    st.divider()
+    st.markdown("### Historial de backups guardados")
+    backups = db_listar_backups(limit=12)
+    if not backups:
+        st.caption("Todavía no hay backups guardados en historial.")
+    else:
+        for item in backups:
+            payload = item.get("payload") or {}
+            counts_item = item.get("counts") or {}
+            titulo = f"#{item['id']} · {item.get('tipo','').upper()}"
+            if item.get("fase"):
+                titulo += f" · {item['fase']}"
+            subt = f"Origen: {item.get('origen','manual')} · {str(item.get('created_at_iso','')).replace('T', ' ')[:19]}"
+            with st.expander(titulo):
+                st.caption(subt)
+                r1, r2, r3 = st.columns(3)
+                r1.metric("Pronósticos", counts_item.get("prodes", 0))
+                r2.metric("Resultados", counts_item.get("resultados", 0))
+                r3.metric("Especiales", counts_item.get("especiales", 0))
+                st.download_button(
+                    f"⬇️ Descargar backup #{item['id']}",
+                    data=json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8"),
+                    file_name=f"backup_historial_{item['id']}.json",
+                    mime="application/json",
+                    use_container_width=True,
+                    key=f"dl_hist_backup_{item['id']}",
+                )
+
+    st.divider()
+    st.markdown("### Restaurar backup")
+    st.warning("Esto sobrescribe datos actuales. Usalo solo si de verdad necesitás recuperar la base o una fase.")
+    archivo_backup = st.file_uploader("Subí un backup JSON exportado desde este panel", type=["json"], key="restore_backup_file")
+    clave_restore = st.text_input("Tu contraseña de admin para restaurar", type="password", key="restore_admin_pass")
+    confirmar_restore = st.text_input("Escribí RESTAURAR para confirmar", key="restore_backup_confirm")
+    if archivo_backup is not None:
+        try:
+            payload_preview = json.loads(archivo_backup.getvalue().decode("utf-8"))
+            scope_preview = payload_preview.get("scope", "?")
+            fase_preview = payload_preview.get("fase") or "—"
+            counts_preview = payload_preview.get("counts", {})
+            p1, p2, p3 = st.columns(3)
+            p1.metric("Tipo", str(scope_preview).upper())
+            p2.metric("Fase", fase_preview)
+            p3.metric("Pronósticos", counts_preview.get("prodes", 0))
+        except Exception:
+            st.error("El archivo no parece ser un backup válido en JSON.")
+
+    if st.button("♻️ Restaurar backup cargado", type="primary", use_container_width=True, key="btn_restore_backup"):
+        admin = db_get_usuario(st.session_state.usuario)
+        if archivo_backup is None:
+            st.session_state["err_backup"] = "Primero subí un archivo de backup."
+        elif not admin or admin.get("clave") != hash_clave(clave_restore):
+            st.session_state["err_backup"] = "Contraseña de admin incorrecta."
+        elif confirmar_restore != "RESTAURAR":
+            st.session_state["err_backup"] = "Tenés que escribir exactamente RESTAURAR para continuar."
+        else:
+            try:
+                payload = json.loads(archivo_backup.getvalue().decode("utf-8"))
+                info = db_restaurar_backup(payload)
+                alcance = "completo" if info.get("scope") == "completo" else f"de la fase {info.get('fase')}"
+                st.session_state["msg_backup"] = f"Backup restaurado correctamente ({alcance})."
+            except Exception as e:
+                st.session_state["err_backup"] = f"No se pudo restaurar el backup: {e}"
+        st.rerun()
+
+    st.divider()
+    st.markdown("### Exportación rápida de usuarios")
     todos_exp = db_get_todos_usuarios()
     if not todos_exp:
         st.info("No hay usuarios registrados todavía.")
@@ -1321,7 +1484,6 @@ def _tab_exportar():
     st.caption(f"Mostrando {len(df_filtrado)} de {len(df_exp)} usuarios")
     with st.expander(f"Ver lista ({len(df_filtrado)} usuarios)", expanded=False):
         st.dataframe(df_filtrado[["Usuario","Nombre","Nacimiento","Localidad","Celular","Mail"]], use_container_width=True, hide_index=True)
-    st.divider()
 
     cols_registro = ["Usuario", "Nombre", "Nacimiento", "Localidad", "Celular", "Mail", "Desde"]
     csv_completo  = df_exp[cols_registro].to_csv(index=False, sep=";").encode("utf-8-sig")

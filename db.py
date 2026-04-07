@@ -4,6 +4,7 @@ Optimizado: invalidación quirúrgica de cache en lugar de clear() global.
 """
 import datetime
 import hashlib
+import json
 import mimetypes
 import os
 import re
@@ -161,6 +162,171 @@ def _invalidar_resultado_especial(categoria):
         pass
 
 
+def _rows_to_plain(rows):
+    out = []
+    for row in rows or []:
+        item = {}
+        for k, v in dict(row).items():
+            if isinstance(v, (datetime.date, datetime.datetime, datetime.time)):
+                item[k] = v.isoformat()
+            else:
+                item[k] = v
+        out.append(item)
+    return out
+
+
+def db_generar_backup(fase=None):
+    fase = str(fase or '').strip() or None
+    with get_db() as conn:
+        cur = conn.cursor()
+        tables = {}
+
+        cur.execute("SELECT * FROM usuarios ORDER BY username")
+        tables['usuarios'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM pendientes ORDER BY id")
+        tables['pendientes'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM fases ORDER BY orden, nombre")
+        tables['fases'] = _rows_to_plain(cur.fetchall())
+
+        if fase:
+            cur.execute("SELECT * FROM partidos WHERE fase=%s ORDER BY idx", (fase,))
+        else:
+            cur.execute("SELECT * FROM partidos ORDER BY fase, idx")
+        tables['partidos'] = _rows_to_plain(cur.fetchall())
+
+        if fase:
+            cur.execute("SELECT * FROM resultados WHERE fase=%s ORDER BY partido_idx", (fase,))
+        else:
+            cur.execute("SELECT * FROM resultados ORDER BY fase, partido_idx")
+        tables['resultados'] = _rows_to_plain(cur.fetchall())
+
+        if fase:
+            cur.execute("SELECT * FROM prodes WHERE fase=%s ORDER BY username, partido_idx", (fase,))
+        else:
+            cur.execute("SELECT * FROM prodes ORDER BY username, fase, partido_idx")
+        tables['prodes'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM config ORDER BY clave")
+        tables['config'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM consumo_log ORDER BY id")
+        tables['consumo_log'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM especiales ORDER BY username, categoria")
+        tables['especiales'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM especiales_resultados ORDER BY categoria")
+        tables['especiales_resultados'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM actividad_feed ORDER BY created_at DESC, id DESC")
+        tables['actividad_feed'] = _rows_to_plain(cur.fetchall())
+
+        cur.execute("SELECT * FROM actividad_usuarios ORDER BY username")
+        tables['actividad_usuarios'] = _rows_to_plain(cur.fetchall())
+
+    counts = {k: len(v) for k, v in tables.items()}
+    return {
+        'generated_at': datetime.datetime.now().isoformat(),
+        'timezone': 'America/Argentina/Buenos_Aires',
+        'scope': 'fase' if fase else 'completo',
+        'fase': fase,
+        'counts': counts,
+        'tables': tables,
+    }
+
+
+def db_guardar_backup_generado(fase=None, origen='manual'):
+    payload = db_generar_backup(fase)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO admin_backups (tipo, fase, origen, contenido_json) VALUES (%s, %s, %s, %s) RETURNING id, created_at",
+            (payload.get('scope', 'completo'), payload.get('fase'), origen, json.dumps(payload, ensure_ascii=False))
+        )
+        row = cur.fetchone()
+    return {'id': row['id'], 'created_at': row['created_at'].isoformat() if row and row.get('created_at') else None, 'payload': payload}
+
+
+def db_listar_backups(limit=20):
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, created_at, tipo, fase, origen, contenido_json FROM admin_backups ORDER BY created_at DESC, id DESC LIMIT %s",
+            (int(limit),)
+        )
+        rows = []
+        for r in cur.fetchall():
+            item = dict(r)
+            try:
+                payload = json.loads(item.get('contenido_json') or '{}')
+            except Exception:
+                payload = {}
+            item['payload'] = payload
+            item['counts'] = payload.get('counts', {}) if isinstance(payload, dict) else {}
+            item['created_at_iso'] = item['created_at'].isoformat() if item.get('created_at') else ''
+            rows.append(item)
+        return rows
+
+
+def _insert_many(cur, table, columns, rows):
+    if not rows:
+        return
+    cols_sql = ', '.join(columns)
+    placeholders = ', '.join(['%s'] * len(columns))
+    values = [tuple(row.get(col) for col in columns) for row in rows]
+    cur.executemany(f"INSERT INTO {table} ({cols_sql}) VALUES ({placeholders})", values)
+
+
+def db_restaurar_backup(payload):
+    if not isinstance(payload, dict):
+        raise ValueError('Backup inválido.')
+    tables = payload.get('tables') or {}
+    scope = str(payload.get('scope') or 'completo').strip().lower()
+    fase = str(payload.get('fase') or '').strip() or None
+    if scope == 'fase' and not fase:
+        raise ValueError('El backup por fase no indica qué fase corresponde.')
+
+    with get_db() as conn:
+        cur = conn.cursor()
+
+        if scope == 'fase':
+            cur.execute("DELETE FROM resultados WHERE fase=%s", (fase,))
+            cur.execute("DELETE FROM prodes WHERE fase=%s", (fase,))
+            cur.execute("DELETE FROM partidos WHERE fase=%s", (fase,))
+        else:
+            cur.execute("TRUNCATE TABLE pendientes, fases, partidos, resultados, prodes, config, consumo_log, especiales, especiales_resultados, actividad_feed, actividad_usuarios, usuarios RESTART IDENTITY CASCADE")
+
+        if scope == 'completo':
+            _insert_many(cur, 'usuarios', ['username', 'clave', 'nombre', 'nacimiento', 'localidad', 'celular', 'mail', 'desde', 'puntos', 'goles', 'consumo', 'es_admin'], tables.get('usuarios', []))
+            _insert_many(cur, 'pendientes', ['id', 'username', 'clave', 'nombre', 'nacimiento', 'localidad', 'celular', 'mail', 'desde', 'comprobante'], tables.get('pendientes', []))
+            _insert_many(cur, 'fases', ['nombre', 'habilitada', 'orden'], tables.get('fases', []))
+            _insert_many(cur, 'config', ['clave', 'valor'], tables.get('config', []))
+            _insert_many(cur, 'consumo_log', ['id', 'username', 'puntos', 'descripcion', 'fecha'], tables.get('consumo_log', []))
+            _insert_many(cur, 'especiales', ['username', 'categoria', 'eleccion', 'confirmado'], tables.get('especiales', []))
+            _insert_many(cur, 'especiales_resultados', ['categoria', 'resultado'], tables.get('especiales_resultados', []))
+            _insert_many(cur, 'actividad_feed', ['id', 'tipo', 'texto', 'created_at'], tables.get('actividad_feed', []))
+            _insert_many(cur, 'actividad_usuarios', ['username', 'last_seen'], tables.get('actividad_usuarios', []))
+
+        _insert_many(cur, 'partidos', ['id', 'fase', 'idx', 'local', 'visita', 'fecha', 'hora'], tables.get('partidos', []))
+        _insert_many(cur, 'resultados', ['fase', 'partido_idx', 'goles_local', 'goles_visita'], tables.get('resultados', []))
+        _insert_many(cur, 'prodes', ['username', 'fase', 'partido_idx', 'goles_local', 'goles_visita', 'confirmado'], tables.get('prodes', []))
+
+        if scope == 'completo':
+            cur.execute("SELECT setval(pg_get_serial_sequence('pendientes','id'), COALESCE((SELECT MAX(id) FROM pendientes), 1), true)")
+            cur.execute("SELECT setval(pg_get_serial_sequence('partidos','id'), COALESCE((SELECT MAX(id) FROM partidos), 1), true)")
+            cur.execute("SELECT setval(pg_get_serial_sequence('consumo_log','id'), COALESCE((SELECT MAX(id) FROM consumo_log), 1), true)")
+            cur.execute("SELECT setval(pg_get_serial_sequence('actividad_feed','id'), COALESCE((SELECT MAX(id) FROM actividad_feed), 1), true)")
+
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
+    db_feed_event(f"♻️ Se restauró un backup {'de ' + fase if scope == 'fase' and fase else 'completo'}", 'backup')
+    return {'scope': scope, 'fase': fase, 'counts': {k: len(v) for k, v in tables.items() if isinstance(v, list)}}
+
+
 # ─── Inicialización ───────────────────────────────────────────────────────────
 
 @st.cache_resource
@@ -218,6 +384,14 @@ def init_tablas():
         CREATE TABLE IF NOT EXISTS actividad_usuarios (
             username TEXT PRIMARY KEY,
             last_seen TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+        CREATE TABLE IF NOT EXISTS admin_backups (
+            id SERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            tipo TEXT NOT NULL,
+            fase TEXT,
+            origen TEXT NOT NULL DEFAULT 'manual',
+            contenido_json TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_usuarios_es_admin ON usuarios (es_admin);
         CREATE INDEX IF NOT EXISTS idx_partidos_fase_idx ON partidos (fase, idx);
@@ -401,6 +575,14 @@ def db_get_fases():
 
 
 def db_toggle_fase(nombre, valor):
+    fases_actuales = db_get_fases() or {}
+    estado_anterior = bool(fases_actuales.get(nombre, False))
+    backup_info = None
+    if estado_anterior and not valor:
+        try:
+            backup_info = db_guardar_backup_generado(nombre, origen='auto_cierre_fase')
+        except Exception:
+            backup_info = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE fases SET habilitada=%s WHERE nombre=%s", (1 if valor else 0, nombre))
@@ -408,6 +590,8 @@ def db_toggle_fase(nombre, valor):
         db_get_fases.clear()
     except Exception:
         st.cache_data.clear()
+    if backup_info and backup_info.get('id'):
+        db_feed_event(f"🛟 Backup automático generado al cerrar {nombre} (#{backup_info['id']})", 'backup')
     db_feed_event(f"{'🟢' if valor else '🔒'} La fase {nombre} fue {'abierta' if valor else 'cerrada'}", "fase")
 
 
