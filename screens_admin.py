@@ -333,7 +333,7 @@ def _tab_pendientes():
 
 def _tab_fases():
     st.subheader("Habilitar / Deshabilitar fases")
-    st.caption("Las acciones sensibles piden confirmación para evitar cierres o reaperturas por error.")
+    st.caption("Las acciones sensibles piden confirmación para evitar cierres o aperturas por error.")
     fases = db_get_fases()
 
     pending = st.session_state.get("fase_toggle_pending")
@@ -341,7 +341,7 @@ def _tab_fases():
         fase_p = pending.get("fase")
         nuevo_estado = bool(pending.get("nuevo"))
         accion = "ABRIR" if nuevo_estado else "CERRAR"
-        estado_txt = "reabrir" if nuevo_estado else "cerrar"
+        estado_txt = "abrir" if nuevo_estado else "cerrar"
         st.warning(f"Vas a {estado_txt} la fase **{fase_p}**.")
         c1, c2 = st.columns([2, 1])
         clave = c1.text_input(
@@ -353,7 +353,7 @@ def _tab_fases():
                 st.error(f"Tenés que escribir exactamente {accion}.")
             else:
                 db_toggle_fase(fase_p, nuevo_estado)
-                st.session_state["msg_resumen"] = f"✅ Fase {fase_p} {'reabierta' if nuevo_estado else 'cerrada'}."
+                st.session_state["msg_resumen"] = f"✅ Fase {fase_p} {'abierta' if nuevo_estado else 'cerrada'}."
                 st.session_state.pop("fase_toggle_pending", None)
                 st.rerun()
         if st.button("Cancelar cambio", key=f"cancel_fase_{fase_p}", use_container_width=True):
