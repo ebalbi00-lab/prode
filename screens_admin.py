@@ -340,7 +340,7 @@ def _tab_fases():
     if pending:
         fase_p = pending.get("fase")
         nuevo_estado = bool(pending.get("nuevo"))
-        accion = "REABRIR" if nuevo_estado else "CERRAR"
+        accion = "ABRIR" if nuevo_estado else "CERRAR"
         estado_txt = "reabrir" if nuevo_estado else "cerrar"
         st.warning(f"Vas a {estado_txt} la fase **{fase_p}**.")
         c1, c2 = st.columns([2, 1])
@@ -366,7 +366,7 @@ def _tab_fases():
         c1, c2, c3 = st.columns([3, 2, 2])
         c1.markdown(f"**{f}**")
         c2.markdown("🟢 Abierta" if estado else "🔴 Cerrada")
-        accion_label = "Cerrar fase" if estado else "Reabrir fase"
+        accion_label = "Cerrar fase" if estado else "Abrir fase"
         if c3.button(accion_label, key=f"toggle_action_{f}", use_container_width=True):
             st.session_state["fase_toggle_pending"] = {"fase": f, "nuevo": not estado}
             st.rerun()
