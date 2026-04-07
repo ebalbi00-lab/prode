@@ -237,39 +237,6 @@ def db_generar_backup(fase=None):
     }
 
 
-def db_guardar_backup_generado(fase=None, origen='manual'):
-    payload = db_generar_backup(fase)
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO admin_backups (tipo, fase, origen, contenido_json) VALUES (%s, %s, %s, %s) RETURNING id, created_at",
-            (payload.get('scope', 'completo'), payload.get('fase'), origen, json.dumps(payload, ensure_ascii=False))
-        )
-        row = cur.fetchone()
-    return {'id': row['id'], 'created_at': row['created_at'].isoformat() if row and row.get('created_at') else None, 'payload': payload}
-
-
-def db_listar_backups(limit=20):
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT id, created_at, tipo, fase, origen, contenido_json FROM admin_backups ORDER BY created_at DESC, id DESC LIMIT %s",
-            (int(limit),)
-        )
-        rows = []
-        for r in cur.fetchall():
-            item = dict(r)
-            try:
-                payload = json.loads(item.get('contenido_json') or '{}')
-            except Exception:
-                payload = {}
-            item['payload'] = payload
-            item['counts'] = payload.get('counts', {}) if isinstance(payload, dict) else {}
-            item['created_at_iso'] = item['created_at'].isoformat() if item.get('created_at') else ''
-            rows.append(item)
-        return rows
-
-
 def _insert_many(cur, table, columns, rows):
     if not rows:
         return
@@ -384,14 +351,6 @@ def init_tablas():
         CREATE TABLE IF NOT EXISTS actividad_usuarios (
             username TEXT PRIMARY KEY,
             last_seen TIMESTAMP NOT NULL DEFAULT NOW()
-        );
-        CREATE TABLE IF NOT EXISTS admin_backups (
-            id SERIAL PRIMARY KEY,
-            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            tipo TEXT NOT NULL,
-            fase TEXT,
-            origen TEXT NOT NULL DEFAULT 'manual',
-            contenido_json TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_usuarios_es_admin ON usuarios (es_admin);
         CREATE INDEX IF NOT EXISTS idx_partidos_fase_idx ON partidos (fase, idx);

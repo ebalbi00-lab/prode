@@ -330,15 +330,46 @@ def _tab_pendientes():
                 st.rerun()
 
 
+
 def _tab_fases():
     st.subheader("Habilitar / Deshabilitar fases")
+    st.caption("Las acciones sensibles piden confirmación para evitar cierres o reaperturas por error.")
     fases = db_get_fases()
-    cols  = st.columns(len(FASES))
-    for idx, f in enumerate(FASES):
-        estado = fases.get(f, False)
-        nuevo  = cols[idx].toggle(f, value=estado, key=f"toggle_{f}")
-        if nuevo != estado:
-            db_toggle_fase(f, nuevo); st.rerun()
+
+    pending = st.session_state.get("fase_toggle_pending")
+    if pending:
+        fase_p = pending.get("fase")
+        nuevo_estado = bool(pending.get("nuevo"))
+        accion = "REABRIR" if nuevo_estado else "CERRAR"
+        estado_txt = "reabrir" if nuevo_estado else "cerrar"
+        st.warning(f"Vas a {estado_txt} la fase **{fase_p}**.")
+        c1, c2 = st.columns([2, 1])
+        clave = c1.text_input(
+            f"Escribí {accion} para confirmar",
+            key=f"confirm_fase_toggle_{fase_p}",
+        )
+        if c2.button(f"✅ Confirmar {estado_txt}", key=f"btn_conf_fase_{fase_p}", use_container_width=True):
+            if clave != accion:
+                st.error(f"Tenés que escribir exactamente {accion}.")
+            else:
+                db_toggle_fase(fase_p, nuevo_estado)
+                st.session_state["msg_resumen"] = f"✅ Fase {fase_p} {'reabierta' if nuevo_estado else 'cerrada'}."
+                st.session_state.pop("fase_toggle_pending", None)
+                st.rerun()
+        if st.button("Cancelar cambio", key=f"cancel_fase_{fase_p}", use_container_width=True):
+            st.session_state.pop("fase_toggle_pending", None)
+            st.rerun()
+        st.divider()
+
+    for f in FASES:
+        estado = bool(fases.get(f, False))
+        c1, c2, c3 = st.columns([3, 2, 2])
+        c1.markdown(f"**{f}**")
+        c2.markdown("🟢 Abierta" if estado else "🔴 Cerrada")
+        accion_label = "Cerrar fase" if estado else "Reabrir fase"
+        if c3.button(accion_label, key=f"toggle_action_{f}", use_container_width=True):
+            st.session_state["fase_toggle_pending"] = {"fase": f, "nuevo": not estado}
+            st.rerun()
 
 
 def _tab_partidos():
@@ -547,13 +578,27 @@ def _tab_resultados():
             c_sep.markdown("<div style='text-align:center; padding-top:9px; color:var(--text3);'>—</div>", unsafe_allow_html=True)
             rv = c_rv.number_input("rv", 0, 15, int(rv_prev), key=f"rv_{fase_sel}_{idx}", label_visibility="collapsed")
             c_visita.markdown(f"<div style='text-align:left; font-weight:700; font-size:0.9rem; padding-top:9px; color:var(--text);'>{bandera(p['visita'])} {p['visita']}</div>", unsafe_allow_html=True)
+            cambio_resultado_existente = tiene_res and (int(rl) != int(rl_prev) or int(rv) != int(rv_prev))
+            if cambio_resultado_existente:
+                st.caption("Para modificar un resultado ya guardado, escribí CONFIRMAR.")
+                confirmar_res = st.text_input(
+                    "Confirmación para modificar resultado",
+                    key=f"confirm_res_{fase_sel}_{idx}",
+                    placeholder="CONFIRMAR",
+                    label_visibility="collapsed",
+                )
+            else:
+                confirmar_res = ""
             if c_btn.button("💾", key=f"save_{fase_sel}_{idx}", help="Guardar resultado"):
-                with st.spinner("Guardando y recalculando puntajes..."):
-                    db_guardar_resultado(fase_sel, idx, rl, rv)
-                    db_calcular_puntos()
-                    db_calcular_puntos_especiales()
-                    st.cache_data.clear()
-                st.session_state["res_ok"] = f"✅ Guardado: {p['local']} {rl} — {rv} {p['visita']}. Puntajes y ranking actualizados."
+                if cambio_resultado_existente and confirmar_res != "CONFIRMAR":
+                    st.session_state["res_ok"] = "❌ Para modificar un resultado ya cargado tenés que escribir CONFIRMAR."
+                else:
+                    with st.spinner("Guardando y recalculando puntajes..."):
+                        db_guardar_resultado(fase_sel, idx, rl, rv)
+                        db_calcular_puntos()
+                        db_calcular_puntos_especiales()
+                        st.cache_data.clear()
+                    st.session_state["res_ok"] = f"✅ Guardado: {p['local']} {rl} — {rv} {p['visita']}. Puntajes y ranking actualizados."
                 st.rerun()
             if tiene_res:
                 st.caption(f"✅ Guardado: {p['local']} {rl_prev} — {rv_prev} {p['visita']}")
@@ -577,12 +622,15 @@ def _tab_resultados():
         with st.form(f"form_limpiar_res_{fase_sel}"):
             st.warning(f"⚠️ Esto borrará los resultados de {label_limpiar} y recalculará los puntajes.")
             pw_limpiar    = st.text_input("Tu contraseña de admin para confirmar", type="password", key=f"pw_limpiar_{fase_sel}")
+            confirmar_limpiar = st.text_input("Escribí BORRAR para confirmar", key=f"txt_limpiar_res_{fase_sel}")
             limpiar_btn   = st.form_submit_button(f"🗑️ Limpiar {label_limpiar}", type="primary")
 
         if limpiar_btn:
             admin_lr = db_get_usuario(st.session_state.usuario)
             if admin_lr["clave"] != hash_clave(pw_limpiar):
                 st.session_state["res_ok"] = "❌ Contraseña incorrecta."
+            elif confirmar_limpiar != "BORRAR":
+                st.session_state["res_ok"] = "❌ Tenés que escribir BORRAR para continuar."
             else:
                 if fase_sel == "Grupos":
                     with get_db() as conn:
@@ -915,10 +963,22 @@ def _tab_especiales():
     pw_esp_adm = st.text_input("🔒 Tu contraseña de admin", type="password", key="pw_guardar_esp")
     guardar_todos_esp = st.button("💾 Guardar todos y aplicar puntos", type="primary", use_container_width=True)
 
+    resultados_previos_guardados = {cat: db_get_resultado_especial(cat) for cat in CATEGORIAS_ESPECIALES}
+    hay_cambios_sensibles = any(
+        resultados_previos_guardados.get(cat) and resultados_previos_guardados.get(cat) != ganador
+        for cat, ganador in selecciones_adm.items() if ganador
+    )
+    if hay_cambios_sensibles:
+        st.caption("Hay especiales ya resueltos que van a cambiar. Escribí CONFIRMAR para continuar.")
+        confirm_esp = st.text_input("Confirmación para sobrescribir especiales", key="confirm_guardar_especiales")
+    else:
+        confirm_esp = ""
     if guardar_todos_esp:
         admin_esp = db_get_usuario(st.session_state.usuario)
         if admin_esp["clave"] != hash_clave(pw_esp_adm):
             st.session_state["msg_esp_adm"] = "❌ Contraseña incorrecta."
+        elif hay_cambios_sensibles and confirm_esp != "CONFIRMAR":
+            st.session_state["msg_esp_adm"] = "❌ Para cambiar especiales ya guardados tenés que escribir CONFIRMAR."
         else:
             guardados = 0
             with st.spinner("Guardando..."):
@@ -938,11 +998,14 @@ def _tab_especiales():
         with st.form("form_limpiar_especiales"):
             st.warning("⚠️ Esto borrará TODOS los resultados especiales y recalculará puntajes.")
             pw_limp_esp   = st.text_input("Tu contraseña de admin", type="password", key="pw_limpiar_esp")
+            confirm_limp_esp = st.text_input("Escribí BORRAR para confirmar", key="confirm_limpiar_esp")
             limpiar_esp   = st.form_submit_button("🗑️ Limpiar resultados especiales", type="primary")
         if limpiar_esp:
             admin_le = db_get_usuario(st.session_state.usuario)
             if admin_le["clave"] != hash_clave(pw_limp_esp):
                 st.session_state["msg_esp_adm"] = "❌ Contraseña incorrecta."
+            elif confirm_limp_esp != "BORRAR":
+                st.session_state["msg_esp_adm"] = "❌ Tenés que escribir BORRAR para continuar."
             else:
                 db_limpiar_resultados_especiales(); db_calcular_puntos()
                 st.session_state["msg_esp_adm"] = "🗑️ Resultados especiales eliminados y puntajes recalculados."
@@ -1145,6 +1208,7 @@ def _tab_usuarios():
                                                index=list(range(1930, datetime.date.today().year+1))[::-1].index(nac_anio) if nac_anio in range(1930, datetime.date.today().year+1) else 0, key="ed_anio")
                     ed_mes  = col_m2.selectbox("Mes", list(range(1,13)), index=nac_mes-1, format_func=lambda x: meses_es_adm[x-1], key="ed_mes")
                     ed_dia  = col_d2.selectbox("Día", list(range(1,32)), index=nac_dia-1, key="ed_dia")
+                    confirmar_username = st.text_input("Si cambiás el username, escribí CAMBIAR para confirmarlo")
                     guardar_ed = st.form_submit_button("💾 Guardar cambios", type="primary")
                 if guardar_ed:
                     nuevo_username = str(ed_username or "").strip().lower()
@@ -1156,6 +1220,8 @@ def _tab_usuarios():
                         st.session_state["err_usuarios"] = "Username solo puede tener letras, números, puntos, guiones."
                     elif not ed_nombre.strip():
                         st.session_state["err_usuarios"] = "El nombre no puede estar vacío."
+                    elif nuevo_username != sel_ed and confirmar_username != "CAMBIAR":
+                        st.session_state["err_usuarios"] = "Para cambiar el username tenés que escribir CAMBIAR."
                     else:
                         with get_db() as conn:
                             cur = conn.cursor()
@@ -1224,11 +1290,14 @@ def _tab_usuarios():
             sel_del  = st.selectbox("Seleccioná el usuario a borrar", list(opts_del.keys()), format_func=lambda x: opts_del[x], key="sel_borrar")
             with st.form("form_borrar_usuario"):
                 clave_adm_del = st.text_input("Tu contraseña de admin", type="password")
+                confirmar_borrar = st.text_input("Escribí BORRAR para confirmar")
                 borrar_btn    = st.form_submit_button("🗑️ Borrar usuario", type="primary")
             if borrar_btn:
                 admin_u = db_get_usuario(st.session_state.usuario)
                 if admin_u["clave"] != hash_clave(clave_adm_del):
                     st.session_state["err_usuarios"] = "Contraseña incorrecta."
+                elif confirmar_borrar != "BORRAR":
+                    st.session_state["err_usuarios"] = "Tenés que escribir BORRAR para continuar."
                 else:
                     db_borrar_usuario(sel_del); st.cache_data.clear()
                     st.session_state["msg_usuarios"] = f"✅ Usuario **{sel_del}** borrado."
@@ -1262,11 +1331,14 @@ def _tab_reset():
         with st.form("form_reset_fase"):
             fase_reset = st.selectbox("Fase a resetear", fases_con_datos, key="fase_reset_sel")
             pw_reset_f = st.text_input("Tu contraseña de admin", type="password", key="pw_reset_fase")
+            confirm_reset_f = st.text_input("Escribí RESETEAR para confirmar", key="txt_reset_fase")
             reset_fase_btn = st.form_submit_button(f"🗑️ Resetear fase", type="primary")
         if reset_fase_btn:
             admin_rf = db_get_usuario(st.session_state.usuario)
             if admin_rf["clave"] != hash_clave(pw_reset_f):
                 st.error("Contraseña incorrecta.")
+            elif confirm_reset_f != "RESETEAR":
+                st.error("Tenés que escribir RESETEAR para continuar.")
             else:
                 with get_db() as conn:
                     cur = conn.cursor()
@@ -1284,11 +1356,14 @@ def _tab_reset():
     st.caption("Vuelve a calcular todos los puntos en base a los pronósticos y resultados actuales.")
     with st.form("form_recalcular"):
         pw_recalc = st.text_input("Tu contraseña de admin", type="password", key="pw_recalcular")
+        confirm_recalc = st.checkbox("Confirmo que quiero recalcular todos los puntajes", key="chk_recalcular")
         recalc_btn = st.form_submit_button("🔄 Recalcular puntajes", type="primary")
     if recalc_btn:
         admin_rc = db_get_usuario(st.session_state.usuario)
         if admin_rc["clave"] != hash_clave(pw_recalc):
             st.error("Contraseña incorrecta.")
+        elif not confirm_recalc:
+            st.error("Marcá la confirmación para recalcular.")
         else:
             db_calcular_puntos()
             st.cache_data.clear()
