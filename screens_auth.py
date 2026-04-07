@@ -139,8 +139,11 @@ def pantalla_login():
         with st.spinner("Validando acceso..."):
             login(usuario, clave)
     if registrarse:
-        cambiar_pantalla(1)
-        st.rerun()
+        if not db_registro_abierto():
+            st.error("El registro está cerrado. No se están tomando nuevas inscripciones.")
+        else:
+            cambiar_pantalla(1)
+            st.rerun()
 
     cta1, cta2 = st.columns([1.1, 1])
     with cta1:
