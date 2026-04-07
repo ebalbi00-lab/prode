@@ -1119,7 +1119,7 @@ def _render_admin_ver_pronosticos_usuario():
         filas_esp.append({
             "Especial": info.get("label", cat.title()),
             "Pronóstico": eleccion,
-            "Resultado real": real or "—",
+            "Resultado real": real if real is not None else "—",
             " ": icono,
         })
 
