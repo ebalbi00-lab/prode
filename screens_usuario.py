@@ -684,20 +684,22 @@ def pantalla_usuario():
                 ultimo = db_get_config(f"wizard_pos_{username}", "0")
                 st.session_state.grupo_wizard = int(ultimo) if ultimo and ultimo.isdigit() else 0
             gi_raw = st.session_state.grupo_wizard
-            gi     = gi_raw if gi_raw == 12 else max(0, min(gi_raw, len(grupos_con_partidos) - 1))
             total  = len(grupos_con_partidos)
+            # gi=0 → especiales; gi=1..total → grupos A..L
+            gi = max(0, min(gi_raw, total))
 
-            if gi == 12:
+            if gi == 0:
                 _render_paso_especiales(username, u, fase, total, partidos, pred)
             else:
-                letra = grupos_con_partidos[min(gi, len(grupos_con_partidos) - 1)]
+                grupo_idx = gi - 1
+                letra = grupos_con_partidos[min(grupo_idx, len(grupos_con_partidos) - 1)]
                 st.markdown(f"""
                 <div style='display:flex; align-items:center; gap:10px; margin:0.5rem 0 0.8rem 0;'>
                     <div style='height:1px; flex:1; background:var(--surface2);'></div>
                     <div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:var(--green); letter-spacing:3px;'>GRUPO {letra}</div>
                     <div style='height:1px; flex:1; background:var(--surface2);'></div>
                 </div>
-                <div style='text-align:center; color:var(--text3); font-size:0.75rem; margin-bottom:0.8rem; letter-spacing:1px;'>{gi+1} DE {total}</div>
+                <div style='text-align:center; color:var(--text3); font-size:0.75rem; margin-bottom:0.8rem; letter-spacing:1px;'>{grupo_idx+1} DE {total}</div>
                 """, unsafe_allow_html=True)
 
                 partidos_grupo = partidos_por_grupo.get(letra, [])
@@ -706,37 +708,31 @@ def pantalla_usuario():
 
                 st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
                 nav1, nav2, nav3 = st.columns([1, 2, 1])
-                if gi > 0:
-                    if nav1.button("← Anterior", key="grupo_prev", use_container_width=True):
-                        with st.spinner("Guardando..."):
-                            _persistir_cambios()
-                        st.session_state.grupo_wizard = gi - 1; db_set_config(f'wizard_pos_{username}', str(gi - 1)); st.rerun()
+                if nav1.button("← Anterior", key="grupo_prev", use_container_width=True):
+                    with st.spinner("Guardando..."):
+                        _persistir_cambios()
+                    st.session_state.grupo_wizard = gi - 1; db_set_config(f'wizard_pos_{username}', str(gi - 1)); st.rerun()
 
-                if gi < total - 1:
+                if gi < total:
                     if nav3.button("Siguiente →", key="grupo_next", type="primary", use_container_width=True):
                         with st.spinner("Guardando..."):
                             _persistir_cambios()
                         st.session_state.grupo_wizard = gi + 1; db_set_config(f'wizard_pos_{username}', str(gi + 1)); st.rerun()
-                else:
-                    if nav3.button("Siguiente → Especiales ⭐", key="grupo_to_especiales", type="primary", use_container_width=True):
-                        with st.spinner("Guardando..."):
-                            _persistir_cambios()
-                        st.session_state.grupo_wizard = 12; db_set_config(f'wizard_pos_{username}', '12'); st.rerun()
 
                 # ── Slider de navegación ──
-                pasos = grupos_con_partidos + ["⭐"]
+                pasos = ["⭐"] + grupos_con_partidos
                 n = len(pasos)
                 dest_slider = st.select_slider(
                     "Ir a",
                     options=list(range(n)),
                     value=gi,
-                    format_func=lambda x: (pasos[x] if pasos[x] == "⭐" else f"Grupo {pasos[x]}"),
+                    format_func=lambda x: ("⭐ Especiales" if x == 0 else f"Grupo {pasos[x]}"),
                     key=f"slider_wizard_{gi}",
                     label_visibility="collapsed",
                 )
                 if dest_slider != gi:
                     with st.spinner("Guardando..."):
-                            _persistir_cambios()
+                        _persistir_cambios()
                     st.session_state.grupo_wizard = dest_slider
                     db_set_config(f'wizard_pos_{username}', str(dest_slider)); st.rerun()
 
@@ -843,7 +839,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
         <div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:var(--gold); letter-spacing:3px;'>⭐ ESPECIALES</div>
         <div style='height:1px; flex:1; background:var(--surface2);'></div>
     </div>
-    <div style='text-align:center; color:var(--text3); font-size:0.75rem; margin-bottom:0.8rem; letter-spacing:1px;'>PASO 13 DE 13</div>
+    <div style='text-align:center; color:var(--text3); font-size:0.75rem; margin-bottom:0.8rem; letter-spacing:1px;'>PASO 1 DE {total+1}</div>
     """, unsafe_allow_html=True)
 
     eq_wiz = db_get_equipos_grupos() or sorted(BANDERAS.keys())
@@ -1021,6 +1017,6 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
             esp_buffer.pop(cat, None)
 
     st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
-    nav1_e, _, _ = st.columns([1, 2, 1])
-    if nav1_e.button("← Grupo L", key="esp_back", use_container_width=True):
-        st.session_state.grupo_wizard = total - 1; st.rerun()
+    nav1_e, _, nav3_e = st.columns([1, 2, 1])
+    if nav3_e.button("Siguiente → Grupo A", key="esp_next", type="primary", use_container_width=True):
+        st.session_state.grupo_wizard = 1; db_set_config(f"wizard_pos_{username}", "1"); st.rerun()
