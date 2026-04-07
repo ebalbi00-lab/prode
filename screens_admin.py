@@ -265,10 +265,11 @@ def _tab_resumen(panel_consumo=False):
 
     st.divider()
     registro_abierto = db_registro_abierto()
-    def _on_toggle_registro():
-        val = st.session_state["toggle_registro"]
-        db_set_config("registro_abierto", "1" if val else "0")
-    st.toggle("📋 Registro abierto", value=registro_abierto, key="toggle_registro", on_change=_on_toggle_registro)
+    nuevo_estado = st.toggle("📋 Registro abierto", value=registro_abierto)
+    if nuevo_estado != registro_abierto:
+        db_set_config("registro_abierto", "1" if nuevo_estado else "0")
+        db_registro_abierto.clear()
+        st.rerun()
 
 
 def _tab_pendientes():
