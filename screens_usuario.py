@@ -691,7 +691,7 @@ def pantalla_usuario():
             gi = max(0, min(gi_raw, total))
 
             if gi == 0:
-                _render_paso_especiales(username, u, fase, total, partidos, pred)
+                _render_paso_especiales(username, u, fase, total, partidos, pred, grupos_con_partidos)
             else:
                 grupo_idx = gi - 1
                 letra = grupos_con_partidos[min(grupo_idx, len(grupos_con_partidos) - 1)]
@@ -864,12 +864,15 @@ def pantalla_usuario():
 
 # ─── Paso 13: Especiales dentro del wizard de grupos ─────────────────────────
 
-def _render_paso_especiales(username, u, fase, total, partidos, pred):
+def _render_paso_especiales(username, u, fase, total, partidos, pred, grupos_con_partidos):
     st.markdown("""
-    <div style='display:flex; align-items:center; gap:10px; margin:0.5rem 0 0.8rem 0;'>
+    <div style='display:flex; align-items:center; gap:10px; margin:0.5rem 0 0.4rem 0;'>
         <div style='height:1px; flex:1; background:var(--surface2);'></div>
         <div style='font-family:Bebas Neue,sans-serif; font-size:1.3rem; color:var(--gold); letter-spacing:3px;'>⭐ ESPECIALES</div>
         <div style='height:1px; flex:1; background:var(--surface2);'></div>
+    </div>
+    <div style='text-align:center; color:var(--text3); font-size:0.75rem; margin-bottom:0.8rem;'>
+        Los resultados se definen al final de la competencia.
     </div>
     """, unsafe_allow_html=True)
 
@@ -969,6 +972,31 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
     if "msg_esp" in st.session_state:
         st.success(st.session_state.pop("msg_esp"))
 
+    # ── Slider de navegación (especiales) ──
+    pasos_esp = ["⭐"] + grupos_con_partidos
+    n_esp = len(pasos_esp)
+    dest_slider_esp = st.select_slider(
+        "Ir a",
+        options=list(range(n_esp)),
+        value=0,
+        format_func=lambda x: ("⭐ Especiales" if x == 0 else f"Grupo {pasos_esp[x]}"),
+        key="slider_wizard_esp",
+        label_visibility="collapsed",
+    )
+    if dest_slider_esp != 0:
+        with st.spinner("Guardando..."):
+            _flush_pred_buffer(username, fase)
+        st.session_state.grupo_wizard = dest_slider_esp
+        db_set_config(f"wizard_pos_{username}", str(dest_slider_esp)); st.rerun()
+
+    # Si todos los especiales ya están confirmados, no mostrar form de confirmación
+    _todos_confirmados = all(
+        (especiales_usuario.get(cat) or {}).get("confirmado")
+        for cat in CATEGORIAS_ESPECIALES
+    )
+    if _todos_confirmados:
+        return
+
     # ── Diálogo de confirmación ──
     if st.session_state.get("mostrar_dialogo_confirm_esp"):
         st.warning("⚠️ ¿Querés continuar sin confirmar todos los pronósticos?")
@@ -1013,9 +1041,4 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
             esp_buffer[cat] = elec
         elif not elec and cat in esp_buffer and not confirmado_actual:
             esp_buffer.pop(cat, None)
-
-    st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
-    nav1_e, _, nav3_e = st.columns([1, 2, 1])
-    if nav3_e.button("Siguiente → Pasar a grupos", key="esp_next", type="primary", use_container_width=True):
-        st.session_state.grupo_wizard = 1; db_set_config(f"wizard_pos_{username}", "1"); st.rerun()
 
