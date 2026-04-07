@@ -972,7 +972,11 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred, grupos_con
     if "msg_esp" in st.session_state:
         st.success(st.session_state.pop("msg_esp"))
 
-    # ── Slider de navegación (especiales) ──
+    # ── Botón siguiente + Slider de navegación (especiales) ──
+    _, _, nav3_e = st.columns([1, 2, 1])
+    if nav3_e.button("Siguiente → Pasar a grupos", key="esp_next", type="primary", use_container_width=True):
+        st.session_state.grupo_wizard = 1; db_set_config(f"wizard_pos_{username}", "1"); st.rerun()
+
     pasos_esp = ["⭐"] + grupos_con_partidos
     n_esp = len(pasos_esp)
     dest_slider_esp = st.select_slider(
