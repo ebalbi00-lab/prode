@@ -456,7 +456,7 @@ def pantalla_usuario():
                 nom_l = nombre_equipo_display(p['local'])
                 nom_v = nombre_equipo_display(p['visita'])
                 res_real = resultados_ver.get(idx_p)
-                res_str = f"{res_real[0]}–{res_real[1]}" if res_real else "pendiente"
+                res_str = f"{res_real[0]}–{res_real[1]}" if res_real is not None else "pendiente"
 
                 header = (
                     '<div style="background:var(--bg3);border:1px solid var(--border);' +
@@ -470,7 +470,7 @@ def pantalla_usuario():
                 for uname, udata in sorted(todos_prodes.items()):
                     gl_u, gv_u = udata["pred"].get(idx_p, ("?", "?"))
                     es_yo = uname == username
-                    if res_real and gl_u != "?":
+                    if res_real is not None and gl_u != "?":
                         rl, rv = res_real
                         exacto = gl_u == rl and gv_u == rv
                         ok = (gl_u > gv_u and rl > rv) or (gl_u < gv_u and rl < rv) or (gl_u == gv_u and rl == rv)
@@ -576,7 +576,7 @@ def pantalla_usuario():
         border_card = "var(--border2)"
         res_str     = ""
 
-        if res_real:
+        if res_real is not None:
             rl, rv = res_real
             acierto_res    = (gl_prev > gv_prev and rl > rv) or (gl_prev < gv_prev and rl < rv) or (gl_prev == gv_prev and rl == rv)
             acierto_exacto = gl_prev == rl and gv_prev == rv
@@ -795,7 +795,7 @@ def pantalla_usuario():
             if not elec:
                 bg_c = "var(--surface)"; border_c = "var(--surface)"
                 derecha = '<span style="color:var(--text3); font-size:0.8rem;">Sin completar</span>'
-            elif resultado_real:
+            elif resultado_real is not None:
                 acierto  = elec == resultado_real
                 icono    = "🎯" if acierto else "❌"
                 bg_c     = "var(--green-dim)" if acierto else "var(--red-dim)"
@@ -849,7 +849,7 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
         col_tw.markdown(f"**{info['label']}**")
         col_pw.markdown(f"<div style='text-align:right; color:var(--gold); font-family:Bebas Neue,sans-serif; font-size:1.1rem;'>+{info['puntos']} pts</div>", unsafe_allow_html=True)
 
-        if res_real_w:
+        if res_real_w is not None:
             acierto_w = elec_w == res_real_w
             st.markdown(f"<div style='color:var(--text2); font-size:0.9rem; margin-bottom:8px;'>Resultado oficial: <b style='color:var(--text)'>{res_real_w}</b> {'🎯' if acierto_w else '❌'} — Tu pronóstico: <b style='color:var(--text)'>{elec_w or '—'}</b></div>", unsafe_allow_html=True)
             selecciones_esp[cat] = elec_w

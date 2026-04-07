@@ -1075,26 +1075,25 @@ def _render_admin_ver_pronosticos_usuario():
 
             filas = []
             resultados_fase = db_get_resultado_completo(fase) or {}
+
+            def _icono_pronostico(pr, rl, rv):
+                if pr is None or rl is None or rv is None:
+                    return ""
+                if pr[0] == rl and pr[1] == rv:
+                    return "✔"
+                if ((pr[0] > pr[1] and rl > rv) or (pr[0] < pr[1] and rl < rv) or (pr[0] == pr[1] and rl == rv)):
+                    return "➖"
+                return "✖"
+
             for idx, p in enumerate(partidos):
                 pr = pred.get(idx)
                 rl, rv = resultados_fase.get(idx, (None, None))
-                estado = "—"
-                if pr is not None and rl is not None and rv is not None:
-                    if pr[0] == rl and pr[1] == rv:
-                        estado = "🎯 Exacto"
-                    elif ((pr[0] > pr[1] and rl > rv) or (pr[0] < pr[1] and rl < rv) or (pr[0] == pr[1] and rl == rv)):
-                        estado = "✅ Resultado"
-                    else:
-                        estado = "❌ Falló"
-                elif pr is not None:
-                    estado = "📝 Pronosticado"
-
                 filas.append({
                     "#": idx + 1,
                     "Partido": f"{_fmt_equipo(p.get('local'))} vs {_fmt_equipo(p.get('visita'))}",
                     "Pronóstico": f"{pr[0]} - {pr[1]}" if pr is not None else "—",
                     "Resultado real": f"{rl} - {rv}" if rl is not None and rv is not None else "—",
-                    "Estado": estado,
+                    " ": _icono_pronostico(pr, rl, rv),
                 })
 
             df_fase = pd.DataFrame(filas)
@@ -1107,22 +1106,21 @@ def _render_admin_ver_pronosticos_usuario():
         eleccion = item.get("eleccion") or "—"
         confirmado_esp = bool(item.get("confirmado"))
         real = resultados_especiales.get(cat)
-        pts = int(info.get("puntos", 0) or 0)
 
         if eleccion == "—":
-            estado = "—"
+            icono = ""
         elif real is None:
-            estado = "✅ Confirmado" if confirmado_esp else "🕓 Sin confirmar"
+            icono = "🕓" if confirmado_esp else ""
         elif eleccion == real:
-            estado = f"🏆 +{pts} pts"
+            icono = "✔"
         else:
-            estado = "❌ No acertó"
+            icono = "✖"
 
         filas_esp.append({
             "Especial": info.get("label", cat.title()),
             "Pronóstico": eleccion,
             "Resultado real": real or "—",
-            "Estado": estado,
+            " ": icono,
         })
 
     st.dataframe(pd.DataFrame(filas_esp), use_container_width=True, hide_index=True)
