@@ -575,14 +575,6 @@ def db_get_fases():
 
 
 def db_toggle_fase(nombre, valor):
-    fases_actuales = db_get_fases() or {}
-    estado_anterior = bool(fases_actuales.get(nombre, False))
-    backup_info = None
-    if estado_anterior and not valor:
-        try:
-            backup_info = db_guardar_backup_generado(nombre, origen='auto_cierre_fase')
-        except Exception:
-            backup_info = None
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("UPDATE fases SET habilitada=%s WHERE nombre=%s", (1 if valor else 0, nombre))
@@ -590,8 +582,6 @@ def db_toggle_fase(nombre, valor):
         db_get_fases.clear()
     except Exception:
         st.cache_data.clear()
-    if backup_info and backup_info.get('id'):
-        db_feed_event(f"🛟 Backup automático generado al cerrar {nombre} (#{backup_info['id']})", 'backup')
     db_feed_event(f"{'🟢' if valor else '🔒'} La fase {nombre} fue {'abierta' if valor else 'cerrada'}", "fase")
 
 
