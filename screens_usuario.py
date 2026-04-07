@@ -719,6 +719,36 @@ def pantalla_usuario():
                             _persistir_cambios()
                         st.session_state.grupo_wizard = gi + 1; db_set_config(f'wizard_pos_{username}', str(gi + 1)); st.rerun()
 
+                if gi == total:
+                    st.divider()
+                    with st.form("form_confirmar_especiales"):
+                        clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
+                        confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
+
+                    if confirmar_esp:
+                        if hash_clave(clave_esp_final) != u["clave"]:
+                            st.error("Contraseña incorrecta.")
+                        else:
+                            esp_confirmados = db_get_especiales_usuario(username)
+                            sin_elegir = [
+                                info["label"]
+                                for cat, info in CATEGORIAS_ESPECIALES.items()
+                                if not ((esp_confirmados.get(cat) or {}).get("confirmado"))
+                            ]
+                            if sin_elegir:
+                                st.error(f"⚠️ Falta confirmar especiales: {', '.join(sin_elegir)}")
+                            else:
+                                with st.spinner("Confirmando pronósticos..."):
+                                    _persistir_cambios()
+                                    _flush_pred_buffer(username, fase)
+                                    db_confirmar_prode(username, fase)
+                                    _get_special_buffer(username).clear()
+                                    db_calcular_puntos()
+                                st.session_state["wizard_grupos_completo"] = True
+                                st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
+                                db_set_config(f"wizard_pos_{username}", "0")
+                                st.rerun()
+
                 # ── Slider de navegación ──
                 pasos = ["⭐"] + grupos_con_partidos
                 n = len(pasos)
@@ -974,39 +1004,6 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
             st.rerun()
         return
 
-    # ── Formulario de confirmación ──
-    with st.form("form_confirmar_especiales"):
-        clave_esp_final = st.text_input("🔒 Tu contraseña para confirmar grupos + especiales", type="password", key="pw_esp_final")
-        confirmar_esp   = st.form_submit_button("🔒 Confirmar todo", type="primary", use_container_width=True)
-
-    if confirmar_esp:
-        if hash_clave(clave_esp_final) != u["clave"]:
-            st.error("Contraseña incorrecta.")
-        else:
-            esp_confirmados = especiales_usuario
-            sin_elegir = [
-                info["label"]
-                for cat, info in CATEGORIAS_ESPECIALES.items()
-                if selecciones_esp.get(cat) is None and not ((esp_confirmados.get(cat) or {}).get("confirmado"))
-            ]
-            if sin_elegir:
-                st.error(f"⚠️ Falta elegir: {', '.join(sin_elegir)}")
-            else:
-                with st.spinner("Confirmando pronósticos..."):
-                    _flush_pred_buffer(username, fase)
-                    db_confirmar_prode(username, fase)
-                    for cat, elec in selecciones_esp.items():
-                        esp_cat = esp_confirmados.get(cat) or {}
-                        if elec and not esp_cat.get("confirmado"):
-                            db_guardar_especial(username, cat, elec)
-                            db_confirmar_especial(username, cat)
-                    _get_special_buffer(username).clear()
-                    db_calcular_puntos()
-                st.session_state["wizard_grupos_completo"] = True
-                st.session_state["msg_grupos"] = "✅ ¡Todo confirmado! Grupos y especiales guardados."
-                db_set_config(f"wizard_pos_{username}", "0")
-                st.rerun()
-
     esp_buffer = _get_special_buffer(username)
     for cat, elec in selecciones_esp.items():
         esp_actual = especiales_usuario.get(cat)
@@ -1020,3 +1017,4 @@ def _render_paso_especiales(username, u, fase, total, partidos, pred):
     nav1_e, _, nav3_e = st.columns([1, 2, 1])
     if nav3_e.button("Siguiente → Grupo A", key="esp_next", type="primary", use_container_width=True):
         st.session_state.grupo_wizard = 1; db_set_config(f"wizard_pos_{username}", "1"); st.rerun()
+
